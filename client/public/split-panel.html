@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Premium split-screen UI layout with 3D depth and organic curved divider" />
+  <title>Split Panel — 3D Depth Layout</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ───────────────────────────── Reset & Base ───────────────────────────── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      width: 100%; height: 100%;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow: hidden;
+    }
+
+    /* ──────────────────────── Lavender Background ─────────────────────────── */
+    body {
+      background: linear-gradient(
+        145deg,
+        hsl(260, 30%, 92%) 0%,
+        hsl(270, 25%, 88%) 40%,
+        hsl(255, 20%, 85%) 100%
+      );
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective: 1400px;
+    }
+
+    /* Subtle ambient grain / noise overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* ───────────────────────── Stage Container ────────────────────────────── */
+    .stage {
+      position: relative;
+      width: min(92vw, 1360px);
+      height: min(82vh, 780px);
+      border-radius: 32px;
+      /* Outer neumorphic shadow on the "table" the panels sit on */
+      filter: drop-shadow(0 40px 80px rgba(80, 60, 120, 0.12));
+    }
+
+    /* ───────────────────── SVG Definitions (hidden) ──────────────────────── */
+    .defs-svg {
+      position: absolute;
+      width: 0; height: 0;
+      overflow: hidden;
+    }
+
+    /* ──────────────────────── Right Panel (Recessed) ─────────────────────── */
+    .panel-right {
+      position: absolute;
+      inset: 0;
+      border-radius: 32px;
+      background: linear-gradient(
+        165deg,
+        hsl(0, 0%, 97%)  0%,
+        hsl(240, 10%, 95%) 50%,
+        hsl(240, 8%, 92%)  100%
+      );
+      /* Recessed neumorphic shadows */
+      box-shadow:
+        inset  4px  4px 12px rgba(0, 0, 0, 0.06),
+        inset -2px -2px  8px rgba(255, 255, 255, 0.7),
+              0   12px 32px rgba(80, 60, 120, 0.08);
+      z-index: 1;
+      overflow: hidden;
+    }
+
+    /* Soft interior radial glow */
+    .panel-right::before {
+      content: '';
+      position: absolute;
+      top: 20%; right: 5%;
+      width: 60%; height: 60%;
+      background: radial-gradient(ellipse at center, rgba(200, 190, 230, 0.15), transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Subtle grid pattern for light panel */
+    .panel-right::after {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,0,0,0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.015) 1px, transparent 1px);
+      background-size: 48px 48px;
+      border-radius: 32px;
+      pointer-events: none;
+    }
+
+    /* ──────────────────────── Left Panel (Elevated) ──────────────────────── */
+    .panel-left {
+      position: absolute;
+      inset: 0;
+      border-radius: 32px;
+      z-index: 3;
+      /* Clip to the organic curve — left side only */
+      clip-path: url(#curveClipLeft);
+      transform: translateZ(0);
+    }
+
+    .panel-left-inner {
+      position: absolute;
+      inset: 0;
+      border-radius: 32px;
+      background: linear-gradient(
+        155deg,
+        hsl(225, 55%, 12%) 0%,
+        hsl(228, 50%, 16%) 35%,
+        hsl(230, 45%, 20%) 70%,
+        hsl(232, 40%, 24%) 100%
+      );
+      /* Elevated feel — large diffuse + crisp near shadow */
+      box-shadow:
+        12px  0  50px rgba(0, 0, 0, 0.35),
+         6px  0  20px rgba(0, 0, 0, 0.25),
+         2px  0   8px rgba(0, 0, 0, 0.20);
+      overflow: hidden;
+    }
+
+    /* Glassmorphism frost layer */
+    .panel-left-inner::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        130deg,
+        rgba(255, 255, 255, 0.04) 0%,
+        rgba(255, 255, 255, 0.01) 40%,
+        rgba(255, 255, 255, 0.06) 100%
+      );
+      border-radius: 32px;
+      pointer-events: none;
+    }
+
+    /* Subtle star-dust / light specks */
+    .panel-left-inner::after {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(circle at 15% 25%, rgba(160, 180, 255, 0.12) 0%, transparent 35%),
+        radial-gradient(circle at 35% 75%, rgba(120, 140, 220, 0.08) 0%, transparent 30%);
+      pointer-events: none;
+    }
+
+    /* ──────────────────── Shimmer Divider (The Curve) ─────────────────────── */
+    .shimmer-divider {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      pointer-events: none;
+      overflow: hidden;
+      border-radius: 32px;
+    }
+
+    .shimmer-divider svg {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+    }
+
+    /* The silver/white shimmer stroke */
+    .shimmer-path {
+      fill: none;
+      stroke: url(#shimmerGrad);
+      stroke-width: 2.5;
+      filter: url(#glow);
+    }
+
+    /* Secondary thinner highlight */
+    .shimmer-path-thin {
+      fill: none;
+      stroke: url(#shimmerGradThin);
+      stroke-width: 1;
+      opacity: 0.7;
+      filter: url(#glowSoft);
+    }
+
+    /* Animated shimmer sweep */
+    .shimmer-sweep {
+      fill: none;
+      stroke: url(#sweepGrad);
+      stroke-width: 3.5;
+      stroke-linecap: round;
+      animation: shimmerMove 4s ease-in-out infinite;
+    }
+
+    @keyframes shimmerMove {
+      0%   { stroke-dashoffset: 1200; opacity: 0; }
+      10%  { opacity: 1; }
+      50%  { opacity: 1; }
+      90%  { opacity: 0; }
+      100% { stroke-dashoffset: -200; opacity: 0; }
+    }
+
+    .shimmer-sweep {
+      stroke-dasharray: 120 1200;
+      stroke-dashoffset: 1200;
+    }
+
+    /* ────────────────────── Depth Shadow Along Curve ──────────────────────── */
+    .depth-shadow {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      overflow: hidden;
+      border-radius: 32px;
+    }
+
+    .depth-shadow svg {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+    }
+
+    .shadow-path {
+      fill: none;
+      stroke: rgba(0, 0, 0, 0.20);
+      stroke-width: 18;
+      filter: url(#shadowBlur);
+    }
+
+    .shadow-path-soft {
+      fill: none;
+      stroke: rgba(0, 0, 0, 0.08);
+      stroke-width: 40;
+      filter: url(#shadowBlurWide);
+    }
+
+    /* ───────────────────────── Ambient Orbs ───────────────────────────────── */
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      animation: orbFloat 12s ease-in-out infinite;
+    }
+
+    .orb-1 {
+      width: 300px; height: 300px;
+      top: -80px; left: -60px;
+      background: radial-gradient(circle, rgba(140, 120, 200, 0.12), transparent 70%);
+      animation-delay: 0s;
+    }
+
+    .orb-2 {
+      width: 250px; height: 250px;
+      bottom: -60px; right: -40px;
+      background: radial-gradient(circle, rgba(180, 160, 220, 0.10), transparent 70%);
+      animation-delay: -4s;
+    }
+
+    .orb-3 {
+      width: 180px; height: 180px;
+      top: 50%; left: 45%;
+      transform: translate(-50%, -50%);
+      background: radial-gradient(circle, rgba(200, 200, 255, 0.08), transparent 70%);
+      animation-delay: -8s;
+    }
+
+    @keyframes orbFloat {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33%      { transform: translate(12px, -8px) scale(1.04); }
+      66%      { transform: translate(-8px, 6px) scale(0.97); }
+    }
+
+    /* ─────────────── Neumorphic Accents on Dark Panel ─────────────────────── */
+    .neumorph-accent {
+      position: absolute;
+      border-radius: 20px;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .accent-1 {
+      width: 120px; height: 120px;
+      top: 18%; left: 8%;
+      background: linear-gradient(145deg, hsl(228, 50%, 18%), hsl(228, 50%, 14%));
+      box-shadow:
+        6px  6px 16px rgba(0, 0, 0, 0.4),
+       -4px -4px 12px rgba(80, 100, 160, 0.08);
+      opacity: 0.35;
+      border-radius: 24px;
+    }
+
+    .accent-2 {
+      width: 80px; height: 80px;
+      bottom: 22%; left: 12%;
+      background: linear-gradient(145deg, hsl(228, 50%, 18%), hsl(228, 50%, 14%));
+      box-shadow:
+        4px  4px 12px rgba(0, 0, 0, 0.35),
+       -3px -3px 10px rgba(80, 100, 160, 0.06);
+      opacity: 0.25;
+      border-radius: 18px;
+    }
+
+    /* ─────────────── Neumorphic Accents on Light Panel ────────────────────── */
+    .accent-3 {
+      width: 100px; height: 100px;
+      top: 25%; right: 10%;
+      background: linear-gradient(145deg, hsl(240, 10%, 96%), hsl(240, 8%, 92%));
+      box-shadow:
+        5px  5px 14px rgba(0, 0, 0, 0.06),
+       -4px -4px 10px rgba(255, 255, 255, 0.8);
+      opacity: 0.40;
+      border-radius: 22px;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .accent-4 {
+      width: 60px; height: 60px;
+      bottom: 30%; right: 8%;
+      background: linear-gradient(145deg, hsl(240, 10%, 96%), hsl(240, 8%, 92%));
+      box-shadow:
+        3px  3px 10px rgba(0, 0, 0, 0.05),
+       -3px -3px  8px rgba(255, 255, 255, 0.7);
+      opacity: 0.30;
+      border-radius: 16px;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    /* ──────────────────── Edge Highlight on Stage ─────────────────────────── */
+    .stage::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 33px;
+      background: linear-gradient(
+        160deg,
+        rgba(255, 255, 255, 0.15),
+        rgba(255, 255, 255, 0.03) 50%,
+        rgba(0, 0, 0, 0.05)
+      );
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ─────────────────────── Responsive ───────────────────────────────────── */
+    @media (max-width: 768px) {
+      .stage {
+        width: 96vw;
+        height: 70vh;
+        border-radius: 24px;
+      }
+      .panel-left, .panel-right, .panel-left-inner {
+        border-radius: 24px;
+      }
+      .neumorph-accent { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Ambient floating orbs behind everything -->
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <!-- Main stage -->
+  <div class="stage" id="stage">
+
+    <!-- Hidden SVG definitions -->
+    <svg class="defs-svg" aria-hidden="true">
+      <defs>
+        <!-- Clip path for the left panel: organic S-curve -->
+        <clipPath id="curveClipLeft" clipPathUnits="objectBoundingBox">
+          <path d="
+            M 0,0
+            L 0.52,0
+            C 0.54,0.12  0.58,0.22  0.55,0.35
+            C 0.52,0.48  0.46,0.52  0.48,0.65
+            C 0.50,0.78  0.56,0.85  0.53,0.95
+            L 0.50,1
+            L 0,1
+            Z
+          " />
+        </clipPath>
+
+        <!-- Shimmer gradient — silver/white metallic -->
+        <linearGradient id="shimmerGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="rgba(220,225,240,0.9)" />
+          <stop offset="25%"  stop-color="rgba(255,255,255,0.95)" />
+          <stop offset="50%"  stop-color="rgba(200,210,230,0.8)" />
+          <stop offset="75%"  stop-color="rgba(255,255,255,0.9)" />
+          <stop offset="100%" stop-color="rgba(190,200,220,0.7)" />
+        </linearGradient>
+
+        <linearGradient id="shimmerGradThin" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stop-color="rgba(255,255,255,0.5)" />
+          <stop offset="50%"  stop-color="rgba(255,255,255,0.8)" />
+          <stop offset="100%" stop-color="rgba(255,255,255,0.4)" />
+        </linearGradient>
+
+        <!-- Sweep highlight gradient -->
+        <linearGradient id="sweepGrad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="780">
+          <stop offset="0%"   stop-color="rgba(255,255,255,0)" />
+          <stop offset="40%"  stop-color="rgba(255,255,255,0.95)" />
+          <stop offset="60%"  stop-color="rgba(220,230,255,1)" />
+          <stop offset="100%" stop-color="rgba(255,255,255,0)" />
+        </linearGradient>
+
+        <!-- Glow filters -->
+        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+
+        <filter id="glowSoft" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+
+        <!-- Shadow blur for depth along curve -->
+        <filter id="shadowBlur" x="-10%" y="-5%" width="120%" height="110%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="6" />
+        </filter>
+
+        <filter id="shadowBlurWide" x="-10%" y="-5%" width="120%" height="110%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="16" />
+        </filter>
+      </defs>
+    </svg>
+
+    <!-- ── Right Panel (recessed, light) ── -->
+    <div class="panel-right" id="panelRight"></div>
+
+    <!-- ── Depth shadow along the curve ── -->
+    <div class="depth-shadow">
+      <svg viewBox="0 0 1360 780" preserveAspectRatio="none">
+        <path class="shadow-path-soft" d="
+          M 714,0
+          C 734,94  789,171  748,273
+          C 707,374  626,405  653,507
+          C 680,608  762,663  720,741
+          L 680,780
+        " />
+        <path class="shadow-path" d="
+          M 707,0
+          C 734,94  789,171  748,273
+          C 707,374  626,405  653,507
+          C 680,608  762,663  720,741
+          L 680,780
+        " />
+      </svg>
+    </div>
+
+    <!-- ── Left Panel (elevated, dark) ── -->
+    <div class="panel-left">
+      <div class="panel-left-inner" id="panelLeft"></div>
+    </div>
+
+    <!-- ── Shimmer Divider ── -->
+    <div class="shimmer-divider">
+      <svg viewBox="0 0 1360 780" preserveAspectRatio="none">
+        <!-- Main shimmer line -->
+        <path class="shimmer-path" d="
+          M 707,0
+          C 734,94  789,171  748,273
+          C 707,374  626,405  653,507
+          C 680,608  762,663  720,741
+          L 680,780
+        " />
+        <!-- Thinner offset highlight -->
+        <path class="shimmer-path-thin" d="
+          M 710,0
+          C 737,94  792,171  751,273
+          C 710,374  629,405  656,507
+          C 683,608  765,663  723,741
+          L 683,780
+        " />
+        <!-- Animated sweep highlight -->
+        <path class="shimmer-sweep" d="
+          M 707,0
+          C 734,94  789,171  748,273
+          C 707,374  626,405  653,507
+          C 680,608  762,663  720,741
+          L 680,780
+        " />
+      </svg>
+    </div>
+
+    <!-- ── Neumorphic accent shapes ── -->
+    <div class="neumorph-accent accent-1"></div>
+    <div class="neumorph-accent accent-2"></div>
+    <div class="accent-3"></div>
+    <div class="accent-4"></div>
+
+  </div>
+
+</body>
+</html>
