@@ -60,12 +60,18 @@ const inscription = async (req, res) => {
       token_activation,
     });
 
-    // Envoyer l'email d'activation
-    await envoyerEmailActivation(email, prenom, token_activation);
+   // Trouve la ligne qui envoie l'email et entoure-la :
+try {
+  await envoyerEmailActivation(user.email, user.token_activation);
+} catch (emailError) {
+  console.error('Erreur envoi email:', emailError.message);
+}
 
-    return res.status(201).json({
-      message: 'Inscription réussie ! Un email d\'activation a été envoyé à ' + email + '. Veuillez activer votre compte avant de vous connecter.',
-    });
+// Ensuite retourne le succès
+return res.status(201).json({
+  message: 'Inscription réussie ! Vérifiez votre email pour activer votre compte.',
+  userId: user.id
+});
 
   } catch (error) {
     return res.status(500).json({
