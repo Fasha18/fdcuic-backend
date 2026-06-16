@@ -104,7 +104,7 @@ const activerCompte = async (req, res) => {
 
     // Activer le compte
     await user.update({
-      est_active: true,
+      est_active: false,
       token_activation: null,
     });
 
