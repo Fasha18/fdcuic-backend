@@ -60,18 +60,15 @@ const inscription = async (req, res) => {
       token_activation,
     });
 
-   // Trouve la ligne qui envoie l'email et entoure-la :
-try {
-  await envoyerEmailActivation(user.email, user.token_activation);
-} catch (emailError) {
-  console.error('Erreur envoi email:', emailError.message);
-}
+    // Envoi de l'email en arrière-plan (sans await) pour ne pas bloquer la réponse au frontend
+    envoyerEmailActivation(user.email, user.prenom, user.token_activation)
+      .catch(emailError => console.error('Erreur asynchrone envoi email:', emailError.message));
 
-// Ensuite retourne le succès
-return res.status(201).json({
-  message: 'Inscription réussie ! Vérifiez votre email pour activer votre compte.',
-  userId: user.id
-});
+    // Ensuite retourne le succès
+    return res.status(201).json({
+      message: 'Inscription réussie ! Vérifiez votre email pour activer votre compte.',
+      userId: user.id
+    });
 
   } catch (error) {
     return res.status(500).json({
@@ -105,7 +102,7 @@ const activerCompte = async (req, res) => {
     // Activer le compte
     await user.update({
       est_active: true,
-      token_activation: null,
+      token_activation: token_activation,
     });
 
     // Rediriger vers une page de succès
