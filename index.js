@@ -1,80 +1,79 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
-const { sequelize } = require('./src/models/index');
-
-// Import des routes
-const authRoutes       = require('./src/routes/auth');
-const appelRoutes      = require('./src/routes/appel');
-const projetRoutes     = require('./src/routes/projet');
-const evaluationRoutes = require('./src/routes/evaluation');
-const subventionRoutes = require('./src/routes/subvention');
-const notificationRoutes = require('./src/routes/notification');
-const mobiliteRoutes = require('./src/routes/mobilite');
-const appelProjetRoutes = require('./src/routes/appelProjet');
-const adminRoutes = require('./src/routes/admin');
-const userRoutes = require('./src/routes/user');
-const secteurRoutes         = require('./src/routes/secteur');
-const typeProjetRoutes      = require('./src/routes/typeProjet');
-const personnelRoutes       = require('./src/routes/personnel');
-const candidatRoutes        = require('./src/routes/candidat');
-const journalRoutes         = require('./src/routes/journal');
-const notifAdminRoutes      = require('./src/routes/notificationAdmin');
-const faqRoutes             = require('./src/routes/faq');
-const legalRoutes           = require('./src/routes/legal');
-
 const cors = require('cors');
+
 const app = express();
 
-// ── CORS (en premier, avant tout le reste) ──
-app.use(cors({
-  origin: 'http://localhost:5173',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+// ── CORS ouvert (accepte les requêtes de partout : mobile, web, etc.) ──
+app.use(cors());
 
 // ── Middlewares globaux ──
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // accès aux images/PDFs
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-
-// ── Routes ──
-app.use('/api/auth',        authRoutes);
-app.use('/api/appels',      appelRoutes);
-app.use('/api/projets',     projetRoutes);
-app.use('/api/evaluations', evaluationRoutes);
-app.use('/api/subventions', subventionRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/mobilite', mobiliteRoutes);
-app.use('/api/dossiers', appelProjetRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/secteurs',              secteurRoutes);
-app.use('/api/admin/types-projet',    typeProjetRoutes);
-app.use('/api/admin/personnel',       personnelRoutes);
-app.use('/api/admin/candidats',       candidatRoutes);
-app.use('/api/admin/journal',         journalRoutes);
-app.use('/api/admin/notifications',   notifAdminRoutes);
-app.use('/api/faqs',                  faqRoutes);
-app.use('/api/legal',                 legalRoutes);
-
-// Route racine
+// ── Route de santé (Railway health check) ──
 app.get('/', (req, res) => {
   res.json({ message: 'API FDCUIC opérationnelle !' });
 });
 
+// ── Routes API ──
+try {
+  app.use('/api/auth',        require('./src/routes/auth'));
+  app.use('/api/appels',      require('./src/routes/appel'));
+  app.use('/api/projets',     require('./src/routes/projet'));
+  app.use('/api/evaluations', require('./src/routes/evaluation'));
+  app.use('/api/subventions', require('./src/routes/subvention'));
+  app.use('/api/notifications', require('./src/routes/notification'));
+  app.use('/api/mobilite',    require('./src/routes/mobilite'));
+  app.use('/api/dossiers',    require('./src/routes/appelProjet'));
+  app.use('/api/admin',       require('./src/routes/admin'));
+  app.use('/api/users',       require('./src/routes/user'));
+  app.use('/api/secteurs',    require('./src/routes/secteur'));
+  app.use('/api/admin/types-projet',  require('./src/routes/typeProjet'));
+  app.use('/api/admin/personnel',     require('./src/routes/personnel'));
+  app.use('/api/admin/candidats',     require('./src/routes/candidat'));
+  app.use('/api/admin/journal',       require('./src/routes/journal'));
+  app.use('/api/admin/notifications', require('./src/routes/notificationAdmin'));
+  app.use('/api/faqs',        require('./src/routes/faq'));
+  app.use('/api/legal',       require('./src/routes/legal'));
+  console.log('Toutes les routes chargées avec succès.');
+} catch (err) {
+  console.error('ERREUR CHARGEMENT ROUTES:', err.message);
+}
+
 // ── Démarrage serveur ──
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, '0.0.0.0', async () => {
+
+// IMPORTANT : Démarrer le serveur HTTP IMMÉDIATEMENT, puis connecter la DB après
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Serveur démarré sur le port ${PORT}`);
+  console.log('NODE_ENV:', process.env.NODE_ENV || 'non défini');
+  console.log('DATABASE_URL présent:', !!process.env.DATABASE_URL);
+});
+
+// Connecter la base de données en arrière-plan (ne bloque PAS le serveur)
+(async () => {
   try {
+    const { sequelize } = require('./src/models/index');
     await sequelize.authenticate();
     console.log('Connexion PostgreSQL réussie !');
     await sequelize.sync({ force: false, alter: true });
     console.log('Tables créées/mises à jour avec succès !');
   } catch (error) {
-    console.error('Erreur de connexion :', error.message);
+    console.error('Erreur de connexion DB:', error.message);
+    // Le serveur reste UP même si la DB échoue
   }
+})();
+
+// Capturer les erreurs non-attrapées pour éviter les crashs silencieux
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION:', err.message);
+  console.error(err.stack);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('UNHANDLED REJECTION:', reason);
 });
