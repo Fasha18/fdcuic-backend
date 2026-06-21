@@ -145,7 +145,7 @@ export default function CandidatDashboard({ onLogout }) {
       <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         {data.image_couverture && (
           <div style={{ height: 140, borderRadius: 8, overflow: 'hidden', marginBottom: 16 }}>
-            <img src={`http://localhost:3000/uploads/${data.image_couverture}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src={`https://fdcuic-backend-production.up.railway.app/uploads/${data.image_couverture}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
         )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
@@ -256,7 +256,7 @@ export default function CandidatDashboard({ onLogout }) {
                     <div key={appel.id} className="card animate-fade-in-up" onClick={() => navigate(`/candidat/appels/${appel.id}`)} style={{ padding: 12, borderRadius: 12, cursor: 'pointer', display: 'flex', flexDirection: 'column' }}>
                       <div style={{ height: 100, borderRadius: 8, background: 'var(--color-bg-hover)', marginBottom: 12, overflow: 'hidden' }}>
                         {appel.image_couverture ? (
-                          <img src={`http://localhost:3000/uploads/${appel.image_couverture}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <img src={`https://fdcuic-backend-production.up.railway.app/uploads/${appel.image_couverture}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         ) : (
                           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-muted)' }}>
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>

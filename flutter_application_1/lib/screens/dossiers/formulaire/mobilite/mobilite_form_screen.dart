@@ -27,19 +27,21 @@ class _MobiliteFormScreenState extends State<MobiliteFormScreen> {
     // Étape 1
     'nom_structure': '',
     'discipline': null,
-    'nom_responsable': '',
-    'email': '',
-    'telephone': '',
-    // Étape 2
-    'pays_destination': '',
-    'region_destination': '',
-    'motivation': '',
-    'experience_anterieure': '',
-    // Étape 3
     'date_depart': null,
     'date_arrivee': null,
+    'pays_destination': '',
+    'region_destination': '',
+    // Étape 2
+    'presentation_succincte': '',
+    'opportunite': '',
+    'pertinence': '',
+    'objectifs_generaux': '',
+    'objectifs_specifiques': '',
+    // Étape 3
+    'programme_sejour_detaille_du_sejour': '',
     'activites_prevues': '',
-    'partenaires_locaux': '',
+    'resultats_attendus': '',
+    'impacts': '',
     // Étape 4
     'documents': <String, String?>{},
   };
@@ -64,11 +66,49 @@ class _MobiliteFormScreenState extends State<MobiliteFormScreen> {
     super.dispose();
   }
 
+  bool _validateCurrentStep() {
+    bool isValid = true;
+    if (_currentStep == 1) {
+      final req = ['nom_structure', 'discipline', 'date_depart', 'date_arrivee', 'pays_destination', 'region_destination'];
+      for (var k in req) {
+        if (formData[k] == null || formData[k].toString().trim().isEmpty) isValid = false;
+      }
+    } else if (_currentStep == 2) {
+      final req = ['presentation_succincte', 'opportunite', 'pertinence', 'objectifs_generaux', 'objectifs_specifiques'];
+      for (var k in req) {
+        if (formData[k] == null || formData[k].toString().trim().isEmpty) isValid = false;
+      }
+    } else if (_currentStep == 3) {
+      final req = ['programme_sejour_detaille_du_sejour', 'activites_prevues', 'resultats_attendus', 'impacts'];
+      for (var k in req) {
+        if (formData[k] == null || formData[k].toString().trim().isEmpty) isValid = false;
+      }
+    } else if (_currentStep == 4) {
+      final docs = formData['documents'] as Map<String, String?>;
+      if (docs['doc_ninea'] == null ||
+          docs['doc_recepisse'] == null ||
+          docs['doc_invitation'] == null) {
+        isValid = false;
+      }
+    }
+    
+    if (!isValid) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Veuillez remplir tous les champs obligatoires pour continuer.'),
+        backgroundColor: FDColors.coral,
+        duration: Duration(seconds: 2),
+      ));
+    }
+    return isValid;
+  }
+
   void _goToStep(int step) {
     if (step < 1 || step > _totalSteps) return;
 
     // Valider l'étape courante avant d'avancer
     if (step > _currentStep) {
+      if (!_validateCurrentStep()) return;
+
       final formKey = _formKeys[_currentStep - 1];
       if (formKey.currentState != null && !formKey.currentState!.validate()) {
         return;
@@ -101,25 +141,27 @@ class _MobiliteFormScreenState extends State<MobiliteFormScreen> {
       final projetId = await ApiService.etape1Mobilite({
         'nom_structure': formData['nom_structure'],
         'discipline': formData['discipline'],
-        'nom_responsable': formData['nom_responsable'],
-        'email': formData['email'],
-        'telephone': formData['telephone'],
+        'date_depart': formData['date_depart'],
+        'date_arrivee': formData['date_arrivee'],
+        'pays_destination': formData['pays_destination'],
+        'region_destination': formData['region_destination'],
       });
 
       // 2. Etape 2
       await ApiService.etape2Mobilite(projetId, {
-        'pays_destination': formData['pays_destination'],
-        'region_destination': formData['region_destination'],
-        'motivation': formData['motivation'],
-        'experience_anterieure': formData['experience_anterieure'],
+        'presentation_succincte': formData['presentation_succincte'],
+        'opportunite': formData['opportunite'],
+        'pertinence': formData['pertinence'],
+        'objectifs_generaux': formData['objectifs_generaux'],
+        'objectifs_specifiques': formData['objectifs_specifiques'],
       });
 
       // 3. Etape 3
       await ApiService.etape3Mobilite(projetId, {
-        'date_depart': formData['date_depart'],
-        'date_arrivee': formData['date_arrivee'],
+        'programme_sejour_detaille_du_sejour': formData['programme_sejour_detaille_du_sejour'],
         'activites_prevues': formData['activites_prevues'],
-        'partenaires_locaux': formData['partenaires_locaux'],
+        'resultats_attendus': formData['resultats_attendus'],
+        'impacts': formData['impacts'],
       });
 
       // 4. Etape 4 - Documents
@@ -168,8 +210,7 @@ class _MobiliteFormScreenState extends State<MobiliteFormScreen> {
                 backgroundColor: FDColors.violet,
               ),
               onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
+                Navigator.of(context).popUntil((route) => route.isFirst);
               },
               child: const Text('OK'),
             ),

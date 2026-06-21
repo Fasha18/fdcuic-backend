@@ -39,10 +39,10 @@ class _AppelsScreenState extends State<AppelsScreen>
             titre: e['titre'],
             description: e['description'] ?? '',
             typeProjet: e['type_projet'],
-            dateDebut: e['date_ouverture'] ?? '',
-            dateFin: e['date_cloture'] ?? '',
+            dateDebut: e['date_debut'] ?? e['date_ouverture'] ?? '',
+            dateFin: e['date_fin'] ?? e['date_cloture'] ?? '',
             statut: e['statut'],
-            criteres: e['criteres_eligibilite'] ?? '',
+            criteres: e['criteres'] ?? e['criteres_eligibilite'] ?? '',
           )).toList();
 
           _mobilite = ProgrammeMobilite(

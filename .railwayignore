@@ -1,0 +1,7 @@
+node_modules/
+client/
+fdcuic_mobile/
+flutter_application_1/
+uploads/
+.git/
+.env

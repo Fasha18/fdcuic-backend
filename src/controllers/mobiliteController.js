@@ -190,6 +190,23 @@ const soumettre = async (req, res) => {
       etape_courante: 5,
     });
 
+    const { envoyerNotificationStatut } = require('../services/notificationService');
+    try {
+      await envoyerNotificationStatut(
+        projet.user_id,
+        {
+          nom_structure: projet.nom_structure,
+          pays_destination: projet.pays_destination,
+          date_depart: projet.date_depart,
+          date_arrivee: projet.date_arrivee,
+          type: 'mobilite'
+        },
+        'soumis'
+      );
+    } catch (notifError) {
+      console.error('Erreur notification mobilité:', notifError.message);
+    }
+
     return res.status(200).json({
       message: 'Dossier soumis avec succès ! Il passera en phase d\'examen.',
       projet,
@@ -246,17 +263,21 @@ const changerStatut = async (req, res) => {
     if (projet.statut !== statut) {
       await projet.update({ statut });
 
-      let msg = '';
-      if (statut === 'en_examen') msg = `Votre candidature de mobilité "${projet.titre}" est actuellement en cours d'examen.`;
-      else if (statut === 'accepte') msg = `Félicitations ! Votre projet de mobilité "${projet.titre}" a été retenu.`;
-      else if (statut === 'rejete') msg = `Nous sommes au regret de vous informer que votre projet de mobilité "${projet.titre}" n'a pas été retenu.`;
-      
-      if (msg) {
-        await Notification.create({
-          user_id: projet.user_id,
-          message: msg,
-          type: 'in_app'
-        });
+      const { envoyerNotificationStatut } = require('../services/notificationService');
+      try {
+        await envoyerNotificationStatut(
+          projet.user_id,
+          {
+            nom_structure: projet.nom_structure,
+            pays_destination: projet.pays_destination,
+            date_depart: projet.date_depart,
+            date_arrivee: projet.date_arrivee,
+            type: 'mobilite'
+          },
+          statut
+        );
+      } catch (notifError) {
+        console.error('Erreur notification mobilité:', notifError.message);
       }
     }
 

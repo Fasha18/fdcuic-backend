@@ -626,7 +626,7 @@ export default function Dashboard({ activeTab = 'apercu', onLogout }) {
                       <div style={{ height: 180, background: 'var(--color-bg-body)', position: 'relative', overflow: 'hidden' }}>
                         {campagne.image_couverture ? (
                           <>
-                            <img src={`http://localhost:3000/uploads/${campagne.image_couverture}`} alt={campagne.titre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <img src={`https://fdcuic-backend-production.up.railway.app/uploads/${campagne.image_couverture}`} alt={campagne.titre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%)' }} />
                           </>
                         ) : (
@@ -702,7 +702,7 @@ export default function Dashboard({ activeTab = 'apercu', onLogout }) {
                     <div style={{ width: '40%', background: 'var(--color-bg-body)', position: 'relative', overflow: 'hidden' }}>
                       {programmeMobilite.image_couverture ? (
                         <>
-                          <img src={`http://localhost:3000/uploads/${programmeMobilite.image_couverture}`} alt={programmeMobilite.titre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <img src={`https://fdcuic-backend-production.up.railway.app/uploads/${programmeMobilite.image_couverture}`} alt={programmeMobilite.titre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.4) 0%, transparent 100%)' }} />
                         </>
                       ) : (

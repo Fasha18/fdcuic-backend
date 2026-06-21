@@ -127,7 +127,7 @@ export default function DetailMobilite({ onLogout }) {
               {programme.image_couverture ? (
                 <>
                   <img 
-                    src={`http://localhost:3000/uploads/${programme.image_couverture}`} 
+                    src={`https://fdcuic-backend-production.up.railway.app/uploads/${programme.image_couverture}`} 
                     alt="Couverture" 
                     style={{ 
                       width: '100%', 

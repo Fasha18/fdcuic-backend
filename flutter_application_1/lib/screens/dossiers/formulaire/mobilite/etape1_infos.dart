@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../../widgets/auth_widgets.dart';
 import '../../../../widgets/form_widgets.dart';
+import '../../../../utils/form_validators.dart';
+import '../../../../core/theme.dart';
 
 class Etape1InfosMob extends StatefulWidget {
   final GlobalKey<FormState> formKey;
@@ -12,9 +14,8 @@ class Etape1InfosMob extends StatefulWidget {
 
 class _Etape1InfosMobState extends State<Etape1InfosMob> {
   late final TextEditingController _structureCtrl;
-  late final TextEditingController _responsableCtrl;
-  late final TextEditingController _emailCtrl;
-  late final TextEditingController _telephoneCtrl;
+  late final TextEditingController _paysCtrl;
+  late final TextEditingController _regionCtrl;
 
   final _disciplines = ['danse_urbaine','hiphop','graffiti','mode','claque','sport_de_rue','art_vivant','conception'];
 
@@ -27,14 +28,38 @@ class _Etape1InfosMobState extends State<Etape1InfosMob> {
   void initState() {
     super.initState();
     _structureCtrl = TextEditingController(text: widget.formData['nom_structure'] ?? '');
-    _responsableCtrl = TextEditingController(text: widget.formData['nom_responsable'] ?? '');
-    _emailCtrl = TextEditingController(text: widget.formData['email'] ?? '');
-    _telephoneCtrl = TextEditingController(text: widget.formData['telephone'] ?? '');
+    _paysCtrl = TextEditingController(text: widget.formData['pays_destination'] ?? '');
+    _regionCtrl = TextEditingController(text: widget.formData['region_destination'] ?? '');
 
     _structureCtrl.addListener(() => widget.formData['nom_structure'] = _structureCtrl.text);
-    _responsableCtrl.addListener(() => widget.formData['nom_responsable'] = _responsableCtrl.text);
-    _emailCtrl.addListener(() => widget.formData['email'] = _emailCtrl.text);
-    _telephoneCtrl.addListener(() => widget.formData['telephone'] = _telephoneCtrl.text);
+    _paysCtrl.addListener(() => widget.formData['pays_destination'] = _paysCtrl.text);
+    _regionCtrl.addListener(() => widget.formData['region_destination'] = _regionCtrl.text);
+  }
+
+  Future<void> _pickDate(String key) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2030),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: FDColors.violet,
+              onPrimary: FDColors.white,
+              onSurface: FDColors.textPrimary,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) {
+      setState(() {
+        widget.formData[key] = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+      });
+    }
   }
 
   @override
@@ -48,7 +73,12 @@ class _Etape1InfosMobState extends State<Etape1InfosMob> {
           children: [
             FDLabel('Nom de la structure / Artiste'),
             const SizedBox(height: 6),
-            FDTextField(controller: _structureCtrl, hint: 'Ex: Collectif Dakar Urban', icon: Icons.business_outlined),
+            FDTextField(
+              controller: _structureCtrl, 
+              hint: 'Ex: Collectif Dakar Urban', 
+              icon: Icons.business_outlined,
+              validator: FormValidators.text,
+            ),
             const SizedBox(height: 16),
 
             FDLabel('Discipline'),
@@ -59,25 +89,126 @@ class _Etape1InfosMobState extends State<Etape1InfosMob> {
               items: _disciplines,
               labelBuilder: _lblDisc,
               onChanged: (v) => setState(() => widget.formData['discipline'] = v),
+              validator: FormValidators.requiredField,
             ),
             const SizedBox(height: 16),
 
-            FDLabel('Nom du responsable'),
-            const SizedBox(height: 6),
-            FDTextField(controller: _responsableCtrl, hint: 'Ex: Alioune Fall', icon: Icons.person_outline_rounded),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      FDLabel('Date de départ'),
+                      const SizedBox(height: 6),
+                      _DateField(
+                        valeur: widget.formData['date_depart'],
+                        hint: 'YYYY-MM-DD',
+                        onTap: () => _pickDate('date_depart'),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      FDLabel("Date d'arrivée"),
+                      const SizedBox(height: 6),
+                      _DateField(
+                        valeur: widget.formData['date_arrivee'],
+                        hint: 'YYYY-MM-DD',
+                        onTap: () => _pickDate('date_arrivee'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
 
-            FDLabel('Email'),
+            FDLabel('Pays de destination'),
             const SizedBox(height: 6),
-            FDTextField(controller: _emailCtrl, hint: 'contact@exemple.com', icon: Icons.email_outlined, keyboardType: TextInputType.emailAddress),
+            FDTextField(
+              controller: _paysCtrl, 
+              hint: 'Ex: France', 
+              icon: Icons.public_outlined,
+              validator: FormValidators.text,
+            ),
             const SizedBox(height: 16),
 
-            FDLabel('Téléphone'),
+            FDLabel('Région de destination'),
             const SizedBox(height: 6),
-            FDTextField(controller: _telephoneCtrl, hint: '+221 77 000 00 00', icon: Icons.phone_outlined, keyboardType: TextInputType.phone),
+            FDTextField(
+              controller: _regionCtrl, 
+              hint: 'Ex: Île-de-France', 
+              icon: Icons.map_outlined,
+              validator: FormValidators.text,
+            ),
           ],
         ),
       ),
     );
   }
+}
+
+class _DateField extends FormField<String> {
+  _DateField({
+    required String? valeur,
+    required String hint,
+    required VoidCallback onTap,
+  }) : super(
+          initialValue: valeur,
+          validator: FormValidators.requiredField,
+          builder: (FormFieldState<String> state) {
+            // Mise à jour de l'état du FormField quand la valeur change
+            if (valeur != state.value) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                state.didChange(valeur);
+              });
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: onTap,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    decoration: BoxDecoration(
+                      color: FDColors.ice,
+                      borderRadius: BorderRadius.circular(FDRadius.sm),
+                      border: Border.all(
+                        color: state.hasError ? FDColors.coral : FDColors.border, 
+                        width: state.hasError ? 1.0 : 0.8
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.calendar_today_outlined, size: 18, color: FDColors.textHint),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            valeur ?? hint,
+                            style: FDText.body.copyWith(
+                              color: valeur == null ? FDColors.textHint : FDColors.textPrimary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                if (state.hasError)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6, left: 14),
+                    child: Text(
+                      state.errorText!,
+                      style: const TextStyle(color: FDColors.coral, fontSize: 12),
+                    ),
+                  ),
+              ],
+            );
+          },
+        );
 }

@@ -373,7 +373,7 @@ export default function CandidatAppels({ onLogout }) {
                       {appel.image_couverture ? (
                         <img
                           className="appel-card-img"
-                          src={`http://localhost:3000/uploads/${appel.image_couverture}`}
+                          src={`https://fdcuic-backend-production.up.railway.app/uploads/${appel.image_couverture}`}
                           alt={appel.titre}
                           onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
                         />

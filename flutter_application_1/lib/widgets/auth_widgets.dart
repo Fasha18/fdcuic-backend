@@ -113,6 +113,7 @@ class FDTextField extends StatelessWidget {
   final IconData icon;
   final TextInputType keyboardType;
   final TextEditingController? controller;
+  final String? Function(String?)? validator;
 
   const FDTextField({
     super.key,
@@ -120,19 +121,20 @@ class FDTextField extends StatelessWidget {
     required this.icon,
     this.keyboardType = TextInputType.text,
     this.controller,
+    this.validator,
   });
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
       controller: controller,
       keyboardType: keyboardType,
       style: FDText.body.copyWith(color: FDColors.textPrimary),
+      validator: validator,
       decoration: InputDecoration(
         hintText: hint,
-        // InputDecorationTheme global s'applique automatiquement
-        // on surcharge juste l'icône
         prefixIcon: Icon(icon, size: 18, color: FDColors.textHint),
+        errorMaxLines: 2,
       ),
     );
   }
@@ -142,10 +144,13 @@ class FDTextField extends StatelessWidget {
 class FDPasswordField extends StatefulWidget {
   final String hint;
   final TextEditingController? controller;
+  final String? Function(String?)? validator;
+
   const FDPasswordField({
     super.key,
     this.hint = '••••••••',
     this.controller,
+    this.validator,
   });
 
   @override
@@ -157,10 +162,11 @@ class _FDPasswordFieldState extends State<FDPasswordField> {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return TextFormField(
       controller: widget.controller,
       obscureText: _obscure,
       style: FDText.body.copyWith(color: FDColors.textPrimary),
+      validator: widget.validator,
       decoration: InputDecoration(
         hintText: widget.hint,
         prefixIcon: const Icon(
@@ -178,6 +184,7 @@ class _FDPasswordFieldState extends State<FDPasswordField> {
           ),
           onPressed: () => setState(() => _obscure = !_obscure),
         ),
+        errorMaxLines: 2,
       ),
     );
   }

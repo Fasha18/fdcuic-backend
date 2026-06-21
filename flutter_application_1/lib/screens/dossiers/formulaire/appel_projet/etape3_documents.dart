@@ -24,17 +24,17 @@ class _Etape3DocumentsState extends State<Etape3Documents> {
     final communs = [
       {'key': 'doc_ninea_recepisse', 'label': 'NINEA / Récépissé', 'requis': 'true'},
       {'key': 'doc_cni_passeport',   'label': 'CNI / Passeport',   'requis': 'true'},
-      {'key': 'doc_plan_action',     'label': 'Plan d\'action',     'requis': 'false'},
-      {'key': 'doc_photo_prototype', 'label': 'Photo / Prototype',  'requis': 'false'},
+      {'key': 'doc_plan_action',     'label': 'Plan d\'action',     'requis': 'true'},
+      {'key': 'doc_photo_prototype', 'label': 'Photo / Prototype',  'requis': 'true'},
     ];
     if (typeProjet == 'structuration') {
       communs.addAll([
-        {'key': 'doc_analyse_financiere', 'label': 'Analyse financière', 'requis': 'false'},
-        {'key': 'doc_business_model',     'label': 'Business Model Canvas', 'requis': 'false'},
+        {'key': 'doc_analyse_financiere', 'label': 'Analyse financière', 'requis': 'true'},
+        {'key': 'doc_business_model',     'label': 'Business Model Canvas', 'requis': 'true'},
       ]);
     }
     if (typeProjet == 'formation' || typeProjet == 'evenementiel') {
-      communs.add({'key': 'doc_budget', 'label': 'Budget prévisionnel', 'requis': 'false'});
+      communs.add({'key': 'doc_budget', 'label': 'Budget prévisionnel', 'requis': 'true'});
     }
     return communs;
   }
@@ -54,10 +54,24 @@ class _Etape3DocumentsState extends State<Etape3Documents> {
   Future<void> _pickFile(String key) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx', 'xls', 'xlsx'],
+      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
     );
 
     if (result != null && result.files.single.path != null) {
+      final sizeInBytes = result.files.single.size;
+      // 10 MB max
+      if (sizeInBytes > 10 * 1024 * 1024) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('La taille du fichier ne doit pas dépasser 10 Mo.'),
+              backgroundColor: FDColors.coral,
+            ),
+          );
+        }
+        return;
+      }
+
       setState(() {
         _fichiers[key] = result.files.single.name;
       });
@@ -99,7 +113,7 @@ class _Etape3DocumentsState extends State<Etape3Documents> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Formats acceptés : PDF, JPG, PNG. Taille max : 5 Mo.',
+                      'Formats acceptés : PDF, JPG, PNG. Taille max : 10 Mo.',
                       style: FDText.bodySub
                           .copyWith(color: FDColors.electricBlue),
                     ),

@@ -20,11 +20,12 @@ class _MobiliteEtape4DocumentsState extends State<MobiliteEtape4Documents> {
   final Map<String, String?> _fichiers = {};
 
   final List<Map<String, String>> _docsRequis = const [
-    {'key': 'doc_passeport', 'label': 'Copie du passeport', 'requis': 'true'},
-    {'key': 'doc_lettre_invitation', 'label': 'Lettre d\'invitation', 'requis': 'true'},
-    {'key': 'doc_cv_artistique', 'label': 'CV artistique / Portfolio', 'requis': 'true'},
-    {'key': 'doc_budget_mobilite', 'label': 'Budget détaillé', 'requis': 'true'},
-    {'key': 'doc_annexes', 'label': 'Documents annexes', 'requis': 'false'},
+    {'key': 'doc_ninea', 'label': 'NINEA', 'requis': 'true'},
+    {'key': 'doc_recepisse', 'label': 'Récépissé', 'requis': 'true'},
+    {'key': 'doc_invitation', 'label': 'Lettre d\'invitation', 'requis': 'true'},
+    {'key': 'doc_note_structure', 'label': 'Note sur la structure', 'requis': 'false'},
+    {'key': 'doc_cv_portfolio', 'label': 'CV / Portfolio', 'requis': 'false'},
+    {'key': 'image_couverture', 'label': 'Image de couverture', 'requis': 'false'},
   ];
 
   @override
@@ -42,10 +43,24 @@ class _MobiliteEtape4DocumentsState extends State<MobiliteEtape4Documents> {
   Future<void> _pickFile(String key) async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx', 'xls', 'xlsx'],
+      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
     );
 
     if (result != null && result.files.single.path != null) {
+      final sizeInBytes = result.files.single.size;
+      // 10 MB max
+      if (sizeInBytes > 10 * 1024 * 1024) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('La taille du fichier ne doit pas dépasser 10 Mo.'),
+              backgroundColor: FDColors.coral,
+            ),
+          );
+        }
+        return;
+      }
+
       setState(() {
         _fichiers[key] = result.files.single.name;
       });
@@ -87,7 +102,7 @@ class _MobiliteEtape4DocumentsState extends State<MobiliteEtape4Documents> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Formats acceptés : PDF, JPG, PNG. Taille max : 5 Mo.',
+                      'Formats acceptés : PDF, JPG, PNG. Taille max : 10 Mo.',
                       style: FDText.bodySub
                           .copyWith(color: FDColors.electricBlue),
                     ),

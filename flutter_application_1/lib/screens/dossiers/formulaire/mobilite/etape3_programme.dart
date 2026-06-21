@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme.dart';
 import '../../../../widgets/auth_widgets.dart';
 import '../../../../widgets/form_widgets.dart';
+import '../../../../utils/form_validators.dart';
 
 class Etape3ProgrammeMob extends StatefulWidget {
   final GlobalKey<FormState> formKey;
@@ -12,40 +12,23 @@ class Etape3ProgrammeMob extends StatefulWidget {
 }
 
 class _Etape3ProgrammeMobState extends State<Etape3ProgrammeMob> {
-  late final TextEditingController _departCtrl;
-  late final TextEditingController _arriveeCtrl;
+  late final TextEditingController _programmeCtrl;
   late final TextEditingController _activitesCtrl;
-  late final TextEditingController _partenairesCtrl;
+  late final TextEditingController _resultatsCtrl;
+  late final TextEditingController _impactsCtrl;
 
   @override
   void initState() {
     super.initState();
-    _departCtrl = TextEditingController(text: widget.formData['date_depart'] ?? '');
-    _arriveeCtrl = TextEditingController(text: widget.formData['date_arrivee'] ?? '');
+    _programmeCtrl = TextEditingController(text: widget.formData['programme_sejour_detaille_du_sejour'] ?? '');
     _activitesCtrl = TextEditingController(text: widget.formData['activites_prevues'] ?? '');
-    _partenairesCtrl = TextEditingController(text: widget.formData['partenaires_locaux'] ?? '');
+    _resultatsCtrl = TextEditingController(text: widget.formData['resultats_attendus'] ?? '');
+    _impactsCtrl = TextEditingController(text: widget.formData['impacts'] ?? '');
 
-    _departCtrl.addListener(() => widget.formData['date_depart'] = _departCtrl.text);
-    _arriveeCtrl.addListener(() => widget.formData['date_arrivee'] = _arriveeCtrl.text);
+    _programmeCtrl.addListener(() => widget.formData['programme_sejour_detaille_du_sejour'] = _programmeCtrl.text);
     _activitesCtrl.addListener(() => widget.formData['activites_prevues'] = _activitesCtrl.text);
-    _partenairesCtrl.addListener(() => widget.formData['partenaires_locaux'] = _partenairesCtrl.text);
-  }
-
-  Future<void> _selectDate(TextEditingController ctrl) async {
-    final d = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2027),
-      builder: (ctx, child) => Theme(
-        data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.light(primary: FDColors.royal)),
-        child: child!,
-      ),
-    );
-    if (d != null) {
-      ctrl.text = '${d.year}-${d.month.toString().padLeft(2,'0')}-${d.day.toString().padLeft(2,'0')}';
-    }
+    _resultatsCtrl.addListener(() => widget.formData['resultats_attendus'] = _resultatsCtrl.text);
+    _impactsCtrl.addListener(() => widget.formData['impacts'] = _impactsCtrl.text);
   }
 
   @override
@@ -57,52 +40,30 @@ class _Etape3ProgrammeMobState extends State<Etape3ProgrammeMob> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      FDLabel('Date de départ'),
-                      const SizedBox(height: 6),
-                      GestureDetector(
-                        onTap: () => _selectDate(_departCtrl),
-                        child: AbsorbPointer(
-                          child: FDTextField(
-                            controller: _departCtrl,
-                            hint: 'AAAA-MM-JJ',
-                            icon: Icons.calendar_today_outlined,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      FDLabel('Date de retour'),
-                      const SizedBox(height: 6),
-                      GestureDetector(
-                        onTap: () => _selectDate(_arriveeCtrl),
-                        child: AbsorbPointer(
-                          child: FDTextField(
-                            controller: _arriveeCtrl,
-                            hint: 'AAAA-MM-JJ',
-                            icon: Icons.calendar_today_outlined,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+            FDChampTexte(
+              'Programme détaillé du séjour', 
+              _programmeCtrl, 
+              'Décrivez jour par jour ou semaine par semaine votre programme...',
+              validator: FormValidators.textArea,
             ),
-            const SizedBox(height: 16),
-            FDChampTexte('Activités prévues', _activitesCtrl, 'Ateliers, résidences, rencontres...'),
-            FDChampTexte('Partenaires locaux', _partenairesCtrl, 'Institutions ou collectifs avec qui vous collaborez...'),
+            FDChampTexte(
+              'Activités prévues', 
+              _activitesCtrl, 
+              'Quelles sont les activités spécifiques prévues lors de cette mobilité ?',
+              validator: FormValidators.textArea,
+            ),
+            FDChampTexte(
+              'Résultats attendus', 
+              _resultatsCtrl, 
+              'Quels résultats concrets espérez-vous à la fin de ce séjour ?',
+              validator: FormValidators.textArea,
+            ),
+            FDChampTexte(
+              'Impacts', 
+              _impactsCtrl, 
+              'Quel sera l\'impact de cette mobilité sur votre structure ou votre carrière ?',
+              validator: FormValidators.textArea,
+            ),
           ],
         ),
       ),

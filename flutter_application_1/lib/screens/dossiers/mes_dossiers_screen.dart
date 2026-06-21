@@ -32,32 +32,13 @@ class _MesDossiersScreenState extends State<MesDossiersScreen>
 
       if (mounted) {
         setState(() {
-          _dossiers = dossiersData.map((e) => AppelProjetDossier(
-            id: e['id'],
-            userId: e['user_id'],
-            appelId: e['appel_id'],
-            nomStructure: e['nom_structure'],
-            typeProjet: e['type_projet'],
-            secteurActivite: e['secteur_activite'],
-            region: e['region'],
-            etapeCourante: e['etape_courante'],
-            statut: e['statut'],
-            createdAt: e['createdAt'] ?? e['created_at'],
-          )).toList();
+          _dossiers = dossiersData
+              .map((e) => AppelProjetDossier.fromJson(e))
+              .toList();
 
-          _projets = projetsData.map((e) => ProjetMobilite(
-            id: e['id'],
-            userId: e['user_id'],
-            nomStructure: e['nom_structure'],
-            discipline: e['discipline'],
-            dateDepart: e['date_depart'],
-            dateArrivee: e['date_arrivee'],
-            paysDestination: e['pays_destination'],
-            regionDestination: e['region_destination'],
-            etapeCourante: e['etape_courante'],
-            statut: e['statut'],
-            createdAt: e['createdAt'] ?? e['created_at'],
-          )).toList();
+          _projets = projetsData
+              .map((e) => ProjetMobilite.fromJson(e))
+              .toList();
         });
       }
     } catch (e) {
@@ -225,28 +206,41 @@ class _MobiliteTab extends StatelessWidget {
 // ════════════════════════════════════════════════
 //  CARD — DOSSIER APPEL PROJET
 // ════════════════════════════════════════════════
+class _TypeConfig {
+  final String label;
+  final Color color;
+  final Color bg;
+
+  const _TypeConfig(this.label, this.color, this.bg);
+
+  factory _TypeConfig.from(String? type) {
+    switch (type) {
+      case 'evenementiel':
+        return _TypeConfig('Événementiel', FDColors.coral, FDColors.coral.withValues(alpha: 0.1));
+      case 'structuration':
+        return _TypeConfig('Structuration', FDColors.royal, FDColors.royal.withValues(alpha: 0.1));
+      case 'formation':
+        return _TypeConfig('Formation', FDColors.mint, FDColors.mint.withValues(alpha: 0.1));
+      default:
+        return _TypeConfig('Appel', FDColors.textSub, FDColors.ice);
+    }
+  }
+}
+
 class _DossierCard extends StatelessWidget {
   final AppelProjetDossier dossier;
   const _DossierCard({required this.dossier});
 
   // Nombre total d'étapes selon type
-  int get _totalEtapes => dossier.typeProjet == 'mobilite' ? 5 : 4;
+  int get _totalEtapes => 4;
 
   double get _progression =>
       dossier.etapeCourante / _totalEtapes;
 
-  String get _typeLabel {
-    switch (dossier.typeProjet) {
-      case 'evenementiel': return 'Événementiel';
-      case 'structuration': return 'Structuration';
-      case 'formation': return 'Formation';
-      default: return 'Appel';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final statut = _StatutConfig.from(dossier.statut);
+    final typeCfg = _TypeConfig.from(dossier.typeProjet);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -268,24 +262,41 @@ class _DossierCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _MiniTag(
-                _typeLabel,
-                FDColors.royal,
-                FDColors.ice,
+              Row(
+                children: [
+                  Icon(Icons.folder_special, size: 14, color: typeCfg.color),
+                  const SizedBox(width: 6),
+                  _MiniTag(
+                    typeCfg.label,
+                    typeCfg.color,
+                    typeCfg.bg,
+                  ),
+                ],
               ),
               _StatutBadge(statut: statut),
             ],
           ),
           const SizedBox(height: 10),
 
-          // Nom structure
+          // Titre Appel
           Text(
-            dossier.nomStructure ?? 'Sans titre',
+            dossier.appel?.titre ?? 'Appel introuvable',
             style: FDText.h3,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          
+          // Structure / Secteur
+          Text(
+            dossier.nomStructure != null && dossier.nomStructure!.isNotEmpty
+                ? dossier.nomStructure!
+                : 'Structure non renseignée',
+            style: FDText.bodySub.copyWith(fontWeight: FontWeight.w600, color: FDColors.textPrimary),
           ),
           const SizedBox(height: 2),
           Text(
-            '${dossier.secteurActivite ?? ''} · ${dossier.region ?? ''}',
+            '${dossier.secteurActivite ?? 'Secteur ?'} · ${dossier.region ?? 'Région ?'}',
             style: FDText.bodySub,
           ),
           const SizedBox(height: 12),
@@ -415,7 +426,13 @@ class _MobiliteCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _MiniTag('Mobilité', FDColors.violet, FDColors.violet.withValues(alpha: 0.1)),
+              Row(
+                children: [
+                  Icon(Icons.flight_takeoff, size: 14, color: FDColors.violet),
+                  const SizedBox(width: 6),
+                  _MiniTag('Mobilité', FDColors.violet, FDColors.violet.withValues(alpha: 0.1)),
+                ],
+              ),
               _StatutBadge(statut: statut),
             ],
           ),
@@ -548,20 +565,20 @@ class _StatutConfig {
       case 'brouillon':
         return _StatutConfig(
           label: '● Brouillon',
-          color: FDColors.gold,
-          bg: FDColors.gold.withValues(alpha: 0.12),
+          color: FDColors.textSub,
+          bg: FDColors.ice,
         );
       case 'soumis':
         return _StatutConfig(
           label: '● Soumis',
-          color: FDColors.electricBlue,
-          bg: FDColors.electricBlue.withValues(alpha: 0.10),
+          color: FDColors.gold,
+          bg: FDColors.gold.withValues(alpha: 0.12),
         );
       case 'en_examen':
         return _StatutConfig(
           label: '● En examen',
-          color: FDColors.violet,
-          bg: FDColors.violet.withValues(alpha: 0.10),
+          color: FDColors.electricBlue,
+          bg: FDColors.electricBlue.withValues(alpha: 0.10),
         );
       case 'accepte':
         return _StatutConfig(

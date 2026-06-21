@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/theme.dart';
 import '../../widgets/auth_widgets.dart';
+import '../../services/api_service.dart';
+import '../../utils/form_validators.dart';
 
 class ProfilScreen extends StatefulWidget {
   const ProfilScreen({super.key});
@@ -39,86 +41,107 @@ class _ProfilScreenState extends State<ProfilScreen> {
     }
   }
 
+  void _onUserUpdated(Map<String, dynamic> updatedUser) {
+    setState(() {
+      _user = updatedUser;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Profil mis à jour avec succès'),
+        backgroundColor: FDColors.mint,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_user == null) {
       return const Scaffold(
+        backgroundColor: FDColors.skyBg,
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
       backgroundColor: FDColors.skyBg,
-      body: Column(
-        children: [
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.only(top: 60, bottom: 30),
-            decoration: const BoxDecoration(gradient: FDGradients.header),
-            child: Column(
-              children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: const BoxDecoration(
-                    color: FDColors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text(
-                      _user!['nom']?.substring(0, 1).toUpperCase() ?? 'U',
-                      style: const TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: FDColors.royal,
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.only(top: 60, bottom: 30),
+              decoration: const BoxDecoration(gradient: FDGradients.header),
+              child: Column(
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: const BoxDecoration(
+                      color: FDColors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Center(
+                      child: Text(
+                        _user!['nom']?.substring(0, 1).toUpperCase() ?? 'U',
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: FDColors.royal,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  '${_user!['prenom']} ${_user!['nom']}',
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: FDColors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  _user!['email'],
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: FDColors.white.withValues(alpha: 0.8),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  _ProfilItem(
-                    icon: Icons.phone_outlined,
-                    title: 'Téléphone',
-                    value: _user!['telephone'] ?? 'Non renseigné',
-                  ),
                   const SizedBox(height: 16),
-                  _ProfilItem(
-                    icon: Icons.verified_user_outlined,
-                    title: 'Rôle',
-                    value: _user!['role'] ?? 'Candidat',
+                  Text(
+                    '${_user!['prenom']} ${_user!['nom']}',
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: FDColors.white,
+                    ),
                   ),
-                  const Spacer(),
-                  FDButton(
-                    label: 'Se déconnecter',
-                    onTap: _logout,
+                  const SizedBox(height: 4),
+                  Text(
+                    _user!['email'],
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: FDColors.white.withValues(alpha: 0.8),
+                    ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 12),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: FDColors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(FDRadius.pill),
+                    ),
+                    child: Text(
+                      _user!['role']?.toUpperCase() ?? 'CANDIDAT',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: FDColors.white,
+                      ),
+                    ),
+                  ),
                 ],
               ),
+            ),
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.all(20),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                _ProfilInfosForm(user: _user!, onUserUpdated: _onUserUpdated),
+                const SizedBox(height: 30),
+                const _ProfilPasswordForm(),
+                const SizedBox(height: 30),
+                FDButton(
+                  label: 'Se déconnecter',
+                  onTap: _logout,
+                ),
+                const SizedBox(height: 40),
+              ]),
             ),
           ),
         ],
@@ -127,49 +150,275 @@ class _ProfilScreenState extends State<ProfilScreen> {
   }
 }
 
-class _ProfilItem extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String value;
+class _ProfilInfosForm extends StatefulWidget {
+  final Map<String, dynamic> user;
+  final Function(Map<String, dynamic>) onUserUpdated;
 
-  const _ProfilItem({
-    required this.icon,
-    required this.title,
-    required this.value,
-  });
+  const _ProfilInfosForm({required this.user, required this.onUserUpdated});
+
+  @override
+  State<_ProfilInfosForm> createState() => _ProfilInfosFormState();
+}
+
+class _ProfilInfosFormState extends State<_ProfilInfosForm> {
+  final _formKey = GlobalKey<FormState>();
+  late String _nom;
+  late String _prenom;
+  late String _telephone;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _nom = widget.user['nom'] ?? '';
+    _prenom = widget.user['prenom'] ?? '';
+    _telephone = widget.user['telephone'] ?? '';
+  }
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    _formKey.currentState!.save();
+
+    setState(() => _isLoading = true);
+    try {
+      final res = await ApiService.updateProfil({
+        'nom': _nom,
+        'prenom': _prenom,
+        'telephone': _telephone,
+      });
+      if (res['user'] != null) {
+        widget.onUserUpdated(res['user']);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: FDColors.coral,
+        ));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: FDColors.white,
-        borderRadius: FDRadius.card,
+        borderRadius: BorderRadius.circular(FDRadius.md),
         boxShadow: FDShadow.card,
-        border: Border.all(color: FDColors.border, width: 0.5),
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: FDColors.ice,
-              borderRadius: BorderRadius.circular(10),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Informations personnelles', style: FDText.h3),
+            const SizedBox(height: 20),
+            TextFormField(
+              initialValue: _prenom,
+              decoration: _inputDecoration('Prénom', Icons.person_outline),
+              validator: FormValidators.requiredField,
+              onSaved: (val) => _prenom = val!,
             ),
-            child: Icon(icon, color: FDColors.royal, size: 20),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: FDText.label),
-                const SizedBox(height: 2),
-                Text(value, style: FDText.body),
-              ],
+            const SizedBox(height: 16),
+            TextFormField(
+              initialValue: _nom,
+              decoration: _inputDecoration('Nom', Icons.person_outline),
+              validator: FormValidators.requiredField,
+              onSaved: (val) => _nom = val!,
             ),
+            const SizedBox(height: 16),
+            TextFormField(
+              initialValue: _telephone,
+              decoration: _inputDecoration('Téléphone', Icons.phone_outlined),
+              keyboardType: TextInputType.phone,
+              validator: FormValidators.phone,
+              onSaved: (val) => _telephone = val!,
+            ),
+            const SizedBox(height: 24),
+            _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: FDColors.royal,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(FDRadius.sm),
+                        ),
+                      ),
+                      onPressed: _submit,
+                      child: const Text(
+                        'Mettre à jour le profil',
+                        style: TextStyle(
+                            color: FDColors.white, fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon, color: FDColors.royal),
+      filled: true,
+      fillColor: FDColors.ice,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(FDRadius.sm),
+        borderSide: BorderSide.none,
+      ),
+    );
+  }
+}
+
+class _ProfilPasswordForm extends StatefulWidget {
+  const _ProfilPasswordForm();
+
+  @override
+  State<_ProfilPasswordForm> createState() => _ProfilPasswordFormState();
+}
+
+class _ProfilPasswordFormState extends State<_ProfilPasswordForm> {
+  final _formKey = GlobalKey<FormState>();
+  String _actuel = '';
+  String _nouveau = '';
+  String _confirmation = '';
+  bool _isLoading = false;
+  bool _obscureText = true;
+
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    _formKey.currentState!.save();
+
+    setState(() => _isLoading = true);
+    try {
+      await ApiService.updatePassword({
+        'mot_de_passe_actuel': _actuel,
+        'nouveau_mot_de_passe': _nouveau,
+        'confirmation_mot_de_passe': _confirmation,
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Mot de passe mis à jour avec succès'),
+            backgroundColor: FDColors.mint,
           ),
-        ],
+        );
+        _formKey.currentState!.reset();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: FDColors.coral,
+        ));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: FDColors.white,
+        borderRadius: BorderRadius.circular(FDRadius.md),
+        boxShadow: FDShadow.card,
+      ),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Sécurité', style: FDText.h3),
+            const SizedBox(height: 20),
+            TextFormField(
+              obscureText: _obscureText,
+              decoration: _inputDecoration('Mot de passe actuel'),
+              validator: FormValidators.requiredField,
+              onSaved: (val) => _actuel = val!,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              obscureText: _obscureText,
+              decoration: _inputDecoration('Nouveau mot de passe'),
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'Requis';
+                if (v.length < 8) return 'Min. 8 caractères';
+                return null;
+              },
+              onChanged: (val) => _nouveau = val,
+              onSaved: (val) => _nouveau = val!,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              obscureText: _obscureText,
+              decoration: _inputDecoration('Confirmer mot de passe'),
+              validator: (v) {
+                if (v == null || v.isEmpty) return 'Requis';
+                if (v != _nouveau) return 'Les mots de passe ne correspondent pas';
+                return null;
+              },
+              onSaved: (val) => _confirmation = val!,
+            ),
+            const SizedBox(height: 24),
+            _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: FDColors.royal,
+                        side: const BorderSide(color: FDColors.royal, width: 1.5),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(FDRadius.sm),
+                        ),
+                      ),
+                      onPressed: _submit,
+                      child: const Text('Changer le mot de passe'),
+                    ),
+                  ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: const Icon(Icons.lock_outline, color: FDColors.royal),
+      suffixIcon: IconButton(
+        icon: Icon(
+          _obscureText ? Icons.visibility_off : Icons.visibility,
+          color: FDColors.textSub,
+        ),
+        onPressed: () {
+          setState(() {
+            _obscureText = !_obscureText;
+          });
+        },
+      ),
+      filled: true,
+      fillColor: FDColors.ice,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(FDRadius.sm),
+        borderSide: BorderSide.none,
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme.dart';
 import '../../../../widgets/auth_widgets.dart';
 import '../../../../widgets/form_widgets.dart';
+import '../../../../utils/form_validators.dart';
 
 class Etape2Details extends StatefulWidget {
   final GlobalKey<FormState> formKey;
@@ -86,14 +87,14 @@ class _Etape2DetailsState extends State<Etape2Details> {
             ),
             const SizedBox(height: 20),
 
-            FDChampTexte('Objectifs globaux', _objectifsCtrl, 'Quels sont les objectifs principaux de votre projet ?'),
-            FDChampTexte('Importance sur le territoire', _importanceCtrl, 'En quoi votre offre est-elle innovante ou nouvelle ?'),
-            FDChampTexte("Impacts économiques", _impactsCtrl, "Création ou renforcement d'emplois attendus..."),
-            FDChampTexte('Potentiel de réussite', _potentielCtrl, 'Quels sont vos atouts pour réussir ?'),
-            FDChampTexte('Localisation', _localisationCtrl, 'Où se déroulera le projet ?'),
-            FDChampTexte('Bénéficiaires', _beneficiairesCtrl, 'Qui sont les bénéficiaires directs ?'),
-            FDChampTexte('Plan de pérennisation', _perennisationCtrl, 'Comment le projet sera-t-il pérennisé ?'),
-            FDChampTexte('Description du produit / service', _descriptionCtrl, 'Décrivez votre produit ou service en détail...'),
+            FDChampTexte('Objectifs globaux', _objectifsCtrl, 'Quels sont les objectifs principaux de votre projet ?', validator: FormValidators.textArea),
+            FDChampTexte('Importance sur le territoire', _importanceCtrl, 'En quoi votre offre est-elle innovante ou nouvelle ?', validator: FormValidators.textArea),
+            FDChampTexte("Impacts économiques", _impactsCtrl, "Création ou renforcement d'emplois attendus...", validator: FormValidators.textArea),
+            FDChampTexte('Potentiel de réussite', _potentielCtrl, 'Quels sont vos atouts pour réussir ?', validator: FormValidators.textArea),
+            FDChampTexte('Localisation', _localisationCtrl, 'Où se déroulera le projet ?', validator: FormValidators.text),
+            FDChampTexte('Bénéficiaires', _beneficiairesCtrl, 'Qui sont les bénéficiaires directs ?', validator: FormValidators.text),
+            FDChampTexte('Plan de pérennisation', _perennisationCtrl, 'Comment le projet sera-t-il pérennisé ?', validator: FormValidators.textArea),
+            FDChampTexte('Description du produit / service', _descriptionCtrl, 'Décrivez votre produit ou service en détail...', validator: FormValidators.textArea),
 
             const SizedBox(height: 8),
 
@@ -144,7 +145,7 @@ class _Etape2DetailsState extends State<Etape2Details> {
             ...equipe.asMap().entries.map((entry) {
               return _MembreCard(
                 index: entry.key,
-                membre: entry.value,
+                membre: entry.value as Map<String, dynamic>,
                 onSupprimer: () => _supprimerMembre(entry.key),
               );
             }),
@@ -245,6 +246,7 @@ class _MembreCardState extends State<_MembreCard> {
           ),
           const SizedBox(height: 12),
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 child: Column(
@@ -252,7 +254,7 @@ class _MembreCardState extends State<_MembreCard> {
                   children: [
                     FDLabel('Prénom'),
                     const SizedBox(height: 4),
-                    FDTextField(controller: _prenomCtrl, hint: 'Prénom', icon: Icons.person_outline_rounded),
+                    FDTextField(controller: _prenomCtrl, hint: 'Prénom', icon: Icons.person_outline_rounded, validator: FormValidators.text),
                   ],
                 ),
               ),
@@ -263,7 +265,7 @@ class _MembreCardState extends State<_MembreCard> {
                   children: [
                     FDLabel('Nom'),
                     const SizedBox(height: 4),
-                    FDTextField(controller: _nomCtrl, hint: 'Nom', icon: Icons.person_outline_rounded),
+                    FDTextField(controller: _nomCtrl, hint: 'Nom', icon: Icons.person_outline_rounded, validator: FormValidators.text),
                   ],
                 ),
               ),
@@ -272,11 +274,11 @@ class _MembreCardState extends State<_MembreCard> {
           const SizedBox(height: 10),
           FDLabel('Poste'),
           const SizedBox(height: 4),
-          FDTextField(controller: _posteCtrl, hint: 'Ex: Directeur artistique', icon: Icons.work_outline_rounded),
+          FDTextField(controller: _posteCtrl, hint: 'Ex: Directeur artistique', icon: Icons.work_outline_rounded, validator: FormValidators.text),
           const SizedBox(height: 10),
           FDLabel('Téléphone'),
           const SizedBox(height: 4),
-          FDTextField(controller: _telCtrl, hint: '+221 77 000 00 00', icon: Icons.phone_outlined, keyboardType: TextInputType.phone),
+          FDTextField(controller: _telCtrl, hint: '+221 77 000 00 00', icon: Icons.phone_outlined, keyboardType: TextInputType.phone, validator: FormValidators.phone),
         ],
       ),
     );

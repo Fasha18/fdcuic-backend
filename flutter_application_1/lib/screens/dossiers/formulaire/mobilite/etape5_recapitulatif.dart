@@ -49,35 +49,62 @@ class _Etape5RecapMobState extends State<Etape5RecapMob> {
             )),
             const SizedBox(height: 16),
 
-            GestureDetector(
-              onTap: () => setState(() => _confirme = !_confirme),
-              child: Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: _confirme ? FDColors.mint.withValues(alpha: 0.06) : FDColors.white,
-                  borderRadius: BorderRadius.circular(FDRadius.sm),
-                  border: Border.all(
-                    color: _confirme ? FDColors.mint : FDColors.border,
-                    width: _confirme ? 1 : 0.5,
-                  ),
-                ),
-                child: Row(
+            FormField<bool>(
+              initialValue: _confirme,
+              validator: (val) {
+                if (val != true) return 'Vous devez certifier l\'exactitude des informations.';
+                return null;
+              },
+              builder: (state) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      _confirme ? Icons.check_box_outlined : Icons.check_box_outline_blank,
-                      color: _confirme ? FDColors.mint : FDColors.silver,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'Je certifie que les informations fournies sont exactes.',
-                        style: FDText.body.copyWith(fontSize: 13),
+                    GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _confirme = !_confirme;
+                        });
+                        state.didChange(_confirme);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: _confirme ? FDColors.mint.withValues(alpha: 0.06) : FDColors.white,
+                          borderRadius: BorderRadius.circular(FDRadius.sm),
+                          border: Border.all(
+                            color: state.hasError ? FDColors.coral : (_confirme ? FDColors.mint : FDColors.border),
+                            width: state.hasError || _confirme ? 1 : 0.5,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              _confirme ? Icons.check_box_outlined : Icons.check_box_outline_blank,
+                              color: state.hasError ? FDColors.coral : (_confirme ? FDColors.mint : FDColors.silver),
+                              size: 20,
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                'Je certifie que les informations fournies sont exactes.',
+                                style: FDText.body.copyWith(fontSize: 13),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
+                    if (state.hasError)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 6, left: 14),
+                        child: Text(
+                          state.errorText!,
+                          style: const TextStyle(color: FDColors.coral, fontSize: 12),
+                        ),
+                      ),
                   ],
-                ),
-              ),
+                );
+              },
             ),
           ],
         ),

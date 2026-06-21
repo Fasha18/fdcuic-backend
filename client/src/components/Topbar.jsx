@@ -50,7 +50,7 @@ const Topbar = ({ title, subtitle }) => {
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:3000/api/notifications', {
+      const res = await axios.get('https://fdcuic-backend-production.up.railway.app/api/notifications', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(res.data.data || []);
@@ -64,7 +64,7 @@ const Topbar = ({ title, subtitle }) => {
   const handleMarkAsRead = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:3000/api/notifications/${id}/lu`, {}, {
+      await axios.put(`https://fdcuic-backend-production.up.railway.app/api/notifications/${id}/lu`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(notifications.map(n => n.id === id ? { ...n, lu: true } : n));
@@ -76,7 +76,7 @@ const Topbar = ({ title, subtitle }) => {
   const handleMarkAllAsRead = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put('http://localhost:3000/api/notifications/tout-lire', {}, {
+      await axios.put('https://fdcuic-backend-production.up.railway.app/api/notifications/tout-lire', {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(notifications.map(n => ({ ...n, lu: true })));
@@ -96,7 +96,7 @@ const Topbar = ({ title, subtitle }) => {
       try {
         setIsSearching(true);
         const token = localStorage.getItem('token');
-        const res = await axios.get(`http://localhost:3000/api/admin/recherche?search=${searchQuery}`, {
+        const res = await axios.get(`https://fdcuic-backend-production.up.railway.app/api/admin/recherche?search=${searchQuery}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setSearchResults(res.data.data);

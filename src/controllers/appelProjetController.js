@@ -267,6 +267,21 @@ const soumettre = async (req, res) => {
       etape_courante: 4,
     });
 
+    const { envoyerNotificationStatut } = require('../services/notificationService');
+    try {
+      await envoyerNotificationStatut(
+        dossier.user_id,
+        {
+          nom_structure: dossier.nom_structure,
+          titre_appel: dossier.appel?.titre || 'Appel à projet',
+          type: 'appel'
+        },
+        'soumis'
+      );
+    } catch (notifError) {
+      console.error('Erreur notification:', notifError.message);
+    }
+
     return res.status(200).json({
       message: 'Dossier soumis avec succès ! Il passera en phase d\'examen.',
       dossier,
@@ -325,17 +340,19 @@ const changerStatut = async (req, res) => {
     if (dossier.statut !== statut) {
       await dossier.update({ statut });
 
-      let msg = '';
-      if (statut === 'en_examen') msg = `Votre candidature pour le projet "${dossier.titre}" est actuellement en cours d'examen.`;
-      else if (statut === 'accepte') msg = `Félicitations ! Votre projet "${dossier.titre}" a été retenu.`;
-      else if (statut === 'rejete') msg = `Nous sommes au regret de vous informer que votre projet "${dossier.titre}" n'a pas été retenu.`;
-      
-      if (msg) {
-        await Notification.create({
-          user_id: dossier.user_id,
-          message: msg,
-          type: 'in_app'
-        });
+      const { envoyerNotificationStatut } = require('../services/notificationService');
+      try {
+        await envoyerNotificationStatut(
+          dossier.user_id,
+          {
+            nom_structure: dossier.nom_structure,
+            titre_appel: dossier.appel?.titre || 'Appel à projet',
+            type: 'appel'
+          },
+          statut
+        );
+      } catch (notifError) {
+        console.error('Erreur notification:', notifError.message);
       }
     }
 

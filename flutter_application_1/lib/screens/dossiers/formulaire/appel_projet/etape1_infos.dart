@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../../../widgets/auth_widgets.dart';
 import '../../../../widgets/form_widgets.dart';
+import '../../../../services/api_service.dart';
+import '../../../../core/theme.dart';
+import '../../../../utils/form_validators.dart';
 
 class Etape1Infos extends StatefulWidget {
   final GlobalKey<FormState> formKey;
@@ -18,8 +21,10 @@ class _Etape1InfosState extends State<Etape1Infos> {
   late final TextEditingController _natureCtrl;
 
   final List<String> _typesProjet = ['structuration', 'formation', 'evenementiel'];
-  final List<String> _secteurs = ['claque', 'danse_urbaine', 'conception', 'sport_de_rue', 'art_vivant', 'mode', 'hiphop', 'graffiti'];
   final List<String> _regions = ['Dakar', 'Thiès', 'Diourbel', 'Fatick', 'Kaolack', 'Kaffrine', 'Saint-Louis', 'Louga', 'Matam', 'Tambacounda', 'Kédougou', 'Kolda', 'Ziguinchor', 'Sédhiou'];
+  
+  List<Map<String, String>> _secteursDyn = [];
+  bool _isLoadingSecteurs = true;
 
   @override
   void initState() {
@@ -33,6 +38,35 @@ class _Etape1InfosState extends State<Etape1Infos> {
     _nomStructureCtrl.addListener(() => widget.formData['nom_structure'] = _nomStructureCtrl.text);
     _activiteCtrl.addListener(() => widget.formData['activite_entreprise'] = _activiteCtrl.text);
     _natureCtrl.addListener(() => widget.formData['nature_projet'] = _natureCtrl.text);
+
+    _loadSecteurs();
+  }
+
+  Future<void> _loadSecteurs() async {
+    try {
+      final res = await ApiService.getSecteursPublic();
+      if (mounted) {
+        setState(() {
+          _secteursDyn = res.map<Map<String, String>>((e) => {
+            'code': e['code'] as String,
+            'label': e['label'] as String,
+          }).toList();
+          _isLoadingSecteurs = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoadingSecteurs = false;
+          // Fallback just in case
+          _secteursDyn = [
+            {'code': 'claque', 'label': 'Claque'},
+            {'code': 'danse_urbaine', 'label': 'Danse urbaine'},
+            {'code': 'art_vivant', 'label': 'Art vivant'},
+          ];
+        });
+      }
+    }
   }
 
   String _labelType(String t) {
@@ -41,15 +75,6 @@ class _Etape1InfosState extends State<Etape1Infos> {
       case 'formation': return 'Formation';
       case 'evenementiel': return 'Événementiel';
       default: return t;
-    }
-  }
-
-  String _labelSecteur(String s) {
-    switch (s) {
-      case 'danse_urbaine': return 'Danse urbaine';
-      case 'sport_de_rue': return 'Sport de rue';
-      case 'art_vivant': return 'Art vivant';
-      default: return s[0].toUpperCase() + s.substring(1);
     }
   }
 
@@ -64,12 +89,22 @@ class _Etape1InfosState extends State<Etape1Infos> {
           children: [
             FDLabel('Prénom et nom du porteur'),
             const SizedBox(height: 6),
-            FDTextField(controller: _prenomNomCtrl, hint: 'Ex: Aminata Diallo', icon: Icons.person_outline_rounded),
+            FDTextField(
+              controller: _prenomNomCtrl, 
+              hint: 'Ex: Aminata Diallo', 
+              icon: Icons.person_outline_rounded,
+              validator: FormValidators.text,
+            ),
             const SizedBox(height: 16),
 
             FDLabel('Nom de la structure'),
             const SizedBox(height: 6),
-            FDTextField(controller: _nomStructureCtrl, hint: 'Ex: Collectif Dakar Urban', icon: Icons.business_outlined),
+            FDTextField(
+              controller: _nomStructureCtrl, 
+              hint: 'Ex: Collectif Dakar Urban', 
+              icon: Icons.business_outlined,
+              validator: FormValidators.text,
+            ),
             const SizedBox(height: 16),
 
             FDLabel('Type de projet'),
@@ -80,18 +115,29 @@ class _Etape1InfosState extends State<Etape1Infos> {
               items: _typesProjet,
               labelBuilder: _labelType,
               onChanged: (v) => setState(() => widget.formData['type_projet'] = v),
+              validator: FormValidators.requiredField,
             ),
             const SizedBox(height: 16),
 
             FDLabel("Secteur d'activité"),
             const SizedBox(height: 6),
-            FDDropdown(
-              hint: 'Sélectionner le secteur',
-              value: widget.formData['secteur_activite'],
-              items: _secteurs,
-              labelBuilder: _labelSecteur,
-              onChanged: (v) => setState(() => widget.formData['secteur_activite'] = v),
-            ),
+            if (_isLoadingSecteurs)
+              const Center(child: Padding(
+                padding: EdgeInsets.all(8.0),
+                child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: FDColors.royal)),
+              ))
+            else
+              FDDropdown(
+                hint: 'Sélectionner le secteur',
+                value: widget.formData['secteur_activite'],
+                items: _secteursDyn.map((e) => e['code'] as String).toList(),
+                labelBuilder: (code) {
+                  final s = _secteursDyn.firstWhere((e) => e['code'] == code, orElse: () => {'label': code});
+                  return s['label'] ?? code;
+                },
+                onChanged: (v) => setState(() => widget.formData['secteur_activite'] = v),
+                validator: FormValidators.requiredField,
+              ),
             const SizedBox(height: 16),
 
             FDLabel('Région'),
@@ -102,11 +148,22 @@ class _Etape1InfosState extends State<Etape1Infos> {
               items: _regions,
               labelBuilder: (r) => r,
               onChanged: (v) => setState(() => widget.formData['region'] = v),
+              validator: FormValidators.requiredField,
             ),
             const SizedBox(height: 16),
 
-            FDChampTexte("Activité de l'entreprise", _activiteCtrl, "Décrivez l'activité principale de votre structure..."),
-            FDChampTexte('Nature du projet', _natureCtrl, 'Décrivez la nature de votre projet...'),
+            FDChampTexte(
+              "Activité de l'entreprise", 
+              _activiteCtrl, 
+              "Décrivez l'activité principale de votre structure...",
+              validator: FormValidators.textArea,
+            ),
+            FDChampTexte(
+              'Nature du projet', 
+              _natureCtrl, 
+              'Décrivez la nature de votre projet...',
+              validator: FormValidators.textArea,
+            ),
           ],
         ),
       ),

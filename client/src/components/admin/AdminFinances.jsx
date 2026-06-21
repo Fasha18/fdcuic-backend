@@ -42,7 +42,7 @@ const AdminFinances = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:3000/api/admin/subventions', {
+      const res = await axios.get('https://fdcuic-backend-production.up.railway.app/api/admin/subventions', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSubventions(res.data.data.subventions);
@@ -59,7 +59,7 @@ const AdminFinances = () => {
     try {
       setUpdating(true);
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:3000/api/admin/subventions/${id}`, { statut_paiement: newStatut }, {
+      await axios.put(`https://fdcuic-backend-production.up.railway.app/api/admin/subventions/${id}`, { statut_paiement: newStatut }, {
         headers: { Authorization: `Bearer ${token}` }
       });
       await fetchSubventions();

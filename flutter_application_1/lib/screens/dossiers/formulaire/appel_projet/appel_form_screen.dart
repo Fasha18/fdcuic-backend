@@ -61,10 +61,50 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
     'Récap',
   ];
 
+  int? _appelId;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is int) {
+      _appelId = args;
+    }
+  }
+
   @override
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  bool _validateCurrentStep() {
+    bool isValid = true;
+    if (_currentStep == 1) {
+      final req = ['prenom_nom_porteur', 'nom_structure', 'type_projet', 'secteur_activite', 'region', 'activite_entreprise', 'nature_projet'];
+      for (var k in req) {
+        if (formData[k] == null || formData[k].toString().trim().isEmpty) isValid = false;
+      }
+    } else if (_currentStep == 2) {
+      final req = ['objectifs_globaux', 'importance_territoire', 'impacts_economiques', 'potentiel_reussite', 'localisation', 'beneficiaires', 'plan_perennisation', 'description_produit'];
+      for (var k in req) {
+        if (formData[k] == null || formData[k].toString().trim().isEmpty) isValid = false;
+      }
+    } else if (_currentStep == 3) {
+      final docs = formData['documents'] as Map<String, String?>;
+      if (docs['doc_ninea_recepisse'] == null || docs['doc_cni_passeport'] == null) {
+        isValid = false;
+      }
+    }
+    
+    if (!isValid) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Veuillez remplir tous les champs de cette étape pour continuer.'),
+        backgroundColor: FDColors.coral,
+        duration: Duration(seconds: 2),
+      ));
+    }
+    return isValid;
   }
 
   void _goToStep(int step) {
@@ -72,6 +112,8 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
 
     // Valider l'étape courante avant d'avancer
     if (step > _currentStep) {
+      if (!_validateCurrentStep()) return;
+      
       final formKey = _formKeys[_currentStep - 1];
       if (formKey.currentState != null && !formKey.currentState!.validate()) {
         return;
@@ -103,6 +145,7 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
     try {
       // 1. Créer le dossier (Etape 1)
       final dossierId = await ApiService.etape1Appel({
+        'appel_id': _appelId,
         'prenom_nom_porteur': formData['prenom_nom_porteur'],
         'nom_structure': formData['nom_structure'],
         'type_projet': formData['type_projet'],
@@ -171,8 +214,7 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
           actions: [
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).pop(); // ferme le dialog
-                Navigator.of(context).pop(); // retour à mes dossiers
+                Navigator.of(context).popUntil((route) => route.isFirst);
               },
               child: const Text('OK'),
             ),

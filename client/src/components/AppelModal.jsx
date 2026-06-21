@@ -33,7 +33,7 @@ const AppelModal = ({ isOpen, onClose, onSaveSuccess, appel = null }) => {
       });
     }
     setImageFile(null);
-    setImagePreview(appel?.image_couverture ? `http://localhost:3000/uploads/${appel.image_couverture}` : null);
+    setImagePreview(appel?.image_couverture ? `https://fdcuic-backend-production.up.railway.app/uploads/${appel.image_couverture}` : null);
   }, [appel, isOpen]);
 
   const handleChange = (e) => {

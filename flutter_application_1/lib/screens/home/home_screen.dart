@@ -1,11 +1,12 @@
 import 'dart:convert';
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/theme.dart';
 import '../../core/constants.dart';
 import '../../services/api_service.dart';
 import '../appels/appels_screen.dart';
+import '../appels/appel_detail_screen.dart';
 import '../dossiers/mes_dossiers_screen.dart';
 import '../profil/profil_screen.dart';
 
@@ -16,413 +17,908 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _bottomNavIndex = 0;
+  int _currentIndex = 0;
 
-  final List<IconData> _icons = [
-    Icons.home_outlined,
-    Icons.search_rounded,
-    Icons.folder_outlined,
-    Icons.person_outline_rounded,
-  ];
-
-  final List<Widget> _pages = [
-    const _HomeDashboard(),
-    const AppelsScreen(hideBottomNav: true), // We need to update AppelsScreen to optionally hide its header if we put it here, or we just let it show its header.
-    const MesDossiersScreen(),
-    const ProfilScreen(),
-  ];
+  void _switchTab(int index) {
+    setState(() => _currentIndex = index);
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: FDColors.skyBg,
-      body: _bottomNavIndex == 0 ? const _HomeDashboard() : _pages[_bottomNavIndex],
-      
-      // ── FAB CENTRE ──────────────────────────
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            _bottomNavIndex = 1; // Aller vers "Explorer"
-          });
-        },
-        backgroundColor: FDColors.royal,
-        elevation: 4,
-        shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: FDColors.white, size: 28),
+      extendBody: true, // Important pour le Glass NavBar
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          _HomeDashboard(onNavigateToTab: _switchTab),
+          const AppelsScreen(hideBottomNav: true),
+          const MesDossiersScreen(),
+          const ProfilScreen(),
+        ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: _GlassNavBar(
+        currentIndex: _currentIndex,
+        onTap: _switchTab,
+      ),
+    );
+  }
+}
 
-      // ── BOTTOM NAV ANIMÉE ───────────────────
-      bottomNavigationBar: AnimatedBottomNavigationBar.builder(
-        itemCount: _icons.length,
-        tabBuilder: (int index, bool isActive) {
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                _icons[index],
-                size: 24,
-                color: isActive ? FDColors.royal : FDColors.textHint,
+// ══════════════════════════════════════════════════
+//  FLOATING GLASS NAV BAR (Restored)
+// ══════════════════════════════════════════════════
+class _GlassNavBar extends StatelessWidget {
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+  const _GlassNavBar({required this.currentIndex, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        24, 0, 24, MediaQuery.of(context).padding.bottom + 12,
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+          child: Container(
+            height: 64,
+            decoration: BoxDecoration(
+              color: FDColors.navy.withValues(alpha: 0.85),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: FDColors.white.withValues(alpha: 0.08),
+                width: 0.5,
               ),
-              const SizedBox(height: 2),
-              Text(
-                ['Accueil', 'Explorer', 'Dossiers', 'Profil'][index],
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                  color: isActive ? FDColors.royal : FDColors.textHint,
+              boxShadow: [
+                BoxShadow(
+                  color: FDColors.navy.withValues(alpha: 0.3),
+                  blurRadius: 30,
+                  offset: const Offset(0, 10),
                 ),
-              ),
-            ],
-          );
-        },
-        activeIndex: _bottomNavIndex,
-        gapLocation: GapLocation.center,
-        notchSmoothness: NotchSmoothness.verySmoothEdge,
-        leftCornerRadius: 32,
-        rightCornerRadius: 32,
-        backgroundColor: FDColors.white,
-        splashColor: FDColors.ice,
-        splashSpeedInMilliseconds: 200,
-        onTap: (index) => setState(() => _bottomNavIndex = index),
-        shadow: BoxShadow(
-          color: FDColors.navy.withValues(alpha: 0.08),
-          blurRadius: 20,
-          offset: const Offset(0, -4),
+              ],
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _GlassNavItem(
+                  icon: Icons.home_rounded,
+                  label: 'Accueil',
+                  isActive: currentIndex == 0,
+                  onTap: () => onTap(0),
+                ),
+                _GlassNavItem(
+                  icon: Icons.explore_outlined,
+                  label: 'Explorer',
+                  isActive: currentIndex == 1,
+                  onTap: () => onTap(1),
+                ),
+                _GlassNavItem(
+                  icon: Icons.folder_copy_outlined,
+                  label: 'Dossiers',
+                  isActive: currentIndex == 2,
+                  onTap: () => onTap(2),
+                ),
+                _GlassNavItem(
+                  icon: Icons.person_outline_rounded,
+                  label: 'Profil',
+                  isActive: currentIndex == 3,
+                  onTap: () => onTap(3),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
   }
 }
 
-class _HomeDashboard extends StatefulWidget {
-  const _HomeDashboard();
+class _GlassNavItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+  const _GlassNavItem({
+    required this.icon,
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
 
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 64,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: isActive
+                    ? FDColors.white.withValues(alpha: 0.15)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(
+                icon,
+                size: 22,
+                color: isActive
+                    ? FDColors.white
+                    : FDColors.white.withValues(alpha: 0.35),
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 9,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                color: isActive
+                    ? FDColors.white
+                    : FDColors.white.withValues(alpha: 0.35),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  HOME DASHBOARD
+// ══════════════════════════════════════════════════
+class _HomeDashboard extends StatefulWidget {
+  final ValueChanged<int> onNavigateToTab;
+  const _HomeDashboard({required this.onNavigateToTab});
   @override
   State<_HomeDashboard> createState() => _HomeDashboardState();
 }
 
-class _HomeDashboardState extends State<_HomeDashboard> {
+class _HomeDashboardState extends State<_HomeDashboard> with TickerProviderStateMixin {
   Map<String, dynamic>? _user;
   List<dynamic> _appelsOuverts = [];
+  Map<String, dynamic>? _programmeMobilite;
+  Map<String, dynamic>? _dossierEnCours;
+  String? _dossierEnCoursType;
+  int _notifCount = 0;
+  int _totalDossiers = 0;
+  int _dossiersEnCours = 0;
+  int _dossiersAcceptes = 0;
   bool _isLoading = true;
+
+  late PageController _carouselController;
+  double _carouselPage = 0;
+
+  late AnimationController _breathingController;
 
   @override
   void initState() {
     super.initState();
+    _carouselController = PageController(viewportFraction: 0.82, initialPage: 0);
+    _carouselController.addListener(() {
+      setState(() => _carouselPage = _carouselController.page ?? 0);
+    });
+
+    // Animation de respiration pour le header
+    _breathingController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 15),
+    )..repeat(reverse: true);
+
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    _carouselController.dispose();
+    _breathingController.dispose();
+    super.dispose();
   }
 
   Future<void> _loadData() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final userStr = prefs.getString('user');
-      if (userStr != null) {
-        _user = jsonDecode(userStr);
+      if (userStr != null) _user = jsonDecode(userStr);
+
+      try { _appelsOuverts = await ApiService.getAppelsOuverts(); } catch (_) {}
+      try { _programmeMobilite = await ApiService.getProgrammeMobilite(); } catch (_) {}
+
+      final token = await ApiService.getToken();
+      if (token != null) {
+        List<dynamic> allDossiers = [];
+        List<dynamic> allProjets = [];
+        try { allDossiers = await ApiService.getMesDossiers(); } catch (_) {}
+        try { allProjets = await ApiService.getMesProjets(); } catch (_) {}
+
+        _totalDossiers = allDossiers.length + allProjets.length;
+        _dossiersEnCours = allDossiers.where((d) =>
+            d['statut'] == 'brouillon' || d['statut'] == 'soumis' || d['statut'] == 'en_examen').length
+            + allProjets.where((p) =>
+            p['statut'] == 'brouillon' || p['statut'] == 'soumis' || p['statut'] == 'en_examen').length;
+        _dossiersAcceptes = allDossiers.where((d) => d['statut'] == 'accepte').length
+            + allProjets.where((p) => p['statut'] == 'accepte').length;
+
+        final brouillonAppel = allDossiers.cast<Map<String, dynamic>?>().firstWhere(
+          (d) => d?['statut'] == 'brouillon', orElse: () => null);
+        if (brouillonAppel != null) {
+          _dossierEnCours = brouillonAppel;
+          _dossierEnCoursType = 'appel';
+        } else {
+          final brouillonMob = allProjets.cast<Map<String, dynamic>?>().firstWhere(
+            (p) => p?['statut'] == 'brouillon', orElse: () => null);
+          if (brouillonMob != null) {
+            _dossierEnCours = brouillonMob;
+            _dossierEnCoursType = 'mobilite';
+          }
+        }
+
+        try {
+          final notifs = await ApiService.getNotifications();
+          _notifCount = notifs.where((n) => n['lu'] == false).length;
+        } catch (_) {}
       }
-      _appelsOuverts = await ApiService.getAppelsOuverts();
-    } catch (e) {
-      debugPrint('Erreur HomeDashboard: $e');
-    } finally {
+    } catch (_) {} finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  // ── DONNÉES CAROUSEL (Nouveaux contenus) ─────────────────
+  List<_CarouselCardData> get _carouselCards {
+    final cards = <_CarouselCardData>[];
+
+    // Card 1: Dossier en cours (s'il y en a un)
+    if (_dossierEnCours != null) {
+      final totalEtapes = _dossierEnCoursType == 'mobilite' ? 5 : 4;
+      final etape = _dossierEnCours!['etape_courante'] ?? 1;
+      cards.add(_CarouselCardData(
+        type: 'brouillon',
+        gradient: const [Color(0xFFF5A623), Color(0xFFE8920A)],
+        icon: Icons.edit_note_rounded,
+        title: 'Brouillon en cours',
+        subtitle: _dossierEnCours!['nom_structure'] ?? 'Sans titre',
+        meta: 'Étape $etape sur $totalEtapes',
+        progress: etape / totalEtapes,
+      ));
+    }
+
+    // Card 2: Statistiques Dossiers
+    cards.add(_CarouselCardData(
+      type: 'dossiers',
+      gradient: const [Color(0xFF0A1F4E), Color(0xFF1E5FD8)],
+      icon: Icons.folder_copy_rounded,
+      title: 'Vos dossiers soumis',
+      subtitle: '$_totalDossiers dossier${_totalDossiers > 1 ? 's' : ''} au total',
+      meta: '$_dossiersEnCours en cours · $_dossiersAcceptes accepté${_dossiersAcceptes > 1 ? 's' : ''}',
+    ));
+
+    // Card 3: Guide du candidat
+    cards.add(const _CarouselCardData(
+      type: 'guide',
+      gradient: [Color(0xFF0095FF), Color(0xFF00C6FF)],
+      icon: Icons.menu_book_rounded,
+      title: 'Astuce du jour',
+      subtitle: 'Guide du candidat',
+      meta: 'Découvrez comment optimiser votre dossier',
+    ));
+
+    // Card 4: Actualités
+    cards.add(const _CarouselCardData(
+      type: 'news',
+      gradient: [Color(0xFFE52E71), Color(0xFFFF8A00)],
+      icon: Icons.newspaper_rounded,
+      title: 'Actualités',
+      subtitle: 'Nouveau Programme 2026',
+      meta: 'Le Fonds s\'agrandit avec de nouveaux axes',
+    ));
+
+    return cards;
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator(color: FDColors.royal));
     }
 
-    return Stack(
-      children: [
-        // ── FOND BLEU (header gradient) ──────────────
-        Container(
-          height: 260,
-          decoration: const BoxDecoration(gradient: FDGradients.header),
-        ),
+    final cards = _carouselCards;
 
-        // ── FEUILLE BLANCHE ARRONDIE ──────────────────
-        Column(
-          children: [
-            _Header(user: _user),
-            Expanded(
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: FDColors.skyBg,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(28),
-                    topRight: Radius.circular(28),
-                  ),
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── HEADER VIVANT (Image animée) ─────────────
+          _buildLivingHeader(),
+
+          const SizedBox(height: 24),
+
+          // ── CAROUSEL HORIZONTAL ──────────
+          SizedBox(
+            height: 180, // Hauteur des cartes
+            child: PageView.builder(
+              controller: _carouselController,
+              itemCount: cards.length,
+              physics: const BouncingScrollPhysics(),
+              itemBuilder: (context, index) {
+                return _buildCarouselCard(index, cards[index]);
+              },
+            ),
+          ),
+          
+          // ── INDICATEURS CAROUSEL ──────
+          const SizedBox(height: 14),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(cards.length, (i) {
+              final distance = (_carouselPage - i).abs();
+              final scale = (1 - distance.clamp(0.0, 1.0)) * 0.6 + 0.4;
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: distance < 0.5 ? 24 : 8,
+                height: 6,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(3),
+                  color: FDColors.royal.withValues(alpha: scale),
                 ),
-                clipBehavior: Clip.hardEdge,
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              );
+            }),
+          ),
+
+          const SizedBox(height: 30),
+
+          // ── PROGRAMME MOBILITÉ (Restauré) ─────────────
+          if (_programmeMobilite != null) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: const Text('Mobilité Artistique', 
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: FDColors.navy)),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: _buildMobiliteCard(),
+            ),
+            const SizedBox(height: 28),
+          ],
+
+          // ── APPELS À PROJETS (Restauré) ─────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Appels à projets', 
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: FDColors.navy)),
+                GestureDetector(
+                  onTap: () => widget.onNavigateToTab(1),
+                  child: const Text('Voir tout', 
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: FDColors.royal)),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _buildAppelsList(),
+          ),
+
+          SizedBox(height: MediaQuery.of(context).padding.bottom + 100),
+        ],
+      ),
+    );
+  }
+
+  // ────────────────────────────────────────────
+  //  HEADER VIVANT (Image de fond + Animation)
+  // ────────────────────────────────────────────
+  Widget _buildLivingHeader() {
+    return SizedBox(
+      height: 260,
+      width: double.infinity,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // 1. Image de fond avec effet de respiration (zoom léger)
+          AnimatedBuilder(
+            animation: _breathingController,
+            builder: (context, child) {
+              // Scale de 1.0 à 1.05
+              final scale = 1.0 + (_breathingController.value * 0.05);
+              return Transform.scale(
+                scale: scale,
+                child: child,
+              );
+            },
+            child: Image.asset(
+              'assets/images/header_bg.png',
+              fit: BoxFit.cover,
+            ),
+          ),
+          
+          // 2. Dégradé sombre pour lisibilité
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  FDColors.navy.withValues(alpha: 0.6),
+                  FDColors.navy.withValues(alpha: 0.3),
+                  FDColors.skyBg,
+                ],
+                stops: const [0.0, 0.6, 1.0],
+              ),
+            ),
+          ),
+
+          // 3. Contenu (FDCUIC, cloche, et Bonjour)
+          SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Logo + Notifs
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // Ici on pourrait mettre le vrai dossier en cours si l'API le permet.
-                      // _SectionHeader('Dossier en cours', 'Voir tout'),
-                      // const SizedBox(height: 10),
-                      // _DossierCard(),
-                      // const SizedBox(height: 20),
-                      
-                      const _SectionHeader('Appels à projets ouverts', 'Tous'),
-                      const SizedBox(height: 10),
-                      _AppelFeatured(),
-                      const SizedBox(height: 10),
-                      
-                      if (_appelsOuverts.isEmpty)
-                        const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 20),
-                          child: Center(child: Text("Aucun appel ouvert pour le moment.")),
-                        )
-                      else
-                        ..._appelsOuverts.take(3).map((appel) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: _AppelCard(
-                              icon: Icons.calendar_today_outlined, // TODO: dynamique
-                              type: appel['type_projet'] ?? 'Appel',
-                              titre: appel['titre'] ?? 'Sans titre',
-                              cloture: appel['date_cloture'] ?? '',
-                              ouvert: true,
+                      const Text(
+                        'FDCUIC',
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w900,
+                          color: FDColors.white,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.pushNamed(context, AppRoutes.notifs),
+                        child: Stack(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: FDColors.white.withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: FDColors.white.withValues(alpha: 0.2)),
+                              ),
+                              child: const Icon(Icons.notifications_outlined, color: FDColors.white, size: 22),
                             ),
-                          );
-                        }),
-                      const SizedBox(height: 80),
+                            if (_notifCount > 0)
+                              Positioned(
+                                right: 0, top: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: FDColors.coral,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(
+                                    _notifCount > 9 ? '9+' : '$_notifCount',
+                                    style: const TextStyle(
+                                      color: FDColors.white,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
-                ),
+                  const Spacer(),
+                  // Texte Bonjour (Bannière intégrée au header)
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: FDColors.navy.withValues(alpha: 0.4),
+                          border: Border.all(color: FDColors.white.withValues(alpha: 0.15), width: 0.5),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Bonjour ${_user?['prenom'] ?? ''} 👋',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w800,
+                                color: FDColors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Votre espace candidat est prêt. Suivez vos dossiers et découvrez de nouvelles opportunités.',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: FDColors.white.withValues(alpha: 0.8),
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                ],
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ────────────────────────────────────────────
+  //  CAROUSEL CARD
+  // ────────────────────────────────────────────
+  Widget _buildCarouselCard(int index, _CarouselCardData data) {
+    final diff = (_carouselPage - index);
+    final absDiff = diff.abs().clamp(0.0, 1.0);
+    final scale = 1.0 - (absDiff * 0.10);
+    final opacity = 1.0 - (absDiff * 0.4);
+
+    return Transform.scale(
+      scale: scale,
+      child: Opacity(
+        opacity: opacity.clamp(0.0, 1.0),
+        child: GestureDetector(
+          onTap: () => _onCarouselCardTap(data.type),
+          child: Container(
+            margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: data.gradient,
+              ),
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: data.gradient.last.withValues(alpha: 0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: FDColors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(data.icon, color: FDColors.white, size: 24),
+                    ),
+                    if (data.progress != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: FDColors.white,
+                          borderRadius: BorderRadius.circular(FDRadius.pill),
+                        ),
+                        child: Text(
+                          '${(data.progress! * 100).toInt()}%',
+                          style: TextStyle(
+                            color: data.gradient.first,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      )
+                    else
+                      Icon(Icons.arrow_outward_rounded,
+                          color: FDColors.white.withValues(alpha: 0.6), size: 24),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      data.title,
+                      style: TextStyle(
+                        color: FDColors.white.withValues(alpha: 0.8),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      data.subtitle,
+                      style: const TextStyle(
+                        color: FDColors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (data.progress != null) ...[
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(3),
+                        child: LinearProgressIndicator(
+                          value: data.progress!,
+                          backgroundColor: FDColors.white.withValues(alpha: 0.2),
+                          valueColor: const AlwaysStoppedAnimation(FDColors.white),
+                          minHeight: 5,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 6),
+                    Text(
+                      data.meta,
+                      style: TextStyle(
+                        color: FDColors.white.withValues(alpha: 0.6),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _onCarouselCardTap(String type) {
+    switch (type) {
+      case 'brouillon':
+        if (_dossierEnCoursType == 'appel') {
+          Navigator.pushNamed(context, AppRoutes.formulaireAppel,
+              arguments: _dossierEnCours!['appel_id'] ?? _dossierEnCours!['id']);
+        } else {
+          Navigator.pushNamed(context, AppRoutes.formulaireMobilite,
+              arguments: _dossierEnCours!['id']);
+        }
+        break;
+      case 'dossiers':
+        widget.onNavigateToTab(2);
+        break;
+      case 'guide':
+      case 'news':
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text('Bientôt disponible !'),
+          backgroundColor: FDColors.royal,
+        ));
+        break;
+    }
+  }
+
+  // ────────────────────────────────────────────
+  //  MOBILITÉ CARD
+  // ────────────────────────────────────────────
+  Widget _buildMobiliteCard() {
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, AppRoutes.formulaireMobilite),
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF7B61FF), Color(0xFF9B85FF)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: FDColors.violet.withValues(alpha: 0.3),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
             ),
           ],
         ),
-      ],
-    );
-  }
-}
-
-// ── HEADER ────────────────────────────────────
-class _Header extends StatelessWidget {
-  final Map<String, dynamic>? user;
-  const _Header({this.user});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(color: Colors.transparent),
-      child: SafeArea(
-        bottom: false,
-        child: Column(
+        child: Row(
           children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Container(
+              width: 52, height: 52,
+              decoration: BoxDecoration(
+                color: FDColors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Icon(Icons.flight_takeoff_rounded,
+                  color: FDColors.white, size: 24),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: FDColors.royal,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: const Text('FDCUIC',
-                      style: TextStyle(color: FDColors.white,
-                        fontSize: 10, fontWeight: FontWeight.w700,
-                        letterSpacing: 0.12)),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pushNamed(context, AppRoutes.notifs);
-                    },
-                    child: Container(
-                      width: 36, height: 36,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        shape: BoxShape.circle,
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          _programmeMobilite!['titre'] ?? 'Mobilité artistique',
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            color: FDColors.white,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                      child: const Icon(Icons.notifications_outlined,
-                        color: FDColors.white, size: 18),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: FDColors.white,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: const Text('Ouvert',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                            color: FDColors.violet,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _programmeMobilite!['description'] ?? 'Postulez pour un soutien aux déplacements.',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: FDColors.white.withValues(alpha: 0.8),
                     ),
                   ),
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: RichText(
-                  text: TextSpan(
-                    style: FDText.greetingName,
-                    children: [
-                      const TextSpan(text: 'Bonjour,\n'),
-                      TextSpan(text: '${user?['prenom'] ?? 'Candidat'} ',
-                        style: const TextStyle(
-                          color: FDColors.iceBlue,
-                          fontStyle: FontStyle.italic,
-                          fontWeight: FontWeight.w400)),
-                      const TextSpan(text: '👋'),
-                    ],
-                  ),
-                ),
+            const SizedBox(width: 8),
+            Container(
+              width: 32, height: 32,
+              decoration: BoxDecoration(
+                color: FDColors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(8),
               ),
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: Text('Votre espace candidat · FDCUIC',
-                  style: FDText.bodySub.copyWith(color: FDColors.silver)),
-              ),
+              child: const Icon(Icons.arrow_forward_rounded,
+                  size: 16, color: FDColors.white),
             ),
           ],
         ),
       ),
     );
   }
-}
 
-// ── SECTION HEADER ────────────────────────────
-class _SectionHeader extends StatelessWidget {
-  final String title, link;
-  const _SectionHeader(this.title, this.link);
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(title, style: FDText.h3),
-        Text(link, style: FDText.label.copyWith(color: FDColors.royal, fontSize: 12)),
-      ],
-    );
-  }
-}
+  // ────────────────────────────────────────────
+  //  APPELS LIST
+  // ────────────────────────────────────────────
+  Widget _buildAppelsList() {
+    if (_appelsOuverts.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: FDColors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: FDColors.border),
+        ),
+        child: const Text(
+          'Aucun appel à projet ouvert pour le moment.',
+          style: TextStyle(color: FDColors.textSub),
+          textAlign: TextAlign.center,
+        ),
+      );
+    }
 
-// ── APPEL FEATURED ────────────────────────────
-class _AppelFeatured extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: FDGradients.featuredCard,
-        borderRadius: FDRadius.cardLg,
-        boxShadow: FDShadow.ice,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('⭐ Toujours ouvert · Mobilité',
-            style: FDText.labelCaps.copyWith(color: FDColors.white.withValues(alpha: 0.5))),
-          const SizedBox(height: 6),
-          const Text('Résidence & mobilité\nartistique internationale',
-            style: TextStyle(color: FDColors.white,
-              fontSize: 16, fontWeight: FontWeight.w700, height: 1.3)),
-          const SizedBox(height: 4),
-          Text('Résidences, festivals, partenariats à l\'étranger',
-            style: FDText.label.copyWith(color: FDColors.white.withValues(alpha: 0.5))),
-          const SizedBox(height: 14),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Ouvert toute l\'année',
-                style: FDText.label.copyWith(color: FDColors.white.withValues(alpha: 0.4))),
-              GestureDetector(
-                onTap: () {
-                  // TODO: Aller à la mobilité
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                  decoration: BoxDecoration(
-                    color: FDColors.white,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text('Postuler →',
-                    style: TextStyle(color: FDColors.royal,
-                      fontSize: 12, fontWeight: FontWeight.w700)),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ── APPEL CARD ────────────────────────────────
-class _AppelCard extends StatelessWidget {
-  final IconData icon;
-  final String type, titre, cloture;
-  final bool ouvert;
-  const _AppelCard({required this.icon, required this.type,
-    required this.titre, required this.cloture, required this.ouvert});
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: FDColors.white,
-        borderRadius: FDRadius.card,
-        border: Border.all(color: FDColors.border, width: 0.5),
-        boxShadow: FDShadow.card,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 42, height: 42,
-            decoration: BoxDecoration(
-              color: ouvert ? FDColors.mint.withValues(alpha: 0.12) : FDColors.ice,
-              borderRadius: BorderRadius.circular(10),
+    return Column(
+      children: _appelsOuverts.take(3).map((appel) {
+        return GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => AppelDetailScreen(appel: appel),
             ),
-            child: Icon(icon,
-              color: ouvert ? FDColors.mint : FDColors.silver, size: 20),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: FDColors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: FDColors.border, width: 0.5),
+              boxShadow: FDShadow.card,
+            ),
+            child: Row(
               children: [
-                Row(children: [
-                  _Badge(type, FDColors.royal, FDColors.ice),
-                  const SizedBox(width: 5),
-                  _Badge(
-                    ouvert ? 'Ouvert' : 'Bientôt fermé',
-                    ouvert ? FDColors.mint : FDColors.gold,
-                    ouvert ? FDColors.mint.withValues(alpha: 0.12)
-                           : FDColors.gold.withValues(alpha: 0.12),
+                Container(
+                  width: 48, height: 48,
+                  decoration: BoxDecoration(
+                    color: FDColors.royal.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                ]),
-                const SizedBox(height: 4),
-                Text(titre, style: FDText.h3.copyWith(fontSize: 13)),
-                const SizedBox(height: 2),
-                Text('Clôture: $cloture', style: FDText.label),
+                  child: const Icon(Icons.campaign_rounded, color: FDColors.royal),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        appel['titre'],
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: FDColors.textPrimary,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Date limite : ${appel['date_cloture']?.toString().substring(0, 10) ?? 'Non définie'}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: FDColors.textSub,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded,
-            color: FDColors.border, size: 20),
-        ],
-      ),
+        );
+      }).toList(),
     );
   }
 }
 
-// ── BADGE ─────────────────────────────────────
-class _Badge extends StatelessWidget {
-  final String text;
-  final Color color, bg;
-  const _Badge(this.text, this.color, this.bg);
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(color: bg, borderRadius: FDRadius.badge),
-      child: Text(text,
-        style: FDText.labelCaps.copyWith(color: color, fontSize: 9)),
-    );
-  }
+// ══════════════════════════════════════════════════
+//  DATA CLASSES
+// ══════════════════════════════════════════════════
+class _CarouselCardData {
+  final String type;
+  final List<Color> gradient;
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String meta;
+  final double? progress;
+
+  const _CarouselCardData({
+    required this.type,
+    required this.gradient,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.meta,
+    this.progress,
+  });
 }

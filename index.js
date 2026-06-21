@@ -2,6 +2,10 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
+const dns = require('dns');
+
+// Force IPv4 globally to fix Railway ENETUNREACH on smtp.gmail.com
+dns.setDefaultResultOrder('ipv4first');
 
 const app = express();
 
@@ -13,6 +17,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+const fs = require('fs');
+
+// ── Création du dossier uploads s'il n'existe pas (pour Railway) ──
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 // ── Route de santé (Railway health check) ──
 app.get('/', (req, res) => {
@@ -45,13 +57,15 @@ try {
 }
 
 // ── Démarrage serveur ──
-const PORT = process.env.PORT || 3000;
+const PORT = 8000;
 
 // IMPORTANT : Démarrer le serveur HTTP IMMÉDIATEMENT, puis connecter la DB après
-const server = app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, () => {
   console.log(`Serveur démarré sur le port ${PORT}`);
   console.log('NODE_ENV:', process.env.NODE_ENV || 'non défini');
   console.log('DATABASE_URL présent:', !!process.env.DATABASE_URL);
+
+  // removed self ping
 });
 
 // Connecter la base de données en arrière-plan (ne bloque PAS le serveur)
