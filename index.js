@@ -62,7 +62,7 @@ try {
 }
 
 // ── Démarrage serveur ──
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 
 // IMPORTANT : Démarrer le serveur HTTP IMMÉDIATEMENT, puis connecter la DB après
 const server = app.listen(PORT, () => {
