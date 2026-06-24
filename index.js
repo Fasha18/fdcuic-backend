@@ -88,7 +88,7 @@ app.get('/api/run-seeder', async (req, res) => {
   try {
     const { sequelize } = require('./src/models/index');
     await sequelize.authenticate();
-    await sequelize.sync();
+    await sequelize.sync({ alter: true });
     
     // Insérer les secteurs et types
     const SecteurActivite = require('./src/models/SecteurActivite');
