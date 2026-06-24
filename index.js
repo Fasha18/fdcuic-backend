@@ -136,8 +136,9 @@ app.get('/api/run-seeder', async (req, res) => {
       nom: 'Admin',
       prenom: 'FDCUIC',
       email: 'admin@fdcuic.sn',
-      mot_de_passe: hashedPassword,
-      role: 'admin'
+      mot_de_passe_hash: hashedPassword,
+      role: 'admin',
+      est_active: true
     });
 
     res.json({ success: true, message: 'Base de données réinitialisée et Seeder exécuté avec succès.' });
