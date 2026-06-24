@@ -2,12 +2,25 @@ require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
-const dns = require('dns');
-
-// Force IPv4 globally to fix Railway ENETUNREACH on smtp.gmail.com
-dns.setDefaultResultOrder('ipv4first');
 
 const app = express();
+
+const logs = [];
+const originalLog = console.log;
+const originalError = console.error;
+console.log = (...args) => {
+  logs.push(`[LOG] ${args.join(' ')}`);
+  originalLog(...args);
+};
+console.error = (...args) => {
+  logs.push(`[ERR] ${args.join(' ')}`);
+  originalError(...args);
+};
+
+app.get('/api/debug-logs', (req, res) => {
+  res.send(logs.join('\n'));
+});
+
 
 // ── CORS ouvert (accepte les requêtes de partout : mobile, web, etc.) ──
 app.use(cors());
@@ -62,10 +75,10 @@ try {
 }
 
 // ── Démarrage serveur ──
-const PORT = process.env.PORT || 8000;
+const PORT = parseInt(process.env.PORT, 10) || 8000;
 
 // IMPORTANT : Démarrer le serveur HTTP IMMÉDIATEMENT, puis connecter la DB après
-const server = app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, () => {
   console.log(`Serveur démarré sur le port ${PORT}`);
   console.log('NODE_ENV:', process.env.NODE_ENV || 'non défini');
   console.log('DATABASE_URL présent:', !!process.env.DATABASE_URL);
