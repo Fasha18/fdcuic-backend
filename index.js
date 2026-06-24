@@ -88,6 +88,11 @@ app.get('/api/run-seeder', async (req, res) => {
   try {
     const { sequelize } = require('./src/models/index');
     await sequelize.authenticate();
+    
+    // NUCLEAR RESET
+    await sequelize.query('DROP SCHEMA public CASCADE;');
+    await sequelize.query('CREATE SCHEMA public;');
+    
     await sequelize.sync({ force: true }); // RESET TOTAL DE LA BASE DE DONNÉES
     
     // Insérer les secteurs et types
