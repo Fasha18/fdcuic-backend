@@ -79,8 +79,9 @@ const server = app.listen(PORT, '0.0.0.0', () => {
     const { sequelize } = require('./src/models/index');
     await sequelize.authenticate();
     console.log('Connexion PostgreSQL réussie !');
-    await sequelize.sync({ force: false, alter: true });
-    console.log('Tables créées/mises à jour avec succès !');
+    // La synchronisation est supprimée en production pour éviter les blocages
+    // await sequelize.sync({ force: false, alter: true });
+    console.log('DB authentifiée avec succès !');
   } catch (error) {
     console.error('Erreur de connexion DB:', error.message);
     // Le serveur reste UP même si la DB échoue
