@@ -88,7 +88,7 @@ app.get('/api/run-seeder', async (req, res) => {
   try {
     const { sequelize } = require('./src/models/index');
     await sequelize.authenticate();
-    await sequelize.sync({ alter: true });
+    await sequelize.sync({ force: true }); // RESET TOTAL DE LA BASE DE DONNÉES
     
     // Insérer les secteurs et types
     const SecteurActivite = require('./src/models/SecteurActivite');
@@ -122,11 +122,25 @@ app.get('/api/run-seeder', async (req, res) => {
       { type_projet_code: 'mobilite', nom_document: 'Budget prévisionnel', obligatoire: true, section_etape: 'etape_3' }
     ], { ignoreDuplicates: true });
 
-    res.json({ success: true, message: 'Seeder exécuté avec succès.' });
+    // Créer l'admin par défaut
+    const User = require('./src/models/User');
+    const bcrypt = require('bcryptjs');
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash('admin1234', salt);
+    await User.create({
+      nom: 'Admin',
+      prenom: 'FDCUIC',
+      email: 'admin@fdcuic.sn',
+      mot_de_passe: hashedPassword,
+      role: 'admin'
+    });
+
+    res.json({ success: true, message: 'Base de données réinitialisée et Seeder exécuté avec succès.' });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // ── Gestion des erreurs ──
 
