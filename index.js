@@ -89,11 +89,13 @@ app.get('/api/run-seeder', async (req, res) => {
     const { sequelize } = require('./src/models/index');
     await sequelize.authenticate();
     
-    // NUCLEAR RESET
+    // NUCLEAR RESET: Drop and recreate schema fresh
     await sequelize.query('DROP SCHEMA public CASCADE;');
     await sequelize.query('CREATE SCHEMA public;');
+    await sequelize.query('GRANT ALL ON SCHEMA public TO PUBLIC;');
     
-    await sequelize.sync({ force: true }); // RESET TOTAL DE LA BASE DE DONNÉES
+    // Sync all models (creates ENUMs with mobilite included)
+    await sequelize.sync({ force: true });
     
     // Insérer les secteurs et types
     const SecteurActivite = require('./src/models/SecteurActivite');

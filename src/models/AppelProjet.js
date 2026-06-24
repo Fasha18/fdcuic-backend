@@ -19,7 +19,7 @@ const AppelProjet = sequelize.define('AppelProjet', {
     allowNull: true,
   },
   type_projet: {
-    type: DataTypes.ENUM('structuration', 'formation', 'evenementiel'),
+    type: DataTypes.ENUM('structuration', 'formation', 'evenementiel', 'mobilite'),
     allowNull: true,
   },
   secteur_activite: {
