@@ -65,7 +65,7 @@ try {
 const PORT = process.env.PORT || 8000;
 
 // IMPORTANT : Démarrer le serveur HTTP IMMÉDIATEMENT, puis connecter la DB après
-const server = app.listen(PORT, () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Serveur démarré sur le port ${PORT}`);
   console.log('NODE_ENV:', process.env.NODE_ENV || 'non défini');
   console.log('DATABASE_URL présent:', !!process.env.DATABASE_URL);
