@@ -15,7 +15,6 @@ const DocumentTemplate = sequelize.define('DocumentTemplate', {
   nom_document: {
     type: DataTypes.STRING(100),
     allowNull: false,
-    unique: true,
     comment: 'Identifiant technique unique ex: business_model, budget_previsionnel',
   },
   label: {
@@ -56,6 +55,12 @@ const DocumentTemplate = sequelize.define('DocumentTemplate', {
 }, {
   tableName: 'document_templates',
   timestamps: true,
+  indexes: [
+    {
+      unique: true,
+      fields: ['nom_document']
+    }
+  ]
 });
 
 module.exports = DocumentTemplate;

@@ -38,8 +38,6 @@ const listerCandidats = async (req, res) => {
   }
 };
 
-const { User, AppelProjet, ProjetMobilite, AppelAProjet, Subvention, Notification } = require('../models/index');
-
 // GET admin — détail d'un candidat + statistiques
 const detailCandidat = async (req, res) => {
   try {

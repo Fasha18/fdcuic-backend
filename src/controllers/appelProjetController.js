@@ -363,6 +363,8 @@ const changerStatut = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
   }
+};
+
 // ── SUPPRIMER DOSSIER (Admin) ──────────────────────────────
 const supprimerDossier = async (req, res) => {
   try {
