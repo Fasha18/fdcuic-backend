@@ -48,6 +48,8 @@ const NAV_CANDIDAT = [
         icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> },
       { id: 'mobilite', label: 'Programme Mobilité',
         icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg> },
+      { id: 'ressources', label: 'Mes Ressources',
+        icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> },
     ]
   }
 ];
@@ -194,26 +196,7 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, role = 'admin' }) => {
         ))}
       </nav>
 
-      {/* ── HELP CARD ── */}
-      {!isCollapsed && (
-        <div style={{
-          margin: '0 12px 12px', padding: '14px 16px', borderRadius: 12,
-          background: 'linear-gradient(135deg, #4F6AF615, #7C5CFC15)',
-          border: '1px solid #4F6AF620',
-        }}>
-          <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 4 }}>Besoin d'aide ?</div>
-          <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 10, lineHeight: 1.5 }}>
-            Contacter le support FDCUIC pour toute assistance.
-          </div>
-          <button style={{
-            width: '100%', padding: '7px', borderRadius: 8,
-            background: 'var(--color-primary)', color: '#fff',
-            border: 'none', fontSize: 12, fontWeight: 700, cursor: 'pointer',
-          }}>
-            Support technique
-          </button>
-        </div>
-      )}
+      {/* ── HELP CARD (REMOVED) ── */}
 
       {/* ── USER ── */}
       <div ref={dropdownRef} style={{

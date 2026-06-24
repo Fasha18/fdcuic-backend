@@ -6,8 +6,8 @@ const listerSecteursPublic = async (req, res) => {
   try {
     const secteurs = await SecteurActivite.findAll({
       where: { actif: true },
-      attributes: ['code', 'label'],
-      order: [['ordre', 'ASC']],
+      attributes: ['code', 'nom'],
+      order: [['nom', 'ASC']],
     });
     return res.status(200).json({ secteurs });
   } catch (error) {
@@ -19,7 +19,7 @@ const listerSecteursPublic = async (req, res) => {
 const listerSecteurs = async (req, res) => {
   try {
     const secteurs = await SecteurActivite.findAll({
-      order: [['ordre', 'ASC']],
+      order: [['nom', 'ASC']],
     });
 
     // Stats par secteur
@@ -50,10 +50,18 @@ const listerSecteurs = async (req, res) => {
 // POST admin — créer un secteur
 const creerSecteur = async (req, res) => {
   try {
-    const { code, label, description, ordre } = req.body;
+    const { code, nom, description, icone } = req.body;
 
-    if (!code || !label) {
-      return res.status(400).json({ message: 'Le code et le label sont obligatoires.' });
+    if (!code || !nom) {
+      return res.status(400).json({ message: 'Le code et le nom sont obligatoires.' });
+    }
+
+    if (nom.length < 3) {
+      return res.status(400).json({ message: 'Le nom doit contenir au moins 3 caractères.' });
+    }
+
+    if (description && description.length < 10) {
+      return res.status(400).json({ message: 'La description doit contenir au moins 10 caractères.' });
     }
 
     // Vérifier l'unicité du code
@@ -62,7 +70,7 @@ const creerSecteur = async (req, res) => {
       return res.status(400).json({ message: `Le code "${code}" existe déjà.` });
     }
 
-    const secteur = await SecteurActivite.create({ code, label, description, ordre });
+    const secteur = await SecteurActivite.create({ code, nom, description, icone });
     return res.status(201).json({ message: 'Secteur créé avec succès.', secteur });
   } catch (error) {
     return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
@@ -77,8 +85,17 @@ const modifierSecteur = async (req, res) => {
       return res.status(404).json({ message: 'Secteur introuvable.' });
     }
 
-    const { label, description, actif, ordre } = req.body;
-    await secteur.update({ label, description, actif, ordre });
+    const { nom, description, icone, actif } = req.body;
+
+    if (nom && nom.length < 3) {
+      return res.status(400).json({ message: 'Le nom doit contenir au moins 3 caractères.' });
+    }
+
+    if (description && description.length < 10) {
+      return res.status(400).json({ message: 'La description doit contenir au moins 10 caractères.' });
+    }
+
+    await secteur.update({ nom, description, icone, actif });
     return res.status(200).json({ message: 'Secteur mis à jour.', secteur });
   } catch (error) {
     return res.status(500).json({ message: 'Erreur serveur.', error: error.message });

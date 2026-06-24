@@ -14,6 +14,7 @@ const ChampFormulaire = require('./ChampFormulaire');
 const ActivityLog = require('./ActivityLog');
 const FAQ = require('./FAQ');
 const PageLegale = require('./PageLegale');
+const DocumentTemplate = require('./DocumentTemplate');
 
 // User soumet N Projets
 User.hasMany(Projet, { foreignKey: 'user_id', as: 'projets' });
@@ -53,6 +54,10 @@ AppelProjet.belongsTo(AppelAProjet, { foreignKey: 'appel_id', as: 'appel' });
 ActivityLog.belongsTo(User, { as: 'admin', foreignKey: 'admin_id' });
 User.hasMany(ActivityLog, { foreignKey: 'admin_id' });
 
+// TypeProjet → DocumentTemplate (1 à N)
+TypeProjet.hasMany(DocumentTemplate, { foreignKey: 'type_projet_code', sourceKey: 'code', as: 'document_templates' });
+DocumentTemplate.belongsTo(TypeProjet, { foreignKey: 'type_projet_code', targetKey: 'code', as: 'type_projet' });
+
 
 module.exports = {
   sequelize,
@@ -71,5 +76,6 @@ module.exports = {
   ActivityLog,
   FAQ,
   PageLegale,
+  DocumentTemplate,
 };
 

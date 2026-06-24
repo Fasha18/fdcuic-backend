@@ -35,4 +35,27 @@ router.put('/mobilite/programme', verifierToken, verifierRole('admin'), modifier
 router.post('/mobilite/programme/image', verifierToken, verifierRole('admin'), uploadMobilite.single('image_couverture'), uploadImageProgrammeMobilite);
 router.get('/mobilite/candidatures', verifierToken, verifierRole('admin'), getCandidaturesMobilite);
 
+// ── NOUVELLES ROUTES MOBILITÉ (Tableau, Stats, Statut) ──
+const { changerStatut, getProgrammeMobiliteStats, supprimerCandidature } = require('../controllers/mobiliteController');
+router.get('/mobilite', verifierToken, verifierRole('admin'), getCandidaturesMobilite); // Réutilise getCandidaturesMobilite
+router.put('/mobilite/:id/statut', verifierToken, verifierRole('admin'), changerStatut);
+router.delete('/mobilite/:id', verifierToken, verifierRole('admin'), supprimerCandidature);
+router.get('/mobilite/stats', verifierToken, verifierRole('admin'), getProgrammeMobiliteStats);
+
+// ── DOCUMENT TEMPLATES ──
+const {
+  listerTous,
+  creer,
+  modifier,
+  supprimer,
+  uploadFichierTemplate,
+} = require('../controllers/documentTemplateController');
+const { uploadTemplate } = require('../config/multerCloudinary');
+
+router.get('/templates', verifierToken, verifierRole('admin'), listerTous);
+router.post('/templates', verifierToken, verifierRole('admin'), creer);
+router.put('/templates/:id', verifierToken, verifierRole('admin'), modifier);
+router.delete('/templates/:id', verifierToken, verifierRole('admin'), supprimer);
+router.post('/templates/:id/fichier', verifierToken, verifierRole('admin'), uploadTemplate.single('fichier'), uploadFichierTemplate);
+
 module.exports = router;

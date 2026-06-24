@@ -241,17 +241,18 @@ class _DossierCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final statut = _StatutConfig.from(dossier.statut);
     final typeCfg = _TypeConfig.from(dossier.typeProjet);
+    final isSoumis = dossier.statut == 'soumis';
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: FDColors.white,
+        color: isSoumis ? FDColors.gold.withValues(alpha: 0.05) : FDColors.white,
         borderRadius: BorderRadius.circular(FDRadius.md),
         border: Border(
-          left: BorderSide(color: statut.color, width: 3),
-          top: BorderSide(color: FDColors.border, width: 0.5),
-          right: BorderSide(color: FDColors.border, width: 0.5),
-          bottom: BorderSide(color: FDColors.border, width: 0.5),
+          left: BorderSide(color: statut.color, width: isSoumis ? 4 : 3),
+          top: BorderSide(color: isSoumis ? FDColors.gold.withValues(alpha: 0.3) : FDColors.border, width: 0.5),
+          right: BorderSide(color: isSoumis ? FDColors.gold.withValues(alpha: 0.3) : FDColors.border, width: 0.5),
+          bottom: BorderSide(color: isSoumis ? FDColors.gold.withValues(alpha: 0.3) : FDColors.border, width: 0.5),
         ),
         boxShadow: FDShadow.card,
       ),
@@ -296,10 +297,33 @@ class _DossierCard extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Text(
-            '${dossier.secteurActivite ?? 'Secteur ?'} · ${dossier.region ?? 'Région ?'}',
+            '${dossier.secteurActivite ?? 'Secteur inconnu'} · ${dossier.region ?? 'Région inconnue'}',
             style: FDText.bodySub,
           ),
           const SizedBox(height: 12),
+
+          if (isSoumis)
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: FDColors.gold.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(FDRadius.sm),
+                border: Border.all(color: FDColors.gold.withValues(alpha: 0.3)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: FDColors.gold, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Candidature transmise et en attente d\'examen.',
+                      style: FDText.bodySub.copyWith(color: FDColors.gold, fontWeight: FontWeight.w600, fontSize: 11),
+                    ),
+                  ),
+                ],
+              ),
+            ),
 
           // Barre de progression (seulement si brouillon)
           if (dossier.statut == 'brouillon') ...[
@@ -375,21 +399,13 @@ class _DossierCard extends StatelessWidget {
 
   String _formatDate(String date) {
     if (date.isEmpty) return '—';
-    final p = date.split('-');
-    if (p.length != 3) {
-      if (date.contains('T')) {
-        final d = date.split('T')[0].split('-');
-        if (d.length == 3) {
-          const m = ['','jan.','fév.','mar.','avr.','mai','juin',
-                      'juil.','août','sep.','oct.','nov.','déc.'];
-          return '${d[2]} ${m[int.parse(d[1])]} ${d[0]}';
-        }
-      }
-      return date;
+    try {
+      final dt = DateTime.parse(date);
+      const m = ['','jan.','fév.','mar.','avr.','mai','juin','juil.','août','sep.','oct.','nov.','déc.'];
+      return '${dt.day} ${m[dt.month]} ${dt.year}';
+    } catch (e) {
+      return date.split('T')[0];
     }
-    const m = ['','jan.','fév.','mar.','avr.','mai','juin',
-                'juil.','août','sep.','oct.','nov.','déc.'];
-    return '${p[2]} ${m[int.parse(p[1])]} ${p[0]}';
   }
 }
 
@@ -405,17 +421,18 @@ class _MobiliteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final statut = _StatutConfig.from(projet.statut);
+    final isSoumis = projet.statut == 'soumis';
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: FDColors.white,
+        color: isSoumis ? FDColors.gold.withValues(alpha: 0.05) : FDColors.white,
         borderRadius: BorderRadius.circular(FDRadius.md),
         border: Border(
-          left: BorderSide(color: statut.color, width: 3),
-          top: BorderSide(color: FDColors.border, width: 0.5),
-          right: BorderSide(color: FDColors.border, width: 0.5),
-          bottom: BorderSide(color: FDColors.border, width: 0.5),
+          left: BorderSide(color: statut.color, width: isSoumis ? 4 : 3),
+          top: BorderSide(color: isSoumis ? FDColors.gold.withValues(alpha: 0.3) : FDColors.border, width: 0.5),
+          right: BorderSide(color: isSoumis ? FDColors.gold.withValues(alpha: 0.3) : FDColors.border, width: 0.5),
+          bottom: BorderSide(color: isSoumis ? FDColors.gold.withValues(alpha: 0.3) : FDColors.border, width: 0.5),
         ),
         boxShadow: FDShadow.card,
       ),
@@ -528,21 +545,13 @@ class _MobiliteCard extends StatelessWidget {
 
   String _fmt(String date) {
     if (date.isEmpty) return '—';
-    final p = date.split('-');
-    if (p.length != 3) {
-      if (date.contains('T')) {
-        final d = date.split('T')[0].split('-');
-        if (d.length == 3) {
-          const m = ['','jan.','fév.','mar.','avr.','mai','juin',
-                      'juil.','août','sep.','oct.','nov.','déc.'];
-          return '${d[2]} ${m[int.parse(d[1])]} ${d[0]}';
-        }
-      }
-      return date;
+    try {
+      final dt = DateTime.parse(date);
+      const m = ['','jan.','fév.','mar.','avr.','mai','juin','juil.','août','sep.','oct.','nov.','déc.'];
+      return '${dt.day} ${m[dt.month]} ${dt.year}';
+    } catch (e) {
+      return date.split('T')[0];
     }
-    const m = ['','jan.','fév.','mar.','avr.','mai','juin',
-                'juil.','août','sep.','oct.','nov.','déc.'];
-    return '${p[2]} ${m[int.parse(p[1])]} ${p[0]}';
   }
 }
 

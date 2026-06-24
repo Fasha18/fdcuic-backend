@@ -324,7 +324,21 @@ const getProgrammeMobiliteStats = async (req, res) => {
   }
 };
 
+// ── SUPPRIMER CANDIDATURE (Admin) ────────────────────────
+const supprimerCandidature = async (req, res) => {
+  try {
+    const candidature = await ProjetMobilite.findByPk(req.params.id);
+    if (!candidature) {
+      return res.status(404).json({ message: 'Candidature introuvable.' });
+    }
+    await candidature.destroy();
+    return res.status(200).json({ message: 'Candidature supprimée avec succès.' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
+  }
+};
+
 module.exports = {
   etape1, etape2, etape3, etape4,
-  soumettre, mesProjets, tousLesProjets, changerStatut, getProgrammeMobilitePublic, getProgrammeMobiliteStats
+  soumettre, mesProjets, tousLesProjets, changerStatut, supprimerCandidature, getProgrammeMobilitePublic, getProgrammeMobiliteStats
 };

@@ -51,6 +51,11 @@ try {
   app.use('/api/admin/notifications', require('./src/routes/notificationAdmin'));
   app.use('/api/faqs',        require('./src/routes/faq'));
   app.use('/api/legal',       require('./src/routes/legal'));
+
+  // Route publique — téléchargement des templates (sans authentification)
+  const { telecharger } = require('./src/controllers/documentTemplateController');
+  app.get('/api/templates/download/:nom_document', telecharger);
+
   console.log('Toutes les routes chargées avec succès.');
 } catch (err) {
   console.error('ERREUR CHARGEMENT ROUTES:', err.message);

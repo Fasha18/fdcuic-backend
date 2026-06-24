@@ -363,10 +363,22 @@ const changerStatut = async (req, res) => {
   } catch (error) {
     return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
   }
+// ── SUPPRIMER DOSSIER (Admin) ──────────────────────────────
+const supprimerDossier = async (req, res) => {
+  try {
+    const dossier = await AppelProjet.findByPk(req.params.id);
+    if (!dossier) {
+      return res.status(404).json({ message: 'Dossier introuvable.' });
+    }
+    await dossier.destroy();
+    return res.status(200).json({ message: 'Dossier supprimé avec succès.' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
+  }
 };
 
 module.exports = {
   etape1, etape2, etape3,
   soumettre, mesDossiers,
-  tousDossiers, changerStatut,
+  tousDossiers, changerStatut, supprimerDossier
 };

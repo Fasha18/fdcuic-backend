@@ -608,31 +608,115 @@ export default function CandidatCandidature({ onLogout }) {
             {etape === 3 && (
               <form onSubmit={handleEtape3Submit} className="card animate-fade-in-up" style={{ padding: 32 }}>
                 <div className="section-header"><h2 className="section-title">Étape 3 : Documents à fournir</h2></div>
-                <p className="help-text" style={{ marginBottom: 32 }}>Formats autorisés : PDF, JPG, PNG. Taille max : 10Mo par fichier.</p>
-
-                <div className="form-grid-2">
-                  {[
-                    { id: 'doc_ninea_recepisse', label: 'NINEA ou Récépissé', req: true },
-                    { id: 'doc_cni_passeport', label: 'CNI ou Passeport', req: true },
-                    { id: 'doc_plan_action', label: 'Plan d\'action', req: true },
-                    { id: 'doc_photo_prototype', label: 'Photo ou prototype', req: true },
-                    { id: 'doc_budget', label: 'Budget détaillé', req: typeProjet === 'formation' || typeProjet === 'evenementiel', full: true },
-                    { id: 'doc_analyse_financiere', label: 'Analyse financière', req: typeProjet === 'structuration' },
-                    { id: 'doc_business_model', label: 'Business Model Canvas', req: typeProjet === 'structuration' },
-                  ].filter(f => f.req).map(f => (
-                    <div key={f.id} className={`form-group ${f.full ? 'form-col-full' : ''}`} id={`field-${f.id}`}>
-                      <label>
-                        {f.label} * 
-                        {existingDocs[f.id] && <span className="appels-status-badge" style={{background:'var(--color-green-light)',color:'var(--color-green)',fontSize:11,padding:'2px 6px',marginLeft:8}}>Déjà fourni</span>}
-                      </label>
-                      <input type="file" accept=".pdf,.jpg,.jpeg,.png" 
-                        onChange={(e) => handleFileChange(e, f.id)} className="file-input" 
-                        style={getInputStyle(f.id)}
-                      />
-                      <ErrorMsg msg={fieldErrors[f.id]} />
-                    </div>
-                  ))}
+                
+                {/* Info box */}
+                <div style={{ background: 'var(--color-primary-light)', border: '1px solid var(--color-primary)', borderRadius: 10, padding: '12px 16px', marginBottom: 24, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="2" style={{ flexShrink: 0, marginTop: 2 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                  <div>
+                    <p style={{ margin: 0, fontSize: 13, color: 'var(--color-primary)', fontWeight: 600 }}>Téléchargez les templates, remplissez-les hors ligne puis uploadez-les ici.</p>
+                    <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--color-text-secondary)' }}>Formats acceptés : PDF, JPG, PNG, Excel (.xlsx), Word (.docx). Taille max : 10 Mo par fichier.</p>
+                  </div>
                 </div>
+
+                {/* Documents communs */}
+                <div style={{ marginBottom: 24 }}>
+                  <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>Documents d'identité</h3>
+                  <div className="form-grid-2">
+                    {[
+                      { id: 'doc_ninea_recepisse', label: 'NINEA ou Récépissé', desc: 'Justificatif d\'enregistrement de votre structure' },
+                      { id: 'doc_cni_passeport', label: 'CNI ou Passeport', desc: 'Pièce d\'identité du porteur de projet' },
+                      { id: 'doc_plan_action', label: "Plan d'action", desc: 'Téléchargez le template, remplissez-le, puis uploadez-le', templateLink: `/api/templates/download/plan_action_${typeProjet}` },
+                      { id: 'doc_photo_prototype', label: 'Photo ou prototype', desc: 'Photo de votre équipe, prototype ou réalisation' },
+                    ].map(f => (
+                      <div key={f.id} id={`field-${f.id}`} style={{ background: 'var(--color-bg-body)', borderRadius: 10, padding: 16, border: `1px solid ${fieldErrors[f.id] ? 'var(--color-red)' : existingDocs[f.id] ? 'var(--color-green)' : 'var(--color-border-light)'}` }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                          <div>
+                            <label style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', display: 'block', marginBottom: 2 }}>{f.label} *</label>
+                            <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>{f.desc}</p>
+                          </div>
+                          {existingDocs[f.id] && <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 6px', borderRadius: 4, background: 'var(--color-green-light)', color: 'var(--color-green)', flexShrink: 0 }}>✓ Fourni</span>}
+                        </div>
+                        {f.templateLink && (
+                          <a href={f.templateLink} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: 'var(--color-primary)', textDecoration: 'none', marginBottom: 8, padding: '4px 8px', background: 'var(--color-primary-light)', borderRadius: 6 }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Télécharger template
+                          </a>
+                        )}
+                        <input type="file" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.docx,.doc"
+                          onChange={(e) => handleFileChange(e, f.id)} className="file-input"
+                          style={{ borderColor: fieldErrors[f.id] ? 'var(--color-red)' : undefined }}
+                        />
+                        <ErrorMsg msg={fieldErrors[f.id]} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Documents spécifiques au type */}
+                {(typeProjet === 'formation' || typeProjet === 'evenementiel') && (
+                  <div style={{ marginBottom: 24 }}>
+                    <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>Documents spécifiques — {typeProjet === 'formation' ? 'Formation' : 'Événementiel'}</h3>
+                    <div id="field-doc_budget" style={{ background: 'var(--color-bg-body)', borderRadius: 10, padding: 16, border: `1px solid ${fieldErrors.doc_budget ? 'var(--color-red)' : existingDocs.doc_budget ? 'var(--color-green)' : 'var(--color-primary)'}` }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                        <div>
+                          <label style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', display: 'block', marginBottom: 2 }}>Budget prévisionnel *</label>
+                          <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>Détaillez votre budget par sections en FCFA. Téléchargez le template, remplissez-le et uploadez-le.</p>
+                        </div>
+                        <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 6px', borderRadius: 4, background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}>OBLIGATOIRE</span>
+                          {existingDocs.doc_budget && <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 6px', borderRadius: 4, background: 'var(--color-green-light)', color: 'var(--color-green)' }}>✓ Fourni</span>}
+                        </div>
+                      </div>
+                      <a
+                        href={`/api/templates/download/${typeProjet === 'formation' ? 'budget_previsionnel' : 'budget_previsionnel_evenementiel'}`}
+                        target="_blank" rel="noreferrer"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: 'var(--color-primary)', textDecoration: 'none', marginBottom: 10, padding: '5px 10px', background: 'var(--color-primary-light)', borderRadius: 6 }}
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Télécharger template Budget {typeProjet === 'evenementiel' ? 'Événementiel' : 'Formation'}
+                      </a>
+                      <input type="file" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.docx,.doc"
+                        onChange={(e) => handleFileChange(e, 'doc_budget')} className="file-input"
+                        style={{ borderColor: fieldErrors.doc_budget ? 'var(--color-red)' : undefined }}
+                      />
+                      <ErrorMsg msg={fieldErrors.doc_budget} />
+                    </div>
+                  </div>
+                )}
+
+                {typeProjet === 'structuration' && (
+                  <div style={{ marginBottom: 24 }}>
+                    <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>Documents spécifiques — Structuration</h3>
+                    <div className="form-grid-2">
+                      {[
+                        { id: 'doc_analyse_financiere', label: 'Analyse financière', desc: 'Bilan 2024, prévisions 2025-2026, et analyse SWOT.', templateNom: 'analyse_financiere' },
+                        { id: 'doc_business_model', label: 'Business Model Canvas', desc: 'Présentez votre modèle économique en 9 blocs.', templateNom: 'business_model' },
+                      ].map(f => (
+                        <div key={f.id} id={`field-${f.id}`} style={{ background: 'var(--color-bg-body)', borderRadius: 10, padding: 16, border: `1px solid ${fieldErrors[f.id] ? 'var(--color-red)' : existingDocs[f.id] ? 'var(--color-green)' : 'var(--color-primary)'}` }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
+                            <div>
+                              <label style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', display: 'block', marginBottom: 2 }}>{f.label} *</label>
+                              <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>{f.desc}</p>
+                            </div>
+                            <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                              <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 6px', borderRadius: 4, background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}>OBLIGATOIRE</span>
+                              {existingDocs[f.id] && <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 6px', borderRadius: 4, background: 'var(--color-green-light)', color: 'var(--color-green)' }}>✓ Fourni</span>}
+                            </div>
+                          </div>
+                          <a href={`/api/templates/download/${f.templateNom}`} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: 'var(--color-primary)', textDecoration: 'none', marginBottom: 10, padding: '5px 10px', background: 'var(--color-primary-light)', borderRadius: 6 }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Télécharger template {f.label}
+                          </a>
+                          <input type="file" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.docx,.doc"
+                            onChange={(e) => handleFileChange(e, f.id)} className="file-input"
+                            style={{ borderColor: fieldErrors[f.id] ? 'var(--color-red)' : undefined }}
+                          />
+                          <ErrorMsg msg={fieldErrors[f.id]} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 32 }}>
                   <button type="button" className="btn-secondary" onClick={() => setEtape(2)}>Retour</button>
@@ -642,6 +726,7 @@ export default function CandidatCandidature({ onLogout }) {
                 </div>
               </form>
             )}
+
 
             {etape === 4 && (
               <div className="card animate-fade-in-up" style={{ padding: 32 }}>

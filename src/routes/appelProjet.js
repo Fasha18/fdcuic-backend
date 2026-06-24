@@ -3,7 +3,7 @@ const router = express.Router();
 const {
   etape1, etape2, etape3,
   soumettre, mesDossiers,
-  tousDossiers, changerStatut,
+  tousDossiers, changerStatut, supprimerDossier
 } = require('../controllers/appelProjetController');
 const { verifierToken, verifierRole } = require('../middlewares/auth');
 const upload = require('../config/multerAppelProjet');
@@ -36,5 +36,8 @@ router.get('/', verifierToken, verifierRole('admin'), tousDossiers);
 
 // Changer statut (Admin)
 router.put('/:id/statut', verifierToken, verifierRole('admin'), changerStatut);
+
+// Supprimer dossier (Admin)
+router.delete('/:id', verifierToken, verifierRole('admin'), supprimerDossier);
 
 module.exports = router;

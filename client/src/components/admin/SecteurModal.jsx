@@ -4,11 +4,26 @@ import adminService from '../../services/adminService';
 const SecteurModal = ({ isOpen, onClose, onSaveSuccess, secteur }) => {
   const isEditing = !!secteur;
   
+  const ICONS = [
+    { name: 'music_note', label: 'Musique' },
+    { name: 'theater_comedy', label: 'Théâtre' },
+    { name: 'directions_run', label: 'Danse' },
+    { name: 'palette', label: 'Arts visuels' },
+    { name: 'book', label: 'Littérature' },
+    { name: 'movie', label: 'Cinéma' },
+    { name: 'landscape', label: 'Patrimoine' },
+    { name: 'celebration', label: 'Cirque' },
+    { name: 'camera_alt', label: 'Photographie' },
+    { name: 'mic', label: 'Performance' },
+    { name: 'computer', label: 'Arts numériques' },
+    { name: 'public', label: 'Géographie' },
+  ];
+
   const [formData, setFormData] = useState({
     code: '',
-    label: '',
+    nom: '',
     description: '',
-    ordre: 0,
+    icone: 'palette',
     actif: true,
   });
   
@@ -20,13 +35,13 @@ const SecteurModal = ({ isOpen, onClose, onSaveSuccess, secteur }) => {
       if (secteur) {
         setFormData({
           code: secteur.code,
-          label: secteur.label,
+          nom: secteur.nom,
           description: secteur.description || '',
-          ordre: secteur.ordre || 0,
+          icone: secteur.icone || 'palette',
           actif: secteur.actif,
         });
       } else {
-        setFormData({ code: '', label: '', description: '', ordre: 0, actif: true });
+        setFormData({ code: '', nom: '', description: '', icone: 'palette', actif: true });
       }
       setError(null);
     }
@@ -46,6 +61,23 @@ const SecteurModal = ({ isOpen, onClose, onSaveSuccess, secteur }) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    // Frontend Validations
+    if (!/^[a-z_]+$/.test(formData.code)) {
+      setError("Le code ne doit contenir que des lettres minuscules et des underscores.");
+      setLoading(false);
+      return;
+    }
+    if (formData.nom.length < 3 || formData.nom.length > 50) {
+      setError("Le nom doit contenir entre 3 et 50 caractères.");
+      setLoading(false);
+      return;
+    }
+    if (formData.description.length < 10 || formData.description.length > 500) {
+      setError("La description doit contenir entre 10 et 500 caractères.");
+      setLoading(false);
+      return;
+    }
 
     try {
       if (isEditing) {
@@ -102,41 +134,71 @@ const SecteurModal = ({ isOpen, onClose, onSaveSuccess, secteur }) => {
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: 14, fontWeight: 500, color: 'var(--color-text-secondary)' }}>Label *</label>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: 14, fontWeight: 500, color: 'var(--color-text-secondary)' }}>Nom *</label>
             <input 
               type="text" 
-              name="label" 
-              value={formData.label} 
+              name="nom" 
+              value={formData.nom} 
               onChange={handleChange} 
               required 
-              placeholder="ex: Aide à la structuration"
+              placeholder="Ex: Musique"
               style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg-body)', color: 'var(--color-text-primary)' }}
             />
           </div>
 
           <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: 14, fontWeight: 500, color: 'var(--color-text-secondary)' }}>Description</label>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+              <label style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-secondary)' }}>Description *</label>
+              <span style={{ fontSize: 12, color: formData.description.length < 10 || formData.description.length > 500 ? 'var(--color-red)' : 'var(--color-text-tertiary)' }}>
+                {formData.description.length} / 500
+              </span>
+            </div>
             <textarea 
               name="description" 
               value={formData.description} 
               onChange={handleChange} 
+              required
+              placeholder="Décrivez ce secteur..."
               rows="3"
               style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg-body)', color: 'var(--color-text-primary)', resize: 'vertical' }}
             />
           </div>
 
-          <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
-            <div style={{ flex: 1 }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: 14, fontWeight: 500, color: 'var(--color-text-secondary)' }}>Ordre d'affichage</label>
-              <input 
-                type="number" 
-                name="ordre" 
-                value={formData.ordre} 
-                onChange={handleChange} 
-                style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'var(--color-bg-body)', color: 'var(--color-text-primary)' }}
-              />
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <label style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-secondary)' }}>Icône *</label>
+              {formData.icone && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'var(--color-primary-light)', color: 'var(--color-primary)', padding: '4px 10px', borderRadius: 8, fontSize: 12, fontWeight: 600 }}>
+                  Aperçu: <span className="material-icons" style={{ fontSize: 18 }}>{formData.icone}</span>
+                </div>
+              )}
             </div>
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', paddingTop: '28px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', maxHeight: '160px', overflowY: 'auto', padding: '4px' }}>
+              {ICONS.map((icon) => (
+                <div
+                  key={icon.name}
+                  onClick={() => setFormData({ ...formData, icone: icon.name })}
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                    padding: '8px', borderRadius: '8px', cursor: 'pointer',
+                    border: formData.icone === icon.name ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
+                    background: formData.icone === icon.name ? 'var(--color-primary-light)' : 'var(--color-bg-body)',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <span className="material-icons" style={{ fontSize: 24, color: formData.icone === icon.name ? 'var(--color-primary)' : 'var(--color-text-secondary)' }}>
+                    {icon.name}
+                  </span>
+                  <span style={{ fontSize: 10, marginTop: 4, textAlign: 'center', color: formData.icone === icon.name ? 'var(--color-primary)' : 'var(--color-text-tertiary)' }}>
+                    {icon.label}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: 14, color: 'var(--color-text-primary)' }}>
                 <input 
                   type="checkbox" 

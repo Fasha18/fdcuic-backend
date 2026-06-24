@@ -12,7 +12,7 @@ const SecteurActivite = sequelize.define('SecteurActivite', {
     allowNull: false,
     unique: true,
   },
-  label: {
+  nom: {
     type: DataTypes.STRING(100),
     allowNull: false,
   },
@@ -20,13 +20,13 @@ const SecteurActivite = sequelize.define('SecteurActivite', {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  icone: {
+    type: DataTypes.STRING(50),
+    allowNull: true,
+  },
   actif: {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
-  },
-  ordre: {
-    type: DataTypes.INTEGER,
-    defaultValue: 0,
   },
 }, {
   tableName: 'secteurs_activite',

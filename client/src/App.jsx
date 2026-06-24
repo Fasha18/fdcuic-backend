@@ -26,6 +26,7 @@ import CandidatCandidature from './pages/CandidatCandidature';
 import CandidatConfirmation from './pages/CandidatConfirmation';
 import CandidatMesDossiers from './pages/CandidatMesDossiers';
 import CandidatMobiliteFormulaire from './pages/CandidatMobiliteFormulaire';
+import CandidatRessources from './pages/CandidatRessources';
 
 function App() {
   const [connecte, setConnecte] = useState(!!localStorage.getItem('token'));
@@ -105,6 +106,7 @@ function App() {
                 <Route path="/candidat/mobilite" element={<CandidatMobilite onLogout={handleLogout} />} />
                 <Route path="/candidat/mobilite/candidature" element={<CandidatMobiliteFormulaire onLogout={handleLogout} />} />
                 <Route path="/candidat/mobilite/nouveau" element={<CandidatMobiliteFormulaire onLogout={handleLogout} />} />
+                <Route path="/candidat/ressources" element={<CandidatRessources onLogout={handleLogout} />} />
               </>
             )}
 

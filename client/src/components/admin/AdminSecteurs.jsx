@@ -167,12 +167,12 @@ const AdminSecteurs = () => {
                 {/* Icône + Label */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
                   <div style={{ width: 42, height: 42, borderRadius: 11, background: colorConf.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <span style={{ fontSize: 18 }}>
-                      {['🎭','💃','🎨','🏃','🎪','👗','🎤','✏️'][i % 8]}
+                    <span className="material-icons" style={{ fontSize: 18 }}>
+                      {secteur.icone || 'category'}
                     </span>
                   </div>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--color-text-primary)' }}>{secteur.label}</div>
+                    <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--color-text-primary)' }}>{secteur.nom}</div>
                     <code style={{ fontSize: 11, color: 'var(--color-text-tertiary)', fontFamily: 'monospace' }}>{secteur.code}</code>
                   </div>
                 </div>
@@ -252,7 +252,7 @@ const AdminSecteurs = () => {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--color-bg-body)' }}>
-                {['Secteur', 'Code', 'Dossiers', 'Candidats', 'Activité', 'Statut', 'Actions'].map(h => (
+                {['Icône', 'Nom', 'Code', 'Dossiers', 'Candidats', 'Activité', 'Statut', 'Actions'].map(h => (
                   <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.6px' }}>{h}</th>
                 ))}
               </tr>
@@ -269,11 +269,13 @@ const AdminSecteurs = () => {
                   >
                     <td style={{ padding: '14px 16px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{ width: 34, height: 34, borderRadius: 9, background: colorConf.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>
-                          {['🎭','💃','🎨','🏃','🎪','👗','🎤','✏️'][i % 8]}
+                        <div className="material-icons" style={{ width: 34, height: 34, borderRadius: 9, background: colorConf.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>
+                          {s.icone || 'category'}
                         </div>
-                        <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--color-text-primary)' }}>{s.label}</span>
                       </div>
+                    </td>
+                    <td style={{ padding: '14px 16px' }}>
+                      <span style={{ fontWeight: 600, fontSize: 14, color: 'var(--color-text-primary)' }}>{s.nom}</span>
                     </td>
                     <td style={{ padding: '14px 16px' }}>
                       <code style={{ fontSize: 12, color: 'var(--color-text-tertiary)', background: 'var(--color-bg-body)', padding: '3px 8px', borderRadius: 6 }}>{s.code}</code>

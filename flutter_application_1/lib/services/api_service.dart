@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   // L'adresse IP est redirigée directement via ADB (adb reverse)
   static const String baseUrl = 'https://fdcuic-backend-production.up.railway.app';
-  // static const String baseUrl = 'http://TON_IP:3000/api'; // vrai téléphone
+  // static const String baseUrl = 'http://127.0.0.1:8000'; // Utilise le backend local via ADB reverse
 
   // ── TOKEN ─────────────────────────────────────────────
   static Future<String?> getToken() async {

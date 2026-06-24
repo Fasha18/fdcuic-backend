@@ -25,6 +25,7 @@ import AdminPersonnel from '../components/admin/AdminPersonnel';
 import AdminSoumissionnaires from '../components/admin/AdminSoumissionnaires';
 import AdminBrouillons from '../components/admin/AdminBrouillons';
 import AdminProjets from '../components/admin/AdminProjets';
+import AdminMobilite from '../components/admin/AdminMobilite';
 
 /* ── Constantes métier ───────────────────────────────────── */
 const COLORS_STATUT = {
@@ -106,7 +107,6 @@ export default function Dashboard({ activeTab = 'apercu', onLogout }) {
   const [programmeMobilite, setProgrammeMobilite] = useState(null);
   const [candidaturesMobiliteCount, setCandidaturesMobiliteCount] = useState(0);
   const [loadingMobilite, setLoadingMobilite] = useState(false);
-  const [isMobiliteModalOpen, setIsMobiliteModalOpen] = useState(false);
 
   const [toast, setToast] = useState({ message: '', type: '' });
   const [overviewFilter, setOverviewFilter] = useState('tous');
@@ -180,11 +180,6 @@ export default function Dashboard({ activeTab = 'apercu', onLogout }) {
       // Création : on l'ajoute au début (avec 0 candidatures par défaut)
       return [{ ...nouvelleCampagne, candidatures_count: 0 }, ...prev];
     });
-  };
-
-  const handleSaveMobiliteSuccess = (nouveauProgramme) => {
-    showToast("Programme Mobilité mis à jour avec succès.");
-    setProgrammeMobilite(nouveauProgramme);
   };
 
   if (loading) return (
@@ -673,71 +668,7 @@ export default function Dashboard({ activeTab = 'apercu', onLogout }) {
              TAB : MOBILITÉ
              ═══════════════════════════════════════════════════ */}
           {activeTab === 'mobilite' && (
-            <div className="content-grid">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '24px' }}>
-                <div>
-                  <h2 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-primary)' }}>Programme Mobilité</h2>
-                  <p style={{ color: 'var(--color-text-secondary)', marginTop: 4 }}>Gérez le programme permanent de mobilité</p>
-                </div>
-                <button 
-                  className="btn-primary" 
-                  style={{ padding: '12px 24px', fontSize: 15, borderRadius: 'var(--radius-md)', background: 'var(--color-orange)', boxShadow: '0 4px 12px rgba(245, 159, 0, 0.3)' }}
-                  onClick={() => setIsMobiliteModalOpen(true)}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                  Configurer le programme
-                </button>
-              </div>
-
-              {loadingMobilite ? (
-                <div className="skeleton" style={{ height: 200, borderRadius: 'var(--radius-md)' }} />
-              ) : programmeMobilite ? (
-                  <div 
-                    className="card animate-fade-in-up" 
-                    style={{ padding: 0, overflow: 'hidden', cursor: 'pointer', display: 'flex', maxWidth: '800px', margin: '0 auto', transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}
-                    onClick={() => navigate(`/admin/mobilite`)}
-                    onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = 'var(--shadow-card-hover)'; }}
-                    onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-md)'; }}
-                  >
-                    <div style={{ width: '40%', background: 'var(--color-bg-body)', position: 'relative', overflow: 'hidden' }}>
-                      {programmeMobilite.image_couverture ? (
-                        <>
-                          <img src={`https://fdcuic-backend-production.up.railway.app/uploads/${programmeMobilite.image_couverture}`} alt={programmeMobilite.titre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(to right, rgba(0,0,0,0.4) 0%, transparent 100%)' }} />
-                        </>
-                      ) : (
-                        <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-tertiary)' }}>
-                          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                        </div>
-                      )}
-                      <span className="badge" style={{ position: 'absolute', top: 16, left: 16, background: programmeMobilite.statut === 'actif' ? 'var(--color-green)' : 'var(--color-red)', color: '#fff', fontSize: 12, fontWeight: 600, boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
-                        {LABEL_STATUT[programmeMobilite.statut] || 'Actif'}
-                      </span>
-                    </div>
-                    <div style={{ padding: '32px', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                      <h3 style={{ fontSize: 22, fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 12, lineHeight: 1.3 }}>{programmeMobilite.titre}</h3>
-                      <p style={{ fontSize: 15, color: 'var(--color-text-secondary)', marginBottom: 24, display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.6 }}>
-                        {programmeMobilite.description}
-                      </p>
-                      
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--color-bg-body)', padding: '16px 20px', borderRadius: '16px', marginTop: 'auto' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                           <div style={{ width: 44, height: 44, borderRadius: '12px', background: 'var(--color-bg-card)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-                           </div>
-                           <div>
-                             <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>Total Candidatures</div>
-                             <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--color-text-primary)' }}>{fmtNum(candidaturesMobiliteCount)}</div>
-                           </div>
-                        </div>
-                        <div style={{ color: 'var(--color-primary)', fontWeight: 600, fontSize: 14, display: 'flex', alignItems: 'center' }}>
-                           Détails <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 6 }}><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-              ) : null}
-            </div>
+            <AdminMobilite />
           )}
 
       <AppelModal 
@@ -745,13 +676,6 @@ export default function Dashboard({ activeTab = 'apercu', onLogout }) {
         onClose={() => setIsModalOpen(false)} 
         onSaveSuccess={handleSaveCampagneSuccess} 
         appel={null}
-      />
-
-      <MobiliteModal
-        isOpen={isMobiliteModalOpen}
-        onClose={() => setIsMobiliteModalOpen(false)}
-        onSaveSuccess={handleSaveMobiliteSuccess}
-        programme={programmeMobilite}
       />
 
       {/* Toast Notification */}

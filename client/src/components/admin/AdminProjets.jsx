@@ -32,6 +32,17 @@ const AdminProjets = () => {
     }
   };
 
+  const handleDelete = async (id) => {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer définitivement cette candidature ?")) {
+      try {
+        await adminService.supprimerDossier(id);
+        fetchDossiers();
+      } catch (err) {
+        alert(err.response?.data?.message || 'Erreur lors de la suppression');
+      }
+    }
+  };
+
   if (loading) return <div className="p-4">Chargement des candidatures...</div>;
   if (error) return <div className="p-4 text-red-500">Erreur : {error}</div>;
 
@@ -73,9 +84,19 @@ const AdminProjets = () => {
                   </span>
                 </td>
                 <td style={{ padding: '14px 12px', textAlign: 'right' }}>
-                  <button className="action-btn primary" title="Voir le dossier">
-                    Voir le dossier
-                  </button>
+                  <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                    <button className="action-btn primary" title="Voir le dossier">
+                      Voir
+                    </button>
+                    <button 
+                      className="action-btn danger" 
+                      title="Supprimer"
+                      onClick={() => handleDelete(dossier.id)}
+                      style={{ background: 'var(--color-red-light)', color: 'var(--color-red)', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, fontSize: 12 }}
+                    >
+                      Supprimer
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

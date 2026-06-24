@@ -119,9 +119,17 @@ const adminService = {
   },
   getCandidaturesMobilite: async (page = 1, search = '', statut = '') => {
     try {
-      const response = await api.get('/admin/mobilite/candidatures', {
+      const response = await api.get('/admin/mobilite', {
         params: { page, search, statut }
       });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  changerStatutMobilite: async (id, statut) => {
+    try {
+      const response = await api.put(`/admin/mobilite/${id}/statut`, { statut });
       return response.data;
     } catch (error) {
       throw error;
@@ -153,6 +161,26 @@ const adminService = {
   },
   getDetailCandidat: async (id) => {
     const res = await api.get(`/admin/candidats/${id}`);
+    return res.data;
+  },
+  getCandidatAppels: async (id) => {
+    const res = await api.get(`/admin/candidats/${id}/appels`);
+    return res.data;
+  },
+  getCandidatMobilites: async (id) => {
+    const res = await api.get(`/admin/candidats/${id}/mobilites`);
+    return res.data;
+  },
+  getCandidatHistorique: async (id) => {
+    const res = await api.get(`/admin/candidats/${id}/historique`);
+    return res.data;
+  },
+  getCandidatNotifications: async (id) => {
+    const res = await api.get(`/admin/candidats/${id}/notifications`);
+    return res.data;
+  },
+  supprimerCandidat: async (id) => {
+    const res = await api.delete(`/admin/candidats/${id}`);
     return res.data;
   },
 
@@ -205,7 +233,51 @@ const adminService = {
   changerStatutDossier: async (id, statut) => {
     const res = await api.put(`/dossiers/${id}/statut`, { statut });
     return res.data;
-  }
+  },
+  supprimerDossier: async (id) => {
+    const res = await api.delete(`/dossiers/${id}`);
+    return res.data;
+  },
+
+  // ── STATS MOBILITÉ & SUPPRESSION ──
+  getStatsMobilite: async () => {
+    const res = await api.get('/admin/mobilite/stats');
+    return res.data;
+  },
+  supprimerCandidatureMobilite: async (id) => {
+    const res = await api.delete(`/admin/mobilite/${id}`);
+    return res.data;
+  },
+
+  // ── DOCUMENT TEMPLATES ──
+  getDocumentTemplatesParType: async (code) => {
+    const res = await api.get(`/admin/types-projet/${code}/documents`);
+    return res.data;
+  },
+  getTousDocumentTemplates: async () => {
+    const res = await api.get('/admin/templates');
+    return res.data;
+  },
+  creerDocumentTemplate: async (data) => {
+    const res = await api.post('/admin/templates', data);
+    return res.data;
+  },
+  modifierDocumentTemplate: async (id, data) => {
+    const res = await api.put(`/admin/templates/${id}`, data);
+    return res.data;
+  },
+  supprimerDocumentTemplate: async (id) => {
+    const res = await api.delete(`/admin/templates/${id}`);
+    return res.data;
+  },
+  uploadFichierTemplate: async (id, file) => {
+    const formData = new FormData();
+    formData.append('fichier', file);
+    const res = await api.post(`/admin/templates/${id}/fichier`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return res.data;
+  },
 };
 
 export default adminService;
