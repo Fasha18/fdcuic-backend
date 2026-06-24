@@ -117,7 +117,22 @@ app.get('/api/run-seeder', async (req, res) => {
       { code: 'evenementiel',  label: 'Événementiel',  nb_etapes: 4 },
       { code: 'mobilite',      label: 'Mobilité',      nb_etapes: 3 },
     ], { ignoreDuplicates: true });
-
+    // Insérer les champs de formulaire (Manquant !)
+    const ChampFormulaire = require('./src/models/ChampFormulaire');
+    const typesCommuns = ['structuration', 'formation', 'evenementiel', 'mobilite'];
+    const champsCommuns = [
+      { nom_champ: 'doc_ninea_recepisse', label: 'NINEA ou Récépissé',  obligatoire: true,  ordre: 1 },
+      { nom_champ: 'doc_cni_passeport',   label: 'CNI ou Passeport',    obligatoire: true,  ordre: 2 },
+      { nom_champ: 'doc_plan_action',     label: "Plan d'action",       obligatoire: false, ordre: 3 },
+      { nom_champ: 'doc_photo_prototype', label: 'Photo ou Prototype',  obligatoire: false, ordre: 4 },
+    ];
+    const champsACreer = [];
+    for (const type of typesCommuns) {
+      for (const champ of champsCommuns) {
+        champsACreer.push({ type_projet: type, type_champ: 'fichier', ...champ });
+      }
+    }
+    await ChampFormulaire.bulkCreate(champsACreer, { ignoreDuplicates: true });
     // Insérer les templates
     const DocumentTemplate = require('./src/models/DocumentTemplate');
     await DocumentTemplate.bulkCreate([

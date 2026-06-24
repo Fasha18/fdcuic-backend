@@ -58,7 +58,7 @@ const DocumentTemplate = sequelize.define('DocumentTemplate', {
   indexes: [
     {
       unique: true,
-      fields: ['nom_document']
+      fields: ['type_projet_code', 'nom_document']
     }
   ]
 });
