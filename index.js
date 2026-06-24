@@ -83,7 +83,53 @@ try {
   console.error('ERREUR CHARGEMENT ROUTES:', err.message);
 }
 
-// ── Démarrage serveur ──
+// ── Route cachée pour exécuter le seeder en production ──
+app.get('/api/run-seeder', async (req, res) => {
+  try {
+    const { sequelize } = require('./src/models/index');
+    await sequelize.authenticate();
+    await sequelize.sync();
+    
+    // Insérer les secteurs et types
+    const SecteurActivite = require('./src/models/SecteurActivite');
+    const TypeProjet = require('./src/models/TypeProjet');
+    await SecteurActivite.bulkCreate([
+      { code: 'claque',        nom: 'Claque',         icone: 'music_note' },
+      { code: 'danse_urbaine', nom: 'Danse urbaine',  icone: 'theater_comedy' },
+      { code: 'conception',    nom: 'Conception',     icone: 'directions_run' },
+      { code: 'sport_de_rue',  nom: 'Sport de rue',   icone: 'palette' },
+      { code: 'art_vivant',    nom: 'Art vivant',     icone: 'book' },
+      { code: 'mode',          nom: 'Mode',           icone: 'movie' },
+      { code: 'hiphop',        nom: 'Hip-hop',        icone: 'landscape' },
+      { code: 'graffiti',      nom: 'Graffiti',       icone: 'celebration' },
+    ], { ignoreDuplicates: true });
+    
+    await TypeProjet.bulkCreate([
+      { code: 'structuration', label: 'Structuration', nb_etapes: 4 },
+      { code: 'formation',     label: 'Formation',     nb_etapes: 4 },
+      { code: 'evenementiel',  label: 'Événementiel',  nb_etapes: 4 },
+      { code: 'mobilite',      label: 'Mobilité',      nb_etapes: 3 },
+    ], { ignoreDuplicates: true });
+
+    // Insérer les templates
+    const DocumentTemplate = require('./src/models/DocumentTemplate');
+    await DocumentTemplate.bulkCreate([
+      { type_projet_code: 'structuration', nom_document: 'Business Model Canvas', obligatoire: true, section_etape: 'etape_4' },
+      { type_projet_code: 'structuration', nom_document: 'Budget prévisionnel', obligatoire: true, section_etape: 'etape_4' },
+      { type_projet_code: 'structuration', nom_document: 'Analyse financière', obligatoire: true, section_etape: 'etape_4' },
+      { type_projet_code: 'formation', nom_document: 'Budget prévisionnel', obligatoire: true, section_etape: 'etape_4' },
+      { type_projet_code: 'evenementiel', nom_document: 'Budget prévisionnel', obligatoire: true, section_etape: 'etape_4' },
+      { type_projet_code: 'mobilite', nom_document: 'Budget prévisionnel', obligatoire: true, section_etape: 'etape_3' }
+    ], { ignoreDuplicates: true });
+
+    res.json({ success: true, message: 'Seeder exécuté avec succès.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Gestion des erreurs ──
+
 const PORT = parseInt(process.env.PORT, 10) || 8000;
 
 // IMPORTANT : Démarrer le serveur HTTP IMMÉDIATEMENT, puis connecter la DB après
