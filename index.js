@@ -119,12 +119,12 @@ app.get('/api/run-seeder', async (req, res) => {
     // Insérer les templates
     const DocumentTemplate = require('./src/models/DocumentTemplate');
     await DocumentTemplate.bulkCreate([
-      { type_projet_code: 'structuration', nom_document: 'Business Model Canvas', obligatoire: true, section_etape: 'etape_4' },
-      { type_projet_code: 'structuration', nom_document: 'Budget prévisionnel', obligatoire: true, section_etape: 'etape_4' },
-      { type_projet_code: 'structuration', nom_document: 'Analyse financière', obligatoire: true, section_etape: 'etape_4' },
-      { type_projet_code: 'formation', nom_document: 'Budget prévisionnel', obligatoire: true, section_etape: 'etape_4' },
-      { type_projet_code: 'evenementiel', nom_document: 'Budget prévisionnel', obligatoire: true, section_etape: 'etape_4' },
-      { type_projet_code: 'mobilite', nom_document: 'Budget prévisionnel', obligatoire: true, section_etape: 'etape_3' }
+      { type_projet_code: 'structuration', nom_document: 'business_model_canvas',  label: 'Business Model Canvas',  obligatoire: true, section_etape: 'etape_4' },
+      { type_projet_code: 'structuration', nom_document: 'budget_previsionnel',    label: 'Budget prévisionnel',    obligatoire: true, section_etape: 'etape_4' },
+      { type_projet_code: 'structuration', nom_document: 'analyse_financiere',     label: 'Analyse financière',     obligatoire: true, section_etape: 'etape_4' },
+      { type_projet_code: 'formation',     nom_document: 'budget_previsionnel',    label: 'Budget prévisionnel',    obligatoire: true, section_etape: 'etape_4' },
+      { type_projet_code: 'evenementiel',  nom_document: 'budget_previsionnel',    label: 'Budget prévisionnel',    obligatoire: true, section_etape: 'etape_4' },
+      { type_projet_code: 'mobilite',      nom_document: 'budget_previsionnel',    label: 'Budget prévisionnel',    obligatoire: true, section_etape: 'etape_3' }
     ], { ignoreDuplicates: true });
 
     // Créer l'admin par défaut
