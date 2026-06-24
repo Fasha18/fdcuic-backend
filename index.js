@@ -22,8 +22,17 @@ app.get('/api/debug-logs', (req, res) => {
 });
 
 
-// ── CORS ouvert (accepte les requêtes de partout : mobile, web, etc.) ──
-app.use(cors());
+// ── CORS explicite — Railway exige des headers manuels pour le preflight OPTIONS ──
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Max-Age', '86400');
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+  next();
+});
 
 // ── Middlewares globaux ──
 app.use(express.json());
