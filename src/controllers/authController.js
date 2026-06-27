@@ -1,8 +1,9 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const { Op } = require('sequelize');
 const { User } = require('../models/index');
-const { envoyerEmailActivation } = require('../services/emailService');
+const { envoyerEmailActivation, envoyerEmailResetPassword } = require('../services/emailService');
 
 // ── INSCRIPTION ───────────────────────────────────────────
 const inscription = async (req, res) => {
@@ -12,69 +13,44 @@ const inscription = async (req, res) => {
       mot_de_passe, confirmation_mot_de_passe,
     } = req.body;
 
-    // Vérifier la confirmation du mot de passe
     if (mot_de_passe !== confirmation_mot_de_passe) {
-      return res.status(400).json({
-        message: 'Les mots de passe ne correspondent pas.'
-      });
+      return res.status(400).json({ message: 'Les mots de passe ne correspondent pas.' });
     }
-
-    // Vérifier longueur minimale
     if (mot_de_passe.length < 8) {
-      return res.status(400).json({
-        message: 'Le mot de passe doit contenir au moins 8 caractères.'
-      });
+      return res.status(400).json({ message: 'Le mot de passe doit contenir au moins 8 caractères.' });
     }
 
-    // Vérifier format téléphone sénégalais
     const phoneRegex = /^(\+221|00221)?[7][0|5|6|7|8][0-9]{7}$/;
     if (!phoneRegex.test(telephone)) {
-      return res.status(400).json({
-        message: 'Numéro de téléphone sénégalais invalide.'
-      });
+      return res.status(400).json({ message: 'Numéro de téléphone sénégalais invalide.' });
     }
 
-    // Vérifier si l'email existe déjà
     const userExistant = await User.findOne({ where: { email } });
     if (userExistant) {
-      return res.status(400).json({
-        message: 'Cet email est déjà utilisé.'
-      });
+      return res.status(400).json({ message: 'Cet email est déjà utilisé.' });
     }
 
-    // Hacher le mot de passe
     const mot_de_passe_hash = await bcrypt.hash(mot_de_passe, 12);
-
-    // Générer le token d'activation unique
     const token_activation = crypto.randomBytes(32).toString('hex');
 
-    // Créer le compte (non activé)
     const user = await User.create({
-      nom,
-      prenom,
-      email,
-      telephone,
+      nom, prenom, email, telephone,
       mot_de_passe_hash,
       role: 'candidat',
       est_active: false,
       token_activation,
     });
 
-    // Envoi de l'email en arrière-plan (sans await) pour ne pas bloquer la réponse au frontend
     envoyerEmailActivation(user.email, user.prenom, user.token_activation)
       .catch(emailError => console.error('Erreur asynchrone envoi email:', emailError.message));
 
-    // Ensuite retourne le succès
     return res.status(201).json({
       message: 'Inscription réussie ! Vérifiez votre email pour activer votre compte.',
       userId: user.id
     });
 
   } catch (error) {
-    return res.status(500).json({
-      message: 'Erreur serveur.',
-      error: error.message
-    });
+    return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
   }
 };
 
@@ -82,30 +58,17 @@ const inscription = async (req, res) => {
 const activerCompte = async (req, res) => {
   try {
     const { token } = req.params;
-
-    const user = await User.findOne({
-      where: { token_activation: token }
-    });
+    const user = await User.findOne({ where: { token_activation: token } });
 
     if (!user) {
-      return res.status(400).json({
-        message: 'Lien d\'activation invalide ou expiré.'
-      });
+      return res.status(400).json({ message: "Lien d'activation invalide ou expiré." });
     }
-
     if (user.est_active) {
-      return res.status(400).json({
-        message: 'Ce compte est déjà activé. Vous pouvez vous connecter.'
-      });
+      return res.status(400).json({ message: 'Ce compte est déjà activé. Vous pouvez vous connecter.' });
     }
 
-    // Activer le compte
-    await user.update({
-      est_active: true,
-      token_activation: null,
-    });
+    await user.update({ est_active: true, token_activation: null });
 
-    // Rediriger vers une page de succès
     return res.send(`
       <html>
         <head>
@@ -138,10 +101,7 @@ const activerCompte = async (req, res) => {
     `);
 
   } catch (error) {
-    return res.status(500).json({
-      message: 'Erreur serveur.',
-      error: error.message
-    });
+    return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
   }
 };
 
@@ -152,27 +112,20 @@ const connexion = async (req, res) => {
 
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(401).json({
-        message: 'Email ou mot de passe incorrect.'
-      });
+      return res.status(401).json({ message: 'Email ou mot de passe incorrect.' });
     }
 
-    // Vérifier si le compte est activé
     if (!user.est_active) {
       return res.status(403).json({
-        message: 'Compte non activé. Veuillez vérifier votre email et cliquer sur le lien d\'activation.'
+        message: "Compte non activé. Veuillez vérifier votre email et cliquer sur le lien d'activation."
       });
     }
 
-    // Vérifier le mot de passe
     const motDePasseValide = await bcrypt.compare(mot_de_passe, user.mot_de_passe_hash);
     if (!motDePasseValide) {
-      return res.status(401).json({
-        message: 'Email ou mot de passe incorrect.'
-      });
+      return res.status(401).json({ message: 'Email ou mot de passe incorrect.' });
     }
 
-    // Générer le token JWT
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
@@ -193,11 +146,102 @@ const connexion = async (req, res) => {
     });
 
   } catch (error) {
-    return res.status(500).json({
-      message: 'Erreur serveur.',
-      error: error.message
-    });
+    return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
   }
 };
 
-module.exports = { inscription, activerCompte, connexion };
+// ── DEMANDE DE RÉINITIALISATION MOT DE PASSE ─────────────
+// POST /api/auth/reset-password
+const demanderResetPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'L\'email est requis.' });
+    }
+
+    const user = await User.findOne({ where: { email } });
+
+    // ⚠️ Toujours retourner 200 pour ne pas révéler si l'email existe
+    if (!user) {
+      return res.status(200).json({
+        message: 'Si cet email existe, un lien de réinitialisation a été envoyé.',
+      });
+    }
+
+    // Générer un token sécurisé valable 1 heure
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // +1 heure
+
+    await user.update({
+      reset_token: resetToken,
+      reset_token_expiry: resetTokenExpiry,
+    });
+
+    // Envoi de l'email en arrière-plan
+    envoyerEmailResetPassword(user.email, user.prenom, resetToken)
+      .catch(err => console.error('Erreur email reset:', err.message));
+
+    return res.status(200).json({
+      message: 'Si cet email existe, un lien de réinitialisation a été envoyé.',
+    });
+
+  } catch (error) {
+    return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
+  }
+};
+
+// ── CONFIRMATION RÉINITIALISATION MOT DE PASSE ───────────
+// POST /api/auth/reset-password/confirmer
+const confirmerResetPassword = async (req, res) => {
+  try {
+    const { token, nouveau_mot_de_passe, confirmation_mot_de_passe } = req.body;
+
+    if (!token || !nouveau_mot_de_passe) {
+      return res.status(400).json({ message: 'Token et nouveau mot de passe requis.' });
+    }
+
+    if (nouveau_mot_de_passe !== confirmation_mot_de_passe) {
+      return res.status(400).json({ message: 'Les mots de passe ne correspondent pas.' });
+    }
+
+    if (nouveau_mot_de_passe.length < 8) {
+      return res.status(400).json({ message: 'Le mot de passe doit contenir au moins 8 caractères.' });
+    }
+
+    // Trouver l'utilisateur avec ce token non expiré
+    const user = await User.findOne({
+      where: {
+        reset_token: token,
+        reset_token_expiry: { [Op.gt]: new Date() }, // token non expiré
+      },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        message: 'Lien de réinitialisation invalide ou expiré. Faites une nouvelle demande.',
+      });
+    }
+
+    // Hacher le nouveau mot de passe et effacer le token
+    const mot_de_passe_hash = await bcrypt.hash(nouveau_mot_de_passe, 12);
+    await user.update({
+      mot_de_passe_hash,
+      reset_token: null,
+      reset_token_expiry: null,
+    });
+
+    return res.status(200).json({ message: 'Mot de passe réinitialisé avec succès ! Vous pouvez vous connecter.' });
+
+  } catch (error) {
+    return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
+  }
+};
+
+module.exports = {
+  inscription,
+  activerCompte,
+  connexion,
+  demanderResetPassword,
+  confirmerResetPassword,
+};

@@ -8,17 +8,17 @@ const User = sequelize.define('User', {
         autoIncrement: true,
     },
     nom: {
-    type: DataTypes.STRING(100),
-    allowNull: false,
-  },
-   prenom: {
-    type: DataTypes.STRING(100),
-    allowNull: false,
-  },
-  telephone: {
-  type: DataTypes.STRING(20),
-  allowNull: true,
-},
+      type: DataTypes.STRING(100),
+      allowNull: false,
+    },
+    prenom: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+    },
+    telephone: {
+      type: DataTypes.STRING(20),
+      allowNull: true,
+    },
     email: {
         type: DataTypes.STRING(150),
         allowNull: false,
@@ -33,23 +33,32 @@ const User = sequelize.define('User', {
         allowNull: false,
         defaultValue: 'candidat',
     },
-
     est_active: {
-  type: DataTypes.BOOLEAN,
-  defaultValue: false,
-  comment: 'Compte activé via email ou non',
-},
-token_activation: {
-  type: DataTypes.STRING,
-  allowNull: true,
-  comment: 'Token unique envoyé par email pour activation',
-},
-
- },
- {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      comment: 'Compte activé via email ou non',
+    },
+    token_activation: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Token unique envoyé par email pour activation',
+    },
+    // ── RESET MOT DE PASSE ──────────────────────────────────
+    reset_token: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      comment: 'Token de réinitialisation de mot de passe',
+    },
+    reset_token_expiry: {
+      type: DataTypes.DATE,
+      allowNull: true,
+      comment: "Date d'expiration du token de réinitialisation (1 heure)",
+    },
+  },
+  {
     tableName: 'user',
     timestamps: false,
-    
-    
   }
-);module.exports = User;
+);
+
+module.exports = User;

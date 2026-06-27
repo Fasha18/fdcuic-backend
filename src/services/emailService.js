@@ -158,6 +158,26 @@ const templateEmail = (prenom, titre, contenu) => `
 </html>
 `;
 
+const envoyerEmailResetPassword = async (email, prenom, token) => {
+  const lien = `${process.env.FRONTEND_URL || 'https://fdcuic-backend-production.up.railway.app'}/reset-password?token=${token}`;
+
+  const html = templateEmail(prenom, '', `
+    <p>Vous avez demandé la réinitialisation de votre mot de passe sur FDCUIC.</p>
+    <p>Cliquez sur le bouton ci-dessous pour créer un nouveau mot de passe :</p>
+    <p style="text-align:center; margin: 28px 0;">
+      <a href="${lien}" style="display:inline-block;background:#4F6AF6;color:white;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:15px;">
+        🔐 Réinitialiser mon mot de passe
+      </a>
+    </p>
+    <p style="color:#888; font-size:13px;">
+      ⏱️ Ce lien est valable <strong>1 heure</strong> seulement.<br/>
+      Si vous n'avez pas demandé cette réinitialisation, ignorez cet email — votre compte reste sécurisé.
+    </p>
+  `);
+
+  await sendBrevoEmail(email, prenom, '🔐 Réinitialisation de mot de passe — FDCUIC', html);
+};
+
 const envoyerEmailNotification = async (email, prenom, sujet, contenu) => {
   const html = templateEmail(prenom, '', contenu);
   await sendBrevoEmail(email, prenom, sujet, html);
@@ -168,4 +188,5 @@ module.exports = {
   envoyerEmailSoumission,
   envoyerEmailStatut,
   envoyerEmailNotification,
+  envoyerEmailResetPassword,
 };

@@ -107,46 +107,54 @@ const detailSubvention = async (req, res) => {
   }
 };
 
-// GET /api/subventions — Liste de toutes les subventions avec stats
+// GET /api/subventions — Liste paginée avec filtres et stats
 const getAllSubventions = async (req, res) => {
   try {
-    const subventions = await Subvention.findAll({
+    const { Op } = require('sequelize');
+    const page       = Math.max(1,   parseInt(req.query.page)  || 1);
+    const limit      = Math.min(100, parseInt(req.query.limit) || 20);
+    const offset     = (page - 1) * limit;
+    const statut     = req.query.statut;     // en_attente | verse | annule
+    const dateDebut  = req.query.date_debut;
+    const dateFin    = req.query.date_fin;
+
+    // Filtres
+    const where = {};
+    if (statut && ['en_attente', 'verse', 'annule'].includes(statut)) {
+      where.statut_paiement = statut;
+    }
+    if (dateDebut || dateFin) {
+      where.createdAt = {};
+      if (dateDebut) where.createdAt[Op.gte] = new Date(dateDebut);
+      if (dateFin)   where.createdAt[Op.lte] = new Date(dateFin);
+    }
+
+    // Requête paginée
+    const { count, rows: subventions } = await Subvention.findAndCountAll({
+      where,
       include: [{
         model: Projet,
         as: 'projet',
         attributes: ['id', 'titre', 'statut', 'type_projet'],
         include: [{ model: User, as: 'candidat', attributes: ['id', 'nom', 'prenom', 'email'] }]
       }],
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
+      limit,
+      offset,
     });
 
-    const total = subventions.length;
-    const montant_total = subventions.reduce((sum, s) => sum + Number(s.montant), 0);
-    const montant_verse = subventions.filter(s => s.statut_paiement === 'verse').reduce((sum, s) => sum + Number(s.montant), 0);
-    const montant_en_attente = subventions.filter(s => s.statut_paiement === 'en_attente').reduce((sum, s) => sum + Number(s.montant), 0);
-    
-    // Projets acceptés sans subvention
-    const projetsAcceptesSansSubvention = await Projet.count({
-      where: { statut: 'accepte' },
-      include: [{
-        model: Subvention,
-        as: 'subvention',
-        required: false
-      }],
-      having: sequelize.where(sequelize.col('subvention.id'), 'IS', null)
-    });
+    // Stats globales (sans filtre pagination)
+    const toutesSubventions  = await Subvention.findAll({ attributes: ['montant', 'statut_paiement'] });
+    const montant_total      = toutesSubventions.reduce((s, x) => s + Number(x.montant), 0);
+    const montant_verse      = toutesSubventions.filter(x => x.statut_paiement === 'verse').reduce((s, x) => s + Number(x.montant), 0);
+    const montant_en_attente = toutesSubventions.filter(x => x.statut_paiement === 'en_attente').reduce((s, x) => s + Number(x.montant), 0);
 
     return res.status(200).json({
       message: 'Liste des subventions récupérée avec succès.',
       data: {
         subventions,
-        stats: {
-          total,
-          montant_total,
-          montant_verse,
-          montant_en_attente,
-          projets_attente_subvention: projetsAcceptesSansSubvention
-        }
+        pagination: { total: count, page, limit, totalPages: Math.ceil(count / limit) },
+        stats: { total: toutesSubventions.length, montant_total, montant_verse, montant_en_attente },
       }
     });
 

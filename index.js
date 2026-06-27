@@ -22,11 +22,23 @@ app.get('/api/debug-logs', (req, res) => {
 });
 
 
-// ── CORS explicite — Railway exige des headers manuels pour le preflight OPTIONS ──
+// ── CORS — Origines autorisées ────────────────────────────
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',   // Vite dev
+  'http://localhost:3000',   // Dev local
+  'https://fdcuic-backend-production.up.railway.app', // Railway prod
+  process.env.FRONTEND_URL,  // Domaine frontend custom (ex: https://mon-site.com)
+].filter(Boolean);
+
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  // En dev on autorise tout, en prod on vérifie la whitelist
+  if (process.env.NODE_ENV !== 'production' || !origin || ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+  }
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Max-Age', '86400');
   if (req.method === 'OPTIONS') {
     return res.status(204).end();
