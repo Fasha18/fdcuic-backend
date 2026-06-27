@@ -16,6 +16,8 @@ const TABS = [
   { id: 'secteurs', label: 'Secteurs d\'activité' },
   { id: 'notifications-admin', label: 'Notifications' },
   { id: 'statistiques', label: 'Statistiques' },
+  { id: 'finances', label: 'Finances' },
+  { id: 'faqs', label: 'Gestion FAQs' },
   { id: 'legal', label: 'Paramètres légaux' },
   { id: 'parametres', label: 'Paramètres compte' },
 ];
@@ -40,6 +42,7 @@ export default function AdminLayout({ onLogout }) {
     else if (path.startsWith('/admin/notifications-admin') || path.startsWith('/admin/notifications')) setActiveTab('notifications-admin');
     else if (path.startsWith('/admin/statistiques')) setActiveTab('statistiques');
     else if (path.startsWith('/admin/finances')) setActiveTab('finances');
+    else if (path.startsWith('/admin/faqs')) setActiveTab('faqs');
     else if (path.startsWith('/admin/legal')) setActiveTab('legal');
     else if (path.startsWith('/admin/profil') || path.startsWith('/admin/parametres')) setActiveTab('parametres');
   }, [location.pathname]);

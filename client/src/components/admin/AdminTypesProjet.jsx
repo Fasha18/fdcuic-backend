@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import adminService from '../../services/adminService';
 import ChampModal from './ChampModal';
+import AdminDocumentsTemplates from './AdminDocumentsTemplates';
 
 const TYPE_CONFIG = {
   structuration: { emoji: '🏗️', color: 'var(--color-primary)', bg: 'var(--color-primary-light)', desc: 'Développement organisationnel des structures' },
@@ -374,102 +375,7 @@ const AdminTypesProjet = () => {
 
           {/* ── ONGLET DOCUMENTS & TEMPLATES ── */}
           {activeTab === 'documents' && (
-            <div>
-              {loadingDocs ? (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                  {[1,2,3].map(n => <div key={n} className="skeleton" style={{ height: 180, borderRadius: 12 }} />)}
-                </div>
-              ) : documents.length === 0 ? (
-                <div className="card" style={{ padding: 48, textAlign: 'center' }}>
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-tertiary)" strokeWidth="1.5" style={{ margin: '0 auto 12px', display: 'block' }}>
-                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
-                  </svg>
-                  <p style={{ color: 'var(--color-text-tertiary)', fontWeight: 600 }}>Aucun template configuré pour ce type de projet.</p>
-                  <p style={{ color: 'var(--color-text-tertiary)', fontSize: 13, marginTop: 4 }}>Lancez le seeder pour créer les templates initiaux.</p>
-                </div>
-              ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                  {documents.map(doc => (
-                    <div key={doc.id} className="card" style={{ padding: 20, border: '1px solid var(--color-border)', borderLeft: `4px solid ${doc.obligatoire ? 'var(--color-primary)' : 'var(--color-border)'}` }}>
-                      {/* Header */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                        <div>
-                          <span style={{
-                            fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 4, marginBottom: 6, display: 'inline-block',
-                            background: doc.obligatoire ? 'var(--color-primary-light)' : 'var(--color-bg-body)',
-                            color: doc.obligatoire ? 'var(--color-primary)' : 'var(--color-text-tertiary)',
-                            textTransform: 'uppercase', letterSpacing: '0.5px'
-                          }}>
-                            {doc.obligatoire ? 'OBLIGATOIRE' : 'OPTIONNEL'}
-                          </span>
-                          <h4 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>{doc.label}</h4>
-                        </div>
-                        {/* Statut fichier */}
-                        <span style={{
-                          fontSize: 10, fontWeight: 600, padding: '3px 8px', borderRadius: 4,
-                          background: doc.a_fichier ? 'var(--color-green-light)' : 'var(--color-orange-light)',
-                          color: doc.a_fichier ? 'var(--color-green)' : 'var(--color-orange)',
-                        }}>
-                          {doc.a_fichier ? '✓ Fichier OK' : '⚠ Sans fichier'}
-                        </span>
-                      </div>
-
-                      {/* Description */}
-                      {doc.description && (
-                        <p style={{ fontSize: 12, color: 'var(--color-text-secondary)', marginBottom: 10, lineHeight: 1.5 }}>
-                          {doc.description.length > 100 ? doc.description.substring(0, 100) + '...' : doc.description}
-                        </p>
-                      )}
-
-                      {/* Sections */}
-                      {doc.sections && doc.sections.length > 0 && (
-                        <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', marginBottom: 12 }}>
-                          {doc.sections.length} section{doc.sections.length > 1 ? 's' : ''} : {doc.sections.map(s => s.titre).join(', ').substring(0, 60)}...
-                        </div>
-                      )}
-
-                      {/* Actions */}
-                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
-                        {doc.a_fichier && (
-                          <a
-                            href={doc.lien_template}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{
-                              padding: '6px 12px', borderRadius: 8, border: '1px solid var(--color-primary)',
-                              background: 'var(--color-primary-light)', color: 'var(--color-primary)',
-                              fontSize: 11, fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 4
-                            }}
-                          >
-                            ↓ Télécharger template
-                          </a>
-                        )}
-                        <label style={{
-                          padding: '6px 12px', borderRadius: 8, border: '1px solid var(--color-border)',
-                          background: 'var(--color-bg-card)', color: 'var(--color-text-secondary)',
-                          fontSize: 11, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4
-                        }}>
-                          {uploadingDoc === doc.id ? '⟳ Upload...' : '↑ Uploader fichier'}
-                          <input type="file" accept=".pdf,.xlsx,.xls,.docx,.doc" style={{ display: 'none' }}
-                            onChange={e => e.target.files?.[0] && handleUploadFichierTemplate(doc.id, e.target.files[0])}
-                          />
-                        </label>
-                        <button
-                          onClick={() => setConfirmDeleteDoc(doc.id)}
-                          style={{
-                            padding: '6px 10px', borderRadius: 8, border: '1px solid var(--color-border)',
-                            background: 'var(--color-bg-card)', color: 'var(--color-red)',
-                            fontSize: 11, fontWeight: 600, cursor: 'pointer'
-                          }}
-                        >
-                          🗑
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <AdminDocumentsTemplates typeCode={selectedType.code} />
           )}
         </div>
       ) : (

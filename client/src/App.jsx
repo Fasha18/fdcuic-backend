@@ -17,6 +17,8 @@ import AdminTypesProjet from './components/admin/AdminTypesProjet';
 import AdminSecteurs from './components/admin/AdminSecteurs';
 import AdminFinances from './components/admin/AdminFinances';
 import AdminNotifications from './components/admin/AdminNotifications';
+import AdminFAQs from './components/admin/AdminFAQs';
+import AdminLegal from './components/admin/AdminLegal';
 
 import CandidatDashboardNew from './pages/CandidatDashboardNew';
 import CandidatAppels from './pages/CandidatAppels';
@@ -84,6 +86,8 @@ function App() {
                 <Route path="secteurs" element={<AdminSecteurs />} />
                 <Route path="finances" element={<AdminFinances />} />
                 <Route path="notifications-admin" element={<AdminNotifications />} />
+                <Route path="faqs" element={<AdminFAQs />} />
+                <Route path="legal" element={<AdminLegal />} />
                 <Route path="profil" element={<Profile onLogout={handleLogout} />} />
                 
                 {/* Routes de détails spécifiques (sans Dashboard wrapper) */}

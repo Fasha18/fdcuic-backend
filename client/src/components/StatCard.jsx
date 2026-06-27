@@ -118,31 +118,31 @@ const StatCard = ({ label, value, sub, icon = 'chart', accent = 'blue', delay = 
   return (
     <div
       className="stat-card animate-fade-in-up"
-      style={{ animationDelay: `${delay * 0.06}s` }}
+      style={{
+        animationDelay: `${delay * 0.06}s`,
+        borderLeftColor: colors.color,
+      }}
     >
-      <div style={{
-        position: 'absolute', top: 0, left: 0, right: 0,
-        height: 3, background: colors.gradient,
-        borderRadius: 'var(--radius-lg) var(--radius-lg) 0 0',
-      }} />
-
+      {/* Label — haut de la carte */}
       <div className="stat-card-header">
         <span className="stat-card-label">{label}</span>
+      </div>
+
+      {/* Corps — valeur à gauche, icône à droite */}
+      <div className="stat-card-body">
+        <div>
+          <div className="stat-card-value">{value}</div>
+          {sub && (
+            <div className="stat-card-sub">{sub}</div>
+          )}
+        </div>
         <div
           className="stat-card-icon"
-          style={{ background: colors.bg, color: colors.color }}
+          style={{ color: colors.color }}
         >
           {iconSvg}
         </div>
       </div>
-
-      <div className="stat-card-value">{value}</div>
-
-      {sub && (
-        <div className="stat-card-sub">
-          {sub}
-        </div>
-      )}
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import StatCard from '../StatCard';
 import DataTable from '../DataTable';
-import axios from 'axios';
+import api from '../../api/axios';
 
 const LABEL_STATUT_PAIEMENT = {
   en_attente: 'En attente',
@@ -41,10 +41,7 @@ const AdminFinances = () => {
   const fetchSubventions = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const res = await axios.get('https://fdcuic-backend-production.up.railway.app/api/admin/subventions', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get('/admin/subventions');
       setSubventions(res.data.data.subventions);
       setStats(res.data.data.stats);
       setLoading(false);
@@ -58,10 +55,7 @@ const AdminFinances = () => {
     if (!window.confirm(`Confirmez-vous le passage au statut "${LABEL_STATUT_PAIEMENT[newStatut]}" ?`)) return;
     try {
       setUpdating(true);
-      const token = localStorage.getItem('token');
-      await axios.put(`https://fdcuic-backend-production.up.railway.app/api/admin/subventions/${id}`, { statut_paiement: newStatut }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.put(`/admin/subventions/${id}`, { statut_paiement: newStatut });
       await fetchSubventions();
     } catch (err) {
       alert("Erreur lors de la mise à jour: " + (err.response?.data?.message || err.message));
