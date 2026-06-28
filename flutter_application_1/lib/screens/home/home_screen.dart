@@ -347,17 +347,111 @@ class _HomeDashboardState extends State<_HomeDashboard> with TickerProviderState
 
     final cards = _carouselCards;
 
-    return SingleChildScrollView(
+    return CustomScrollView(
       physics: const BouncingScrollPhysics(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // ── HEADER VIVANT (Image animée) ─────────────
-          _buildLivingHeader(),
+      slivers: [
+        // ── NOUVEAU HEADER (Sticky) ─────────────
+        SliverAppBar(
+          expandedHeight: 210.0,
+          floating: false,
+          pinned: true,
+          backgroundColor: FDColors.navy,
+          elevation: 0,
+          title: const Text(
+            'FDCUIC',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.w900,
+              color: FDColors.white,
+              letterSpacing: 1.5,
+            ),
+          ),
+          actions: [
+            GestureDetector(
+              onTap: () => Navigator.pushNamed(context, AppRoutes.notifs),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    margin: const EdgeInsets.only(right: 16),
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: FDColors.white.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: FDColors.white.withValues(alpha: 0.2)),
+                    ),
+                    child: const Icon(Icons.notifications_outlined, color: FDColors.white, size: 22),
+                  ),
+                  if (_notifCount > 0)
+                    Positioned(
+                      right: 16,
+                      top: 10,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: const BoxDecoration(
+                          color: FDColors.coral,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          _notifCount > 9 ? '9+' : '$_notifCount',
+                          style: const TextStyle(
+                            color: FDColors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+          flexibleSpace: FlexibleSpaceBar(
+            background: Container(
+              decoration: const BoxDecoration(
+                gradient: FDGradients.header,
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 60, 20, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        'Bonjour ${_user?['prenom'] ?? ''} 👋',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          color: FDColors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Votre espace candidat est prêt. Suivez vos dossiers et découvrez de nouvelles opportunités.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: FDColors.white.withValues(alpha: 0.9),
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
 
-          const SizedBox(height: 24),
+        // ── CONTENU DE LA PAGE ─────────────
+        SliverToBoxAdapter(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 24),
 
-          // ── CAROUSEL HORIZONTAL ──────────
+              // ── CAROUSEL HORIZONTAL ──────────
           SizedBox(
             height: 180, // Hauteur des cartes
             child: PageView.builder(
@@ -426,159 +520,15 @@ class _HomeDashboardState extends State<_HomeDashboard> with TickerProviderState
             child: _buildAppelsList(),
           ),
 
-          SizedBox(height: MediaQuery.of(context).padding.bottom + 100),
-        ],
-      ),
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 100),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
-  // ────────────────────────────────────────────
-  //  HEADER VIVANT (Image de fond + Animation)
-  // ────────────────────────────────────────────
-  Widget _buildLivingHeader() {
-    return SizedBox(
-      height: 260,
-      width: double.infinity,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // 1. Image de fond avec effet de respiration (zoom léger)
-          AnimatedBuilder(
-            animation: _breathingController,
-            builder: (context, child) {
-              // Scale de 1.0 à 1.05
-              final scale = 1.0 + (_breathingController.value * 0.05);
-              return Transform.scale(
-                scale: scale,
-                child: child,
-              );
-            },
-            child: Image.asset(
-              'assets/images/header_bg.png',
-              fit: BoxFit.cover,
-            ),
-          ),
-          
-          // 2. Dégradé sombre pour lisibilité
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  FDColors.navy.withValues(alpha: 0.6),
-                  FDColors.navy.withValues(alpha: 0.3),
-                  FDColors.skyBg,
-                ],
-                stops: const [0.0, 0.6, 1.0],
-              ),
-            ),
-          ),
 
-          // 3. Contenu (FDCUIC, cloche, et Bonjour)
-          SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Logo + Notifs
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'FDCUIC',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                          color: FDColors.white,
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => Navigator.pushNamed(context, AppRoutes.notifs),
-                        child: Stack(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: FDColors.white.withValues(alpha: 0.15),
-                                shape: BoxShape.circle,
-                                border: Border.all(color: FDColors.white.withValues(alpha: 0.2)),
-                              ),
-                              child: const Icon(Icons.notifications_outlined, color: FDColors.white, size: 22),
-                            ),
-                            if (_notifCount > 0)
-                              Positioned(
-                                right: 0, top: 0,
-                                child: Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: const BoxDecoration(
-                                    color: FDColors.coral,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: Text(
-                                    _notifCount > 9 ? '9+' : '$_notifCount',
-                                    style: const TextStyle(
-                                      color: FDColors.white,
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Spacer(),
-                  // Texte Bonjour (Bannière intégrée au header)
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: FDColors.navy.withValues(alpha: 0.4),
-                          border: Border.all(color: FDColors.white.withValues(alpha: 0.15), width: 0.5),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Bonjour ${_user?['prenom'] ?? ''} 👋',
-                              style: const TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.w800,
-                                color: FDColors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Votre espace candidat est prêt. Suivez vos dossiers et découvrez de nouvelles opportunités.',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: FDColors.white.withValues(alpha: 0.8),
-                                height: 1.4,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   // ────────────────────────────────────────────
   //  CAROUSEL CARD

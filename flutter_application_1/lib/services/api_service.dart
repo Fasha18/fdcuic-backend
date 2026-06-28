@@ -111,7 +111,7 @@ class ApiService {
   // ── APPELS À PROJETS ──────────────────────────────────
   static Future<List<dynamic>> getAppelsOuverts() async {
     final res = await http.get(
-      Uri.parse('$baseUrl/api/appels'),
+      Uri.parse('$baseUrl/api/appels?t=${DateTime.now().millisecondsSinceEpoch}'),
       headers: await _headers(auth: false),
     );
     if (res.statusCode == 200) {
@@ -128,7 +128,7 @@ class ApiService {
 
   static Future<List<dynamic>> getTousLesAppels() async {
     final res = await http.get(
-      Uri.parse('$baseUrl/api/appels/tous'),
+      Uri.parse('$baseUrl/api/appels/tous?t=${DateTime.now().millisecondsSinceEpoch}'),
       headers: await _headers(),
     );
     if (res.statusCode == 200) {
