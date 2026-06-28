@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'core/theme.dart';
+import 'package:provider/provider.dart';
+import 'core/theme_provider.dart';
+import 'core/app_colors.dart';
+import 'core/theme.dart'; // L'ancien theme si utilisé ailleurs
 import 'core/constants.dart';
 import 'screens/auth/welcome_screen.dart';
 import 'screens/auth/login_screen.dart';
@@ -20,22 +23,31 @@ class FDCUICApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: AppStrings.appName, // ← AppStrings (pas FDStrings)
-      debugShowCheckedModeBanner: false,
-      theme: fdcuicTheme(),
-      initialRoute: AppRoutes.welcome, // Started at home (Bypass Auth)
-      routes: {
-        AppRoutes.welcome: (context) => const WelcomeScreen(),
-        AppRoutes.login: (context) => const LoginScreen(),
-        AppRoutes.register: (context) => const RegisterScreen(),
-        AppRoutes.home: (context) => const HomeScreen(),
-        AppRoutes.appels: (context) => const AppelsScreen(),
-        AppRoutes.dossiers: (context) => const MesDossiersScreen(),
-        AppRoutes.formulaireAppel: (context) => const AppelFormScreen(),
-        AppRoutes.formulaireMobilite: (context) => const MobiliteFormScreen(),
-        AppRoutes.notifs: (context) => const NotificationsScreen(),
-      },
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+      ],
+      child: Consumer<ThemeProvider>(
+        builder: (ctx, theme, _) => MaterialApp(
+          title: AppStrings.appName,
+          debugShowCheckedModeBanner: false,
+          themeMode: theme.mode,
+          theme: AppTheme.light,
+          darkTheme: AppTheme.dark,
+          initialRoute: AppRoutes.welcome,
+          routes: {
+            AppRoutes.welcome: (context) => const WelcomeScreen(),
+            AppRoutes.login: (context) => const LoginScreen(),
+            AppRoutes.register: (context) => const RegisterScreen(),
+            AppRoutes.home: (context) => const HomeScreen(),
+            AppRoutes.appels: (context) => const AppelsScreen(),
+            AppRoutes.dossiers: (context) => const MesDossiersScreen(),
+            AppRoutes.formulaireAppel: (context) => const AppelFormScreen(),
+            AppRoutes.formulaireMobilite: (context) => const MobiliteFormScreen(),
+            AppRoutes.notifs: (context) => const NotificationsScreen(),
+          },
+        ),
+      ),
     );
   }
 }
