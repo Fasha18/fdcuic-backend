@@ -2,7 +2,7 @@
 // Utilisation du port HTTP (443) pour contourner le blocage SMTP de Railway
 
 const BREVO_API_KEY = process.env.BREVO_API_KEY;
-const SENDER_EMAIL = 'fbiaye18@gmail.com';
+const SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || 'fbiaye18@gmail.com';
 const SENDER_NAME = 'FDCUIC';
 
 const sendBrevoEmail = async (toEmail, toName, subject, content, isText = false) => {
