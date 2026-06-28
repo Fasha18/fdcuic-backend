@@ -67,7 +67,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 260.0,
+            expandedHeight: 290.0,
             floating: false,
             pinned: true,
             backgroundColor: FDColors.navy,
@@ -83,7 +83,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
             flexibleSpace: FlexibleSpaceBar(
               background: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.only(top: 80, bottom: 20),
+                padding: const EdgeInsets.only(top: 90, bottom: 10),
                 decoration: const BoxDecoration(
                   gradient: FDGradients.header,
                 ),
@@ -91,8 +91,8 @@ class _ProfilScreenState extends State<ProfilScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Container(
-                      width: 90,
-                      height: 90,
+                      width: 80,
+                      height: 80,
                       decoration: BoxDecoration(
                         color: FDColors.white,
                         shape: BoxShape.circle,
@@ -108,18 +108,18 @@ class _ProfilScreenState extends State<ProfilScreen> {
                         child: Text(
                           _user!['nom']?.substring(0, 1).toUpperCase() ?? 'U',
                           style: const TextStyle(
-                            fontSize: 36,
+                            fontSize: 32,
                             fontWeight: FontWeight.w800,
                             color: FDColors.royal,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     Text(
                       '${_user!['prenom']} ${_user!['nom']}',
                       style: const TextStyle(
-                        fontSize: 24,
+                        fontSize: 22,
                         fontWeight: FontWeight.w800,
                         color: FDColors.white,
                       ),
@@ -133,7 +133,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
                         color: FDColors.white.withValues(alpha: 0.9),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                       decoration: BoxDecoration(
