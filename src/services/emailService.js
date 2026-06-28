@@ -61,6 +61,20 @@ L'équipe FDCUIC`;
   await sendBrevoEmail(email, prenom, 'Activez votre compte FDCUIC', text, true);
 };
 
+const envoyerEmailBienvenue = async (email, prenom) => {
+  const html = templateEmail(prenom, '', `
+    <p>Bienvenue sur la plateforme <strong>FDCUIC</strong> !</p>
+    <p>Votre compte a été créé avec succès. Vous pouvez dès à présent vous connecter et explorer les appels à projets disponibles.</p>
+    <p style="text-align:center; margin: 28px 0;">
+      <a href="https://fdcuic-backend-production.up.railway.app" style="display:inline-block;background:#1B6CA8;color:white;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:15px;">
+        🚀 Accéder à la plateforme
+      </a>
+    </p>
+    <p style="color:#888; font-size:13px;">Si vous n'avez pas créé ce compte, ignorez cet email.</p>
+  `);
+  await sendBrevoEmail(email, prenom, '🎉 Bienvenue sur FDCUIC !', html);
+};
+
 const envoyerEmailSoumission = async (email, prenom, titre) => {
   const html = `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
@@ -185,6 +199,7 @@ const envoyerEmailNotification = async (email, prenom, sujet, contenu) => {
 
 module.exports = {
   envoyerEmailActivation,
+  envoyerEmailBienvenue,
   envoyerEmailSoumission,
   envoyerEmailStatut,
   envoyerEmailNotification,

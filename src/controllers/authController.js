@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { Op } = require('sequelize');
 const { User } = require('../models/index');
-const { envoyerEmailActivation, envoyerEmailResetPassword } = require('../services/emailService');
+const { envoyerEmailActivation, envoyerEmailBienvenue, envoyerEmailResetPassword } = require('../services/emailService');
 
 // ── INSCRIPTION ───────────────────────────────────────────
 const inscription = async (req, res) => {
@@ -37,15 +37,17 @@ const inscription = async (req, res) => {
       nom, prenom, email, telephone,
       mot_de_passe_hash,
       role: 'candidat',
-      est_active: false,
-      token_activation,
+      est_active: true,        // ✅ Activation immédiate — pas besoin d'email
+      token_activation: null,
     });
 
-    envoyerEmailActivation(user.email, user.prenom, user.token_activation)
-      .catch(emailError => console.error('Erreur asynchrone envoi email:', emailError.message));
+    // Envoi d'un email de bienvenue en arrière-plan (non bloquant)
+    envoyerEmailBienvenue(user.email, user.prenom)
+      .then(() => console.log(`Email de bienvenue envoyé à ${user.email}`))
+      .catch(emailError => console.error('⚠️ Email bienvenue non envoyé (non bloquant):', emailError.message));
 
     return res.status(201).json({
-      message: 'Inscription réussie ! Vérifiez votre email pour activer votre compte.',
+      message: 'Inscription réussie ! Vous pouvez maintenant vous connecter.',
       userId: user.id
     });
 
