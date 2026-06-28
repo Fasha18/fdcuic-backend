@@ -37,17 +37,24 @@ const inscription = async (req, res) => {
       nom, prenom, email, telephone,
       mot_de_passe_hash,
       role: 'candidat',
-      est_active: true,        // ✅ Activation immédiate — pas besoin d'email
-      token_activation: null,
+      est_active: false,
+      token_activation,
     });
 
-    // Envoi d'un email de bienvenue en arrière-plan (non bloquant)
-    envoyerEmailBienvenue(user.email, user.prenom)
-      .then(() => console.log(`Email de bienvenue envoyé à ${user.email}`))
-      .catch(emailError => console.error('⚠️ Email bienvenue non envoyé (non bloquant):', emailError.message));
+    // Envoi de l'email d'activation (attente du résultat pour garantir l'envoi)
+    try {
+      await envoyerEmailActivation(user.email, user.prenom, user.token_activation);
+    } catch (emailError) {
+      // Si l'email échoue, on supprime le compte pour forcer une ré-inscription propre
+      await user.destroy();
+      console.error('❌ Erreur envoi email activation:', emailError.message);
+      return res.status(500).json({
+        message: "Impossible d'envoyer l'email d'activation. Vérifiez votre adresse email et réessayez.",
+      });
+    }
 
     return res.status(201).json({
-      message: 'Inscription réussie ! Vous pouvez maintenant vous connecter.',
+      message: "Inscription réussie ! Un email d'activation vous a été envoyé. Cliquez sur le lien pour activer votre compte.",
       userId: user.id
     });
 
