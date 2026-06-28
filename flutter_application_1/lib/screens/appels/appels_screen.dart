@@ -227,7 +227,9 @@ class _AppelsTabState extends State<_AppelsTab> {
         Expanded(
           child: _filtres.isEmpty
               ? _EmptyState(
-                  message: 'Aucun appel ${_filtre == "ouvert" ? "ouvert" : "fermé"} pour le moment.',
+                  message: _filtre == 'tous' 
+                      ? 'Aucun appel à projets pour le moment.' 
+                      : 'Aucun appel $_filtre pour le moment.',
                 )
               : ListView.builder(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
