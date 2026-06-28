@@ -66,80 +66,103 @@ class _ProfilScreenState extends State<ProfilScreen> {
       backgroundColor: FDColors.skyBg,
       body: CustomScrollView(
         slivers: [
-          SliverToBoxAdapter(
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.only(top: 60, bottom: 30),
-              decoration: const BoxDecoration(gradient: FDGradients.header),
-              child: Column(
-                children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: const BoxDecoration(
-                      color: FDColors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Center(
-                      child: Text(
-                        _user!['nom']?.substring(0, 1).toUpperCase() ?? 'U',
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: FDColors.royal,
+          SliverAppBar(
+            expandedHeight: 260.0,
+            floating: false,
+            pinned: true,
+            backgroundColor: FDColors.navy,
+            elevation: 0,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.logout_rounded, color: FDColors.white),
+                tooltip: 'Se déconnecter',
+                onPressed: _logout,
+              ),
+              const SizedBox(width: 8),
+            ],
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.only(top: 80, bottom: 20),
+                decoration: const BoxDecoration(
+                  gradient: FDGradients.header,
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        color: FDColors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: FDColors.navy.withValues(alpha: 0.2),
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
+                          )
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          _user!['nom']?.substring(0, 1).toUpperCase() ?? 'U',
+                          style: const TextStyle(
+                            fontSize: 36,
+                            fontWeight: FontWeight.w800,
+                            color: FDColors.royal,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '${_user!['prenom']} ${_user!['nom']}',
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: FDColors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    _user!['email'],
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: FDColors.white.withValues(alpha: 0.8),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: FDColors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(FDRadius.pill),
-                    ),
-                    child: Text(
-                      _user!['role']?.toUpperCase() ?? 'CANDIDAT',
+                    const SizedBox(height: 16),
+                    Text(
+                      '${_user!['prenom']} ${_user!['nom']}',
                       style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
                         color: FDColors.white,
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 4),
+                    Text(
+                      _user!['email'],
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: FDColors.white.withValues(alpha: 0.9),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: FDColors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(FDRadius.pill),
+                        border: Border.all(color: FDColors.white.withValues(alpha: 0.3)),
+                      ),
+                      child: Text(
+                        _user!['role']?.toUpperCase() ?? 'CANDIDAT',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w800,
+                          color: FDColors.white,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
           SliverPadding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(20, 30, 20, 100),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
                 _ProfilInfosForm(user: _user!, onUserUpdated: _onUserUpdated),
                 const SizedBox(height: 30),
                 const _ProfilPasswordForm(),
-                const SizedBox(height: 30),
-                FDButton(
-                  label: 'Se déconnecter',
-                  onTap: _logout,
-                ),
                 const SizedBox(height: 40),
               ]),
             ),

@@ -151,10 +151,7 @@ class _AppelsScreenState extends State<AppelsScreen>
               controller: _tabController,
               children: [
                 _AppelsTab(appels: _appels),
-                if (_mobilite != null)
-                  _MobiliteTab(programme: _mobilite!)
-                else
-                  const _EmptyState(message: 'Aucun programme de mobilité trouvé.'),
+                _MobiliteTab(programme: _mobilite),
               ],
             ),
           ),
@@ -248,7 +245,7 @@ class _AppelsTabState extends State<_AppelsTab> {
 //  TAB 2 — MOBILITÉ
 // ════════════════════════════════════════════════
 class _MobiliteTab extends StatelessWidget {
-  final ProgrammeMobilite programme;
+  final ProgrammeMobilite? programme;
   const _MobiliteTab({required this.programme});
 
   @override
@@ -304,7 +301,7 @@ class _MobiliteTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  programme.titre,
+                  programme?.titre ?? 'Mobilité artistique',
                   style: const TextStyle(
                     color: FDColors.white,
                     fontSize: 18,
@@ -314,7 +311,7 @@ class _MobiliteTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  programme.description,
+                  programme?.description ?? 'Postulez pour un soutien aux déplacements tout au long de l\'année.',
                   style: TextStyle(
                     color: FDColors.white.withValues(alpha: 0.65),
                     fontSize: 13,
@@ -353,7 +350,7 @@ class _MobiliteTab extends StatelessWidget {
           const SizedBox(height: 24),
 
           // ── CRITÈRES D'ÉLIGIBILITÉ ────────────────────
-          if (programme.criteresEligibilite != null) ...[
+          if (programme?.criteresEligibilite != null) ...[
             const Text(
               'Critères d\'éligibilité',
               style: FDText.h3,
@@ -369,7 +366,7 @@ class _MobiliteTab extends StatelessWidget {
                 boxShadow: FDShadow.card,
               ),
               child: Column(
-                children: programme.criteresEligibilite!
+                children: programme!.criteresEligibilite!
                     .split('·')
                     .where((c) => c.trim().isNotEmpty)
                     .map((critere) => Padding(

@@ -185,7 +185,7 @@ class _HomeDashboard extends StatefulWidget {
 
 class _HomeDashboardState extends State<_HomeDashboard> with TickerProviderStateMixin {
   Map<String, dynamic>? _user;
-  List<dynamic> _appelsOuverts = [];
+  List<AppelAProjet> _appelsOuverts = [];
   Map<String, dynamic>? _programmeMobilite;
   Map<String, dynamic>? _dossierEnCours;
   String? _dossierEnCoursType;
@@ -230,7 +230,21 @@ class _HomeDashboardState extends State<_HomeDashboard> with TickerProviderState
       final userStr = prefs.getString('user');
       if (userStr != null) _user = jsonDecode(userStr);
 
-      try { _appelsOuverts = await ApiService.getAppelsOuverts(); } catch (_) {}
+      try { 
+        final rawAppels = await ApiService.getAppelsOuverts(); 
+        _appelsOuverts = rawAppels.map((e) => AppelAProjet(
+            id: e['id'],
+            titre: e['titre'],
+            description: e['description'] ?? '',
+            typeProjet: e['type_projet'],
+            dateDebut: e['date_debut'] ?? e['date_ouverture'] ?? '',
+            dateFin: e['date_fin'] ?? e['date_cloture'] ?? '',
+            statut: e['statut'],
+            criteres: e['criteres'] ?? e['criteres_eligibilite'] ?? '',
+        )).toList();
+      } catch (e) {
+        debugPrint('Erreur appels: $e');
+      }
       try { _programmeMobilite = await ApiService.getProgrammeMobilite(); } catch (_) {}
 
       final token = await ApiService.getToken();
@@ -377,20 +391,18 @@ class _HomeDashboardState extends State<_HomeDashboard> with TickerProviderState
 
           const SizedBox(height: 30),
 
-          // ── PROGRAMME MOBILITÉ (Restauré) ─────────────
-          if (_programmeMobilite != null) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: const Text('Mobilité Artistique', 
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: FDColors.navy)),
-            ),
-            const SizedBox(height: 12),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: _buildMobiliteCard(),
-            ),
-            const SizedBox(height: 28),
-          ],
+          // ── PROGRAMME MOBILITÉ (Toujours visible) ─────────────
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: const Text('Mobilité Artistique', 
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: FDColors.navy)),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: _buildMobiliteCard(),
+          ),
+          const SizedBox(height: 28),
 
           // ── APPELS À PROJETS (Restauré) ─────────────
           Padding(
@@ -760,7 +772,7 @@ class _HomeDashboardState extends State<_HomeDashboard> with TickerProviderState
                     children: [
                       Flexible(
                         child: Text(
-                          _programmeMobilite!['titre'] ?? 'Mobilité artistique',
+                          _programmeMobilite?['titre'] ?? 'Mobilité artistique',
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w800,
@@ -789,7 +801,7 @@ class _HomeDashboardState extends State<_HomeDashboard> with TickerProviderState
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _programmeMobilite!['description'] ?? 'Postulez pour un soutien aux déplacements.',
+                    _programmeMobilite?['description'] ?? 'Postulez pour un soutien aux déplacements.',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
@@ -852,20 +864,24 @@ class _HomeDashboardState extends State<_HomeDashboard> with TickerProviderState
             decoration: BoxDecoration(
               color: FDColors.white,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: FDColors.border, width: 0.5),
+              border: Border.all(color: FDColors.border),
               boxShadow: FDShadow.card,
             ),
             child: Row(
               children: [
+                // Icône
                 Container(
                   width: 48, height: 48,
                   decoration: BoxDecoration(
-                    color: FDColors.royal.withValues(alpha: 0.08),
+                    color: FDColors.royal.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(Icons.campaign_rounded, color: FDColors.royal),
+                  child: const Icon(Icons.description_outlined,
+                      color: FDColors.royal),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 16),
+                
+                // Textes
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
