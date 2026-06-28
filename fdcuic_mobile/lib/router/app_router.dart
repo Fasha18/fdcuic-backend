@@ -17,10 +17,29 @@ import '../features/notifications/screens/notifications_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/applications/screens/applications_screen.dart';
 
+import '../features/auth/providers/auth_provider.dart';
+
 // Provide the router
 final appRouterProvider = Provider<GoRouter>((ref) {
+  final authState = ref.watch(authStateProvider);
+
   return GoRouter(
-    initialLocation: '/onboarding',
+    initialLocation: '/login',
+    redirect: (context, state) {
+      final isAuth = authState.user != null;
+      final isAuthRoute = state.matchedLocation == '/login' || state.matchedLocation == '/register';
+      final isOnboarding = state.matchedLocation == '/onboarding';
+
+      if (!isAuth && !isAuthRoute && !isOnboarding) {
+        return '/login';
+      }
+
+      if (isAuth && (isAuthRoute || isOnboarding)) {
+        return '/home';
+      }
+
+      return null;
+    },
     routes: [
       GoRoute(
         path: '/onboarding',

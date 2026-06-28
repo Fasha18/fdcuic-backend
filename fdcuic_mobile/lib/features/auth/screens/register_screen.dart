@@ -1,16 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/auth_provider.dart';
 
-class RegisterScreen extends StatefulWidget {
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _telephoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   String _selectedRole = 'Chercheur / Étudiant';
@@ -30,9 +33,45 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _telephoneController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  void _handleRegister() async {
+    final fullName = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final telephone = _telephoneController.text.trim();
+    final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
+
+    if (fullName.isEmpty || email.isEmpty || telephone.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Veuillez remplir tous les champs')),
+      );
+      return;
+    }
+
+    final nameParts = fullName.split(' ');
+    final prenom = nameParts.first;
+    final nom = nameParts.length > 1 ? nameParts.sublist(1).join(' ') : ' ';
+
+    final success = await ref.read(authStateProvider.notifier).register(
+      nom: nom,
+      prenom: prenom,
+      email: email,
+      telephone: telephone,
+      password: password,
+      confirmPassword: confirmPassword,
+    );
+
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Inscription réussie ! Vérifiez votre email.'), backgroundColor: Colors.green),
+      );
+      context.pop(); // Go back to login
+    }
   }
 
   InputDecoration _fieldDecoration(String hint) {
@@ -59,6 +98,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final authState = ref.watch(authStateProvider);
+
+    ref.listen<AuthState>(authStateProvider, (previous, next) {
+      if (next.error != null && (previous?.error != next.error)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(next.error!), backgroundColor: Colors.red),
+        );
+        ref.read(authStateProvider.notifier).clearError();
+      }
+    });
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -122,6 +172,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       keyboardType: TextInputType.emailAddress,
                       style: const TextStyle(fontSize: 14, color: Color(0xFF1E293B)),
                       decoration: _fieldDecoration('nathan.roberts@example.com'),
+                    ),
+                    const SizedBox(height: 18),
+
+                    // Telephone
+                    _buildLabel('Téléphone'),
+                    const SizedBox(height: 8),
+                    TextFormField(
+                      controller: _telephoneController,
+                      keyboardType: TextInputType.phone,
+                      style: const TextStyle(fontSize: 14, color: Color(0xFF1E293B)),
+                      decoration: _fieldDecoration('770000000'),
                     ),
                     const SizedBox(height: 6),
 
@@ -296,8 +357,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     SizedBox(
                       height: 50,
                       child: ElevatedButton(
-                        onPressed: _agreeToTerms
-                            ? () => context.go('/home')
+                        onPressed: (_agreeToTerms && !authState.isLoading)
+                            ? _handleRegister
                             : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF2563EB),
@@ -310,13 +371,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             borderRadius: BorderRadius.circular(25),
                           ),
                         ),
-                        child: const Text(
-                          'Créer un compte',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        child: authState.isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : const Text(
+                                'Créer un compte',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                       ),
                     ),
                     const SizedBox(height: 32),

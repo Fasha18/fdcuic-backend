@@ -1,43 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../projects/providers/projet_provider.dart';
+import 'package:intl/intl.dart';
 
-class ApplicationsScreen extends StatefulWidget {
+class ApplicationsScreen extends ConsumerStatefulWidget {
   const ApplicationsScreen({super.key});
 
   @override
-  State<ApplicationsScreen> createState() => _ApplicationsScreenState();
+  ConsumerState<ApplicationsScreen> createState() => _ApplicationsScreenState();
 }
 
-class _ApplicationsScreenState extends State<ApplicationsScreen> {
+class _ApplicationsScreenState extends ConsumerState<ApplicationsScreen> {
   String _selectedFilter = 'Toutes';
   final List<String> _filters = ['Toutes', 'En cours', 'Acceptées', 'Refusées'];
 
-  final List<Map<String, dynamic>> _applications = [
-    {
-      'title': 'Fonds d\'Innovation Technologique',
-      'type': 'Projet',
-      'status': 'En cours',
-      'date': '12 Mai 2026',
-    },
-    {
-      'title': 'Global Exchange 2026',
-      'type': 'Mobilité',
-      'status': 'Acceptées',
-      'date': '05 Fév 2026',
-    },
-    {
-      'title': 'Green Entrepreneurship',
-      'type': 'Projet',
-      'status': 'Refusées',
-      'date': '10 Déc 2025',
-    },
-  ];
-
   @override
   Widget build(BuildContext context) {
-    final filteredList = _selectedFilter == 'Toutes'
-        ? _applications
-        : _applications.where((app) => app['status'] == _selectedFilter).toList();
+    final projetsAsyncValue = ref.watch(mesProjetsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -50,13 +30,31 @@ class _ApplicationsScreenState extends State<ApplicationsScreen> {
         children: [
           _buildFilters(),
           Expanded(
-            child: ListView.separated(
-              padding: const EdgeInsets.all(24),
-              itemCount: filteredList.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 16),
-              itemBuilder: (context, index) {
-                final app = filteredList[index];
-                return _buildApplicationCard(app);
+            child: projetsAsyncValue.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) => Center(child: Text('Erreur: $error')),
+              data: (projets) {
+                final filteredList = projets.where((p) {
+                  if (_selectedFilter == 'Toutes') return true;
+                  if (_selectedFilter == 'En cours' && p.statut == 'soumis') return true;
+                  if (_selectedFilter == 'Acceptées' && p.statut == 'accepte') return true;
+                  if (_selectedFilter == 'Refusées' && p.statut == 'refuse') return true;
+                  return false;
+                }).toList();
+
+                if (filteredList.isEmpty) {
+                  return const Center(child: Text('Aucune candidature trouvée.'));
+                }
+
+                return ListView.separated(
+                  padding: const EdgeInsets.all(24),
+                  itemCount: filteredList.length,
+                  separatorBuilder: (context, index) => const SizedBox(height: 16),
+                  itemBuilder: (context, index) {
+                    final projet = filteredList[index];
+                    return _buildApplicationCard(projet);
+                  },
+                );
               },
             ),
           ),
@@ -101,23 +99,26 @@ class _ApplicationsScreenState extends State<ApplicationsScreen> {
     );
   }
 
-  Widget _buildApplicationCard(Map<String, dynamic> app) {
+  Widget _buildApplicationCard(projet) {
     Color statusColor;
     IconData statusIcon;
+    String statusText;
 
-    switch (app['status']) {
-      case 'Acceptées':
+    switch (projet.statut) {
+      case 'accepte':
         statusColor = AppColors.success;
         statusIcon = Icons.check_circle;
+        statusText = 'Acceptées';
         break;
-      case 'Refusées':
+      case 'refuse':
         statusColor = AppColors.error;
         statusIcon = Icons.cancel;
+        statusText = 'Refusées';
         break;
-      case 'En cours':
       default:
         statusColor = AppColors.warning;
         statusIcon = Icons.hourglass_empty;
+        statusText = 'En cours';
         break;
     }
 
@@ -152,7 +153,7 @@ class _ApplicationsScreenState extends State<ApplicationsScreen> {
                     Icon(statusIcon, size: 14, color: statusColor),
                     const SizedBox(width: 4),
                     Text(
-                      app['status'],
+                      statusText,
                       style: TextStyle(
                         color: statusColor,
                         fontSize: 12,
@@ -162,23 +163,16 @@ class _ApplicationsScreenState extends State<ApplicationsScreen> {
                   ],
                 ),
               ),
-              Text(
-                app['date'],
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                  fontSize: 12,
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 16),
           Text(
-            app['title'],
+            projet.titre,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
           Text(
-            'Type : ${app['type']}',
+            'Budget: ${NumberFormat.currency(locale: 'fr_FR', symbol: 'FCFA').format(projet.budgetPrevisionnel)}',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: AppColors.textSecondary,
             ),

@@ -1,39 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
+import '../providers/projet_provider.dart';
+import '../models/appel_model.dart';
+import 'package:intl/intl.dart';
 
-class ProjectsScreen extends StatelessWidget {
+class ProjectsScreen extends ConsumerWidget {
   const ProjectsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Simulated dynamic data from backend
-    final List<Map<String, dynamic>> projects = [
-      {
-        'id': '1',
-        'title': 'Fonds d\'Innovation Technologique',
-        'description': 'Soutien aux startups développant des solutions DeepTech.',
-        'deadline': '30 Juin 2026',
-        'status': 'Ouvert',
-        'image': Icons.biotech,
-      },
-      {
-        'id': '2',
-        'title': 'Green Entrepreneurship',
-        'description': 'Financement pour les projets à impact environnemental positif.',
-        'deadline': '15 Juillet 2026',
-        'status': 'Ouvert',
-        'image': Icons.eco,
-      },
-      {
-        'id': '3',
-        'title': 'Tech for Good',
-        'description': 'Appel à projets pour l\'innovation sociale.',
-        'deadline': '1 Août 2026',
-        'status': 'Bientôt',
-        'image': Icons.favorite,
-      },
-    ];
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appelsAsyncValue = ref.watch(appelsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -42,20 +20,29 @@ class ProjectsScreen extends StatelessWidget {
         elevation: 0,
         centerTitle: false,
       ),
-      body: ListView.separated(
-        padding: const EdgeInsets.all(24),
-        itemCount: projects.length,
-        separatorBuilder: (context, index) => const SizedBox(height: 16),
-        itemBuilder: (context, index) {
-          final project = projects[index];
-          return _buildProjectCard(context, project);
+      body: appelsAsyncValue.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (error, stack) => Center(child: Text('Erreur: $error')),
+        data: (appels) {
+          if (appels.isEmpty) {
+            return const Center(child: Text('Aucun appel à projets disponible.'));
+          }
+          return ListView.separated(
+            padding: const EdgeInsets.all(24),
+            itemCount: appels.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 16),
+            itemBuilder: (context, index) {
+              final appel = appels[index];
+              return _buildProjectCard(context, appel);
+            },
+          );
         },
       ),
     );
   }
 
-  Widget _buildProjectCard(BuildContext context, Map<String, dynamic> project) {
-    final bool isOpen = project['status'] == 'Ouvert';
+  Widget _buildProjectCard(BuildContext context, AppelModel appel) {
+    final bool isOpen = appel.statut == 'ouvert';
 
     return Container(
       decoration: BoxDecoration(
@@ -74,7 +61,7 @@ class ProjectsScreen extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
           onTap: () {
-            context.push('/projects/details/${project['id']}');
+            context.push('/projects/details/${appel.id}');
           },
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -90,7 +77,7 @@ class ProjectsScreen extends StatelessWidget {
                         color: AppColors.primary.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(16),
                       ),
-                      child: Icon(project['image'] as IconData, color: AppColors.primary, size: 32),
+                      child: const Icon(Icons.description_outlined, color: AppColors.primary, size: 32),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
@@ -107,7 +94,7 @@ class ProjectsScreen extends StatelessWidget {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Text(
-                                  project['status'],
+                                  appel.statut.toUpperCase(),
                                   style: TextStyle(
                                     color: isOpen ? AppColors.success : AppColors.warning,
                                     fontSize: 12,
@@ -116,7 +103,7 @@ class ProjectsScreen extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                'Fin : ${project['deadline']}',
+                                'Fin : ${appel.dateFin}',
                                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                   color: AppColors.textSecondary,
                                   fontSize: 12,
@@ -126,7 +113,7 @@ class ProjectsScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 8),
                           Text(
-                            project['title'],
+                            appel.titre,
                             style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 18),
                           ),
                         ],
@@ -136,15 +123,17 @@ class ProjectsScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  project['description'],
+                  appel.description,
                   style: Theme.of(context).textTheme.bodyMedium,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
                   child: OutlinedButton(
                     onPressed: () {
-                      context.push('/projects/details/${project['id']}');
+                      context.push('/projects/details/${appel.id}');
                     },
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 12),

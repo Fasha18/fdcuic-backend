@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../auth/providers/auth_provider.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authStateProvider);
+    final user = authState.user;
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profil'),
@@ -52,23 +56,25 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Candidat User',
+                    user != null ? '${user.prenom} ${user.nom}' : 'Candidat User',
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'candidat@example.com',
+                    user?.email ?? 'candidat@example.com',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: AppColors.textSecondary,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '+33 6 12 34 56 78',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
+                  if (user?.telephone != null && user!.telephone!.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      user.telephone!,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
@@ -103,9 +109,11 @@ class ProfileScreen extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: OutlinedButton.icon(
-                onPressed: () {
-                  // TODO: Clear auth token
-                  context.go('/login');
+                onPressed: () async {
+                  await ref.read(authStateProvider.notifier).logout();
+                  if (context.mounted) {
+                    context.go('/login');
+                  }
                 },
                 icon: const Icon(Icons.logout, color: AppColors.error),
                 label: const Text('Se déconnecter', style: TextStyle(color: AppColors.error)),
