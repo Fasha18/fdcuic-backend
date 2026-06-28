@@ -165,7 +165,7 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
         
         // ── 3.1 HEADER ───────────────────────
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 4, 24, 20),
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
           child: Row(
             children: [
               Column(
@@ -257,7 +257,7 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
               children: [
                 // ── 3.2 HERO GREETING ─────────────
                 Container(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 26),
+                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
                   decoration: BoxDecoration(
                     color: c.bgHeader,
                     border: Border(bottom: BorderSide(color: c.borderMain, width: 1)),
@@ -319,7 +319,7 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
                   ),
                 ),
 
-                const SizedBox(height: 22),
+                const SizedBox(height: 16),
 
                 // ── SECTION: MES DOSSIERS ─────────
                 _SectionHeader(title: "Mes dossiers", actionText: "Voir tout", onTap: () => widget.onNavigateToTab(2), c: c),
@@ -367,7 +367,7 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
 
                 const SizedBox(height: 24),
                 Divider(color: c.borderMain, thickness: 1, height: 1),
-                const SizedBox(height: 22),
+                const SizedBox(height: 16),
 
                 // ── SECTION: APPEL EN VEDETTE ─────
                 Padding(
@@ -420,7 +420,7 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
                   },
                 ),
 
-                const SizedBox(height: 22),
+                const SizedBox(height: 16),
 
                 // ── SECTION: APPELS À PROJETS ─────
                 _SectionHeader(title: "Appels à projets", actionText: "Voir tout", onTap: () => widget.onNavigateToTab(1), c: c),
@@ -510,41 +510,52 @@ class DossierStatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: c.bgCard,
         borderRadius: BorderRadius.circular(18),
-        border: Border(
-          left: BorderSide(color: accentColor, width: 3),
-          top: BorderSide(color: c.borderMain, width: 1),
-          right: BorderSide(color: c.borderMain, width: 1),
-          bottom: BorderSide(color: c.borderMain, width: 1),
-        ),
+        border: Border.all(color: c.borderMain, width: 1),
       ),
-      padding: const EdgeInsets.all(14),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Container(
-                width: 32, height: 32,
-                decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(9)),
-                child: Icon(icon, color: accentColor, size: 16),
+          Positioned(
+            left: 0, top: 0, bottom: 0,
+            child: Container(
+              width: 3,
+              decoration: BoxDecoration(
+                color: accentColor,
+                borderRadius: const BorderRadius.only(topLeft: Radius.circular(17), bottomLeft: Radius.circular(17)),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(20)),
-                child: Text(badge, style: GoogleFonts.sora(fontSize: 10, fontWeight: FontWeight.w600, color: accentColor)),
-              ),
-            ],
+            ),
           ),
-          const SizedBox(height: 12),
-          Text(
-            count.toString(),
-            style: GoogleFonts.sora(fontSize: 24, fontWeight: FontWeight.w700, color: c.txtPrimary, letterSpacing: -0.02),
-          ),
-          const SizedBox(height: 3),
-          Text(
-            label,
-            style: GoogleFonts.sora(fontSize: 11, color: c.txtSecondary, fontWeight: FontWeight.w500),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      width: 32, height: 32,
+                      decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(9)),
+                      child: Icon(icon, color: accentColor, size: 16),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(20)),
+                      child: Text(badge, style: GoogleFonts.sora(fontSize: 10, fontWeight: FontWeight.w600, color: accentColor)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  count.toString(),
+                  style: GoogleFonts.sora(fontSize: 24, fontWeight: FontWeight.w700, color: c.txtPrimary, letterSpacing: -0.02),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  label,
+                  style: GoogleFonts.sora(fontSize: 11, color: c.txtSecondary, fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -583,12 +594,12 @@ class FeaturedAppelCard extends StatelessWidget {
                 width: 3,
                 decoration: BoxDecoration(
                   color: c.accentPurple,
-                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(18), bottomLeft: Radius.circular(18)),
+                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(17), bottomLeft: Radius.circular(17)),
                 ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
               child: Row(
                 children: [
                   Container(
@@ -606,7 +617,7 @@ class FeaturedAppelCard extends StatelessWidget {
                             Text("Mobilité", style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.w600, color: c.txtPrimary)),
                             const SizedBox(width: 8),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
                               decoration: BoxDecoration(color: c.accentPurple, borderRadius: BorderRadius.circular(20)),
                               child: Text(
                                 "Ouvert",
@@ -677,75 +688,88 @@ class AppelCardUI extends StatelessWidget {
       decoration: BoxDecoration(
         color: c.bgCard,
         borderRadius: BorderRadius.circular(18),
-        border: Border(
-          left: BorderSide(color: catColor, width: 3),
-          top: BorderSide(color: c.borderMain, width: 1),
-          right: BorderSide(color: c.borderMain, width: 1),
-          bottom: BorderSide(color: c.borderMain, width: 1),
-        ),
+        border: Border.all(color: c.borderMain, width: 1),
       ),
-      padding: const EdgeInsets.all(14),
-      child: Row(
+      child: Stack(
         children: [
-          Container(
-            width: 40, height: 40,
-            decoration: BoxDecoration(color: catBg, borderRadius: BorderRadius.circular(11)),
-            child: Icon(icon, color: catColor, size: 19),
+          Positioned(
+            left: 0, top: 0, bottom: 0,
+            child: Container(
+              width: 3,
+              decoration: BoxDecoration(
+                color: catColor,
+                borderRadius: const BorderRadius.only(topLeft: Radius.circular(17), bottomLeft: Radius.circular(17)),
+              ),
+            ),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        appel.titre,
-                        style: GoogleFonts.sora(fontSize: 13, fontWeight: FontWeight.w600, color: c.txtPrimary),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: isOpen ? const Color(0xFFDCFCE7) : const Color(0xFFFEF9C3),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        isOpen ? "Ouvert" : "Bientôt",
-                        style: GoogleFonts.sora(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w700,
-                          color: isOpen ? const Color(0xFF16A34A) : const Color(0xFFCA8A04)
-                        ),
-                      ),
-                    ),
-                  ],
+                Container(
+                  width: 40, height: 40,
+                  decoration: BoxDecoration(color: catBg, borderRadius: BorderRadius.circular(11)),
+                  child: Icon(icon, color: catColor, size: 19),
                 ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    Text(
-                      appel.typeProjet ?? 'Projet',
-                      style: GoogleFonts.sora(fontSize: 11, fontWeight: FontWeight.w600, color: catColor),
-                    ),
-                    const SizedBox(width: 12),
-                    Icon(Icons.calendar_today_outlined, size: 11, color: c.txtSecondary),
-                    const SizedBox(width: 4),
-                    Text(
-                      dateLabel,
-                      style: GoogleFonts.sora(fontSize: 11, color: c.txtSecondary),
-                    ),
-                  ],
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              appel.titre,
+                              style: GoogleFonts.sora(fontSize: 13, fontWeight: FontWeight.w600, color: c.txtPrimary, height: 1.35),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: isOpen ? const Color(0xFFDCFCE7) : const Color(0xFFFEF9C3),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Text(
+                              isOpen ? "Ouvert" : "Bientôt",
+                              style: GoogleFonts.sora(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: isOpen ? const Color(0xFF16A34A) : const Color(0xFFCA8A04)
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Text(
+                            appel.typeProjet ?? 'Projet',
+                            style: GoogleFonts.sora(fontSize: 11, fontWeight: FontWeight.w600, color: catColor),
+                          ),
+                          const SizedBox(width: 12),
+                          Icon(Icons.calendar_today_outlined, size: 11, color: c.txtSecondary),
+                          const SizedBox(width: 4),
+                          Text(
+                            dateLabel,
+                            style: GoogleFonts.sora(fontSize: 11, color: c.txtSecondary),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 8),
+                Icon(Icons.chevron_right_rounded, color: c.borderMain, size: 18),
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          Icon(Icons.chevron_right_rounded, color: c.borderMain, size: 18),
         ],
       ),
     );
