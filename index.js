@@ -49,7 +49,6 @@ app.use((req, res, next) => {
 // ── Middlewares globaux ──
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const fs = require('fs');

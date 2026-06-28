@@ -102,8 +102,7 @@ const activerCompte = async (req, res) => {
             <div class="icon">✅</div>
             <h1>Compte activé avec succès !</h1>
             <p>Votre compte FDCUIC est maintenant actif.<br/>
-               Vous pouvez vous connecter à la plateforme.</p>
-            <a class="btn" href="/">Retour à l'accueil</a>
+               Vous pouvez fermer cette page et retourner sur l'application mobile pour vous connecter.</p>
           </div>
         </body>
       </html>
