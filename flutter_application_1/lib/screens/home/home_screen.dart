@@ -9,6 +9,7 @@ import '../appels/appels_screen.dart';
 import '../appels/appel_detail_screen.dart';
 import '../dossiers/mes_dossiers_screen.dart';
 import '../profil/profil_screen.dart';
+import '../../models/appel_a_projet.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
