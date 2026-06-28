@@ -392,10 +392,9 @@ class _HomeDashboardState extends State<_HomeDashboard> with TickerProviderState
 
           const SizedBox(height: 30),
 
-          // ── PROGRAMME MOBILITÉ (Toujours visible) ─────────────
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: const Text('Mobilité Artistique', 
+            child: const Text('Mobilité', 
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: FDColors.navy)),
           ),
           const SizedBox(height: 12),
@@ -773,7 +772,7 @@ class _HomeDashboardState extends State<_HomeDashboard> with TickerProviderState
                     children: [
                       Flexible(
                         child: Text(
-                          _programmeMobilite?['titre'] ?? 'Mobilité artistique',
+                          _programmeMobilite?['titre'] ?? 'Mobilité',
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w800,

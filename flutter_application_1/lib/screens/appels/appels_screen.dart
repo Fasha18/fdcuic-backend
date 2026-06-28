@@ -28,38 +28,49 @@ class _AppelsScreenState extends State<AppelsScreen>
   }
 
   Future<void> _loadData() async {
+    setState(() => _isLoading = true);
+    
+    // Charger les appels
     try {
       final appelsData = await ApiService.getTousLesAppels();
-      final mobiliteData = await ApiService.getProgrammeMobilite();
-
       if (mounted) {
         setState(() {
           _appels = appelsData.map((e) => AppelAProjet(
-            id: e['id'],
-            titre: e['titre'],
+            id: e['id'] ?? 0,
+            titre: e['titre'] ?? 'Sans titre',
             description: e['description'] ?? '',
             typeProjet: e['type_projet'],
             dateDebut: e['date_debut'] ?? e['date_ouverture'] ?? '',
             dateFin: e['date_fin'] ?? e['date_cloture'] ?? '',
-            statut: e['statut'],
+            statut: e['statut'] ?? 'fermé',
             criteres: e['criteres'] ?? e['criteres_eligibilite'] ?? '',
           )).toList();
+        });
+      }
+    } catch (e) {
+      debugPrint('Erreur chargement appels: $e');
+    }
 
+    // Charger la mobilité (indépendamment)
+    try {
+      final mobiliteData = await ApiService.getProgrammeMobilite();
+      if (mounted) {
+        setState(() {
           _mobilite = ProgrammeMobilite(
-            id: mobiliteData['id'],
-            titre: mobiliteData['titre'],
+            id: mobiliteData['id'] ?? 0,
+            titre: mobiliteData['titre'] ?? 'Mobilité',
             description: mobiliteData['description'] ?? '',
             criteresEligibilite: mobiliteData['criteres_eligibilite'],
-            statut: mobiliteData['statut'],
+            statut: mobiliteData['statut'] ?? 'ouvert',
           );
         });
       }
     } catch (e) {
-      debugPrint('Erreur de chargement: $e');
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      debugPrint('Erreur chargement mobilité: $e');
+    }
+
+    if (mounted) {
+      setState(() => _isLoading = false);
     }
   }
 
@@ -301,7 +312,7 @@ class _MobiliteTab extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  programme?.titre ?? 'Mobilité artistique',
+                  programme?.titre ?? 'Mobilité',
                   style: const TextStyle(
                     color: FDColors.white,
                     fontSize: 18,
