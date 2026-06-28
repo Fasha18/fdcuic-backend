@@ -3,7 +3,7 @@ import api from '../../api/axios';
 
 const PAGES_LEGALES = [
   { type: 'mentions_legales', label: 'Mentions légales', icon: '📄', description: "Informations légales sur l'éditeur de la plateforme." },
-  { type: 'cgu', label: "Conditions Générales d'Utilisation", icon: '📋', description: 'Règles d'utilisation de la plateforme FDCUIC.' },
+  { type: 'cgu', label: "Conditions Générales d'Utilisation", icon: '📋', description: "Règles d'utilisation de la plateforme FDCUIC." },
   { type: 'confidentialite', label: 'Politique de confidentialité', icon: '🔒', description: 'Gestion des données personnelles et RGPD.' },
 ];
 
