@@ -888,18 +888,18 @@ class _HomeDashboardState extends State<_HomeDashboard> with TickerProviderState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        appel['titre'],
+                        appel.titre,
                         style: const TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: FDColors.textPrimary,
+                          color: FDColors.navy,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Date limite : ${appel['date_cloture']?.toString().substring(0, 10) ?? 'Non définie'}',
+                        'Date limite : ${appel.dateFin.isNotEmpty ? (appel.dateFin.length > 10 ? appel.dateFin.substring(0, 10) : appel.dateFin) : 'Non définie'}',
                         style: TextStyle(
                           fontSize: 12,
                           color: FDColors.textSub,
