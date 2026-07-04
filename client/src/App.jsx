@@ -4,13 +4,12 @@ import './App.css';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import DetailAppel from './pages/DetailAppel';
-import DetailMobilite from './pages/DetailMobilite';
 import CandidaturesList from './pages/CandidaturesList';
 import Profile from './pages/Profile';
 import AdminLayout from './components/AdminLayout';
 
-import AdminProjets from './components/admin/AdminProjets';
 import AdminBrouillons from './components/admin/AdminBrouillons';
+import AdminCandidature from './components/admin/AdminCandidature';
 import AdminSoumissionnaires from './components/admin/AdminSoumissionnaires';
 import AdminPersonnel from './components/admin/AdminPersonnel';
 import AdminTypesProjet from './components/admin/AdminTypesProjet';
@@ -19,6 +18,9 @@ import AdminFinances from './components/admin/AdminFinances';
 import AdminNotifications from './components/admin/AdminNotifications';
 import AdminFAQs from './components/admin/AdminFAQs';
 import AdminLegal from './components/admin/AdminLegal';
+import AdminDetailDossier from './components/admin/AdminDetailDossier';
+import AdminDetailSoumissionnaire from './components/admin/AdminDetailSoumissionnaire';
+import AdminDetailMobilite from './components/admin/AdminDetailMobilite';
 
 import CandidatDashboardNew from './pages/CandidatDashboardNew';
 import CandidatAppels from './pages/CandidatAppels';
@@ -70,7 +72,7 @@ function App() {
 
         {connecte ? (
           <>
-            {userRole === 'admin' && (
+            {['admin', 'evaluateur'].includes(userRole) && (
               <Route path="/admin" element={<AdminLayout onLogout={handleLogout} />}>
                 {/* Routes gérées par Dashboard (qui agira comme composant principal) */}
                 <Route index element={<Dashboard activeTab="apercu" onLogout={handleLogout} />} />
@@ -78,8 +80,8 @@ function App() {
                 <Route path="mobilite" element={<Dashboard activeTab="mobilite" onLogout={handleLogout} />} />
                 
                 {/* Pages dédiées (remplaçant les anciens composants dans Dashboard) */}
-                <Route path="projets" element={<AdminProjets />} />
                 <Route path="brouillons" element={<AdminBrouillons />} />
+                <Route path="candidatures-admin" element={<AdminCandidature />} />
                 <Route path="soumissionnaires" element={<AdminSoumissionnaires />} />
                 <Route path="personnel" element={<AdminPersonnel />} />
                 <Route path="types-projet" element={<AdminTypesProjet />} />
@@ -93,8 +95,11 @@ function App() {
                 {/* Routes de détails spécifiques (sans Dashboard wrapper) */}
                 <Route path="appels/:id" element={<DetailAppel onLogout={handleLogout} />} />
                 <Route path="appels/:id/candidatures" element={<CandidaturesList onLogout={handleLogout} type="appel" />} />
-                <Route path="mobilite/:id" element={<DetailMobilite onLogout={handleLogout} />} />
                 <Route path="mobilite/candidatures" element={<CandidaturesList onLogout={handleLogout} type="mobilite" />} />
+                {/* Détail d'un dossier (accessible admin + évaluateur) */}
+                <Route path="dossiers/:id" element={<AdminDetailDossier onLogout={handleLogout} />} />
+                <Route path="soumissionnaires/:id" element={<AdminDetailSoumissionnaire />} />
+                <Route path="mobilite/candidature/:id" element={<AdminDetailMobilite onLogout={handleLogout} />} />
               </Route>
             )}
 
@@ -114,7 +119,7 @@ function App() {
               </>
             )}
 
-            <Route path="*" element={<Navigate to={userRole === 'admin' ? '/admin' : '/candidat'} replace />} />
+            <Route path="*" element={<Navigate to={['admin', 'evaluateur'].includes(userRole) ? '/admin' : '/candidat'} replace />} />
           </>
         ) : (
           <Route path="*" element={<Navigate to="/login" replace />} />

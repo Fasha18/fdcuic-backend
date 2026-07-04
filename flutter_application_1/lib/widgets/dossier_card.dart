@@ -7,9 +7,9 @@ class DossierCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       child: ListTile(
-        leading: const Icon(Icons.folder),
-        title: const Text('Dossier'),
-        subtitle: const Text('Résumé du dossier'),
+        leading: Icon(Icons.folder),
+        title: Text('Dossier'),
+        subtitle: Text('Résumé du dossier'),
       ),
     );
   }

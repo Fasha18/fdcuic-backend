@@ -1,3 +1,4 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme.dart';
 import '../../../../widgets/auth_widgets.dart';
@@ -64,12 +65,12 @@ class _Etape2DetailsState extends State<Etape2Details> {
     return Form(
       key: widget.formKey,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+        padding: EdgeInsets.fromLTRB(20, 24, 20, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             FDLabel('Phase du projet'),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
             Row(
               children: [
                 _ToggleOption(
@@ -77,7 +78,7 @@ class _Etape2DetailsState extends State<Etape2Details> {
                   selected: widget.formData['phase_ideation'] == true,
                   onTap: () => setState(() => widget.formData['phase_ideation'] = !widget.formData['phase_ideation']),
                 ),
-                const SizedBox(width: 10),
+                SizedBox(width: 10.w),
                 _ToggleOption(
                   label: 'Exécution',
                   selected: widget.formData['phase_execution'] == true,
@@ -85,7 +86,7 @@ class _Etape2DetailsState extends State<Etape2Details> {
                 ),
               ],
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
 
             FDChampTexte('Objectifs globaux', _objectifsCtrl, 'Quels sont les objectifs principaux de votre projet ?', validator: FormValidators.textArea),
             FDChampTexte('Importance sur le territoire', _importanceCtrl, 'En quoi votre offre est-elle innovante ou nouvelle ?', validator: FormValidators.textArea),
@@ -96,7 +97,7 @@ class _Etape2DetailsState extends State<Etape2Details> {
             FDChampTexte('Plan de pérennisation', _perennisationCtrl, 'Comment le projet sera-t-il pérennisé ?', validator: FormValidators.textArea),
             FDChampTexte('Description du produit / service', _descriptionCtrl, 'Décrivez votre produit ou service en détail...', validator: FormValidators.textArea),
 
-            const SizedBox(height: 8),
+            SizedBox(height: 8.h),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -106,7 +107,7 @@ class _Etape2DetailsState extends State<Etape2Details> {
                   GestureDetector(
                     onTap: _ajouterMembre,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: FDColors.ice,
                         borderRadius: BorderRadius.circular(FDRadius.xs),
@@ -114,20 +115,20 @@ class _Etape2DetailsState extends State<Etape2Details> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.add, size: 14, color: FDColors.royal),
-                          const SizedBox(width: 4),
-                          const Text('Ajouter', style: TextStyle(fontSize: 12, color: FDColors.royal, fontWeight: FontWeight.w600)),
+                          Icon(Icons.add, size: 14, color: FDColors.royal),
+                          SizedBox(width: 4.w),
+                          Text('Ajouter', style: TextStyle(fontSize: 12.sp, color: FDColors.royal, fontWeight: FontWeight.w600)),
                         ],
                       ),
                     ),
                   ),
               ],
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10.h),
 
             if (equipe.isEmpty)
               Container(
-                padding: const EdgeInsets.all(14),
+                padding: EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: FDColors.ice,
                   borderRadius: BorderRadius.circular(FDRadius.sm),
@@ -135,9 +136,9 @@ class _Etape2DetailsState extends State<Etape2Details> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.info_outline, size: 16, color: FDColors.textSub),
-                    const SizedBox(width: 8),
-                    const Expanded(child: Text("Ajoutez au moins 1 membre d'équipe.", style: FDText.bodySub)),
+                    Icon(Icons.info_outline, size: 16, color: FDColors.textSub),
+                    SizedBox(width: 8.w),
+                    Expanded(child: Text("Ajoutez au moins 1 membre d'équipe.", style: FDText.bodySub)),
                   ],
                 ),
               ),
@@ -167,7 +168,7 @@ class _ToggleOption extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+        padding: EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
           color: selected ? FDColors.royal.withValues(alpha: 0.10) : FDColors.ice,
           borderRadius: BorderRadius.circular(FDRadius.sm),
@@ -179,7 +180,7 @@ class _ToggleOption extends StatelessWidget {
         child: Text(
           label,
           style: TextStyle(
-            fontSize: 13,
+            fontSize: 13.sp,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
             color: selected ? FDColors.royal : FDColors.textSub,
           ),
@@ -223,8 +224,8 @@ class _MembreCardState extends State<_MembreCard> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      margin: EdgeInsets.only(bottom: 12),
+      padding: EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: FDColors.white,
         borderRadius: BorderRadius.circular(FDRadius.sm),
@@ -237,14 +238,14 @@ class _MembreCardState extends State<_MembreCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Membre ', style: FDText.h3.copyWith(fontSize: 13)),
+              Text('Membre ', style: FDText.h3.copyWith(fontSize: 13.sp)),
               GestureDetector(
                 onTap: widget.onSupprimer,
-                child: const Icon(Icons.close, size: 16, color: FDColors.coral),
+                child: Icon(Icons.close, size: 16, color: FDColors.coral),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12.h),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -253,31 +254,31 @@ class _MembreCardState extends State<_MembreCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     FDLabel('Prénom'),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     FDTextField(controller: _prenomCtrl, hint: 'Prénom', icon: Icons.person_outline_rounded, validator: FormValidators.text),
                   ],
                 ),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10.w),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     FDLabel('Nom'),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4.h),
                     FDTextField(controller: _nomCtrl, hint: 'Nom', icon: Icons.person_outline_rounded, validator: FormValidators.text),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           FDLabel('Poste'),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           FDTextField(controller: _posteCtrl, hint: 'Ex: Directeur artistique', icon: Icons.work_outline_rounded, validator: FormValidators.text),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           FDLabel('Téléphone'),
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           FDTextField(controller: _telCtrl, hint: '+221 77 000 00 00', icon: Icons.phone_outlined, keyboardType: TextInputType.phone, validator: FormValidators.phone),
         ],
       ),

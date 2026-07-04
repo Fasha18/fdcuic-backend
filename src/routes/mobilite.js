@@ -2,13 +2,12 @@ const express = require('express');
 const router = express.Router();
 const {
   etape1, etape2, etape3, etape4,
-  soumettre, mesProjets, tousLesProjets, changerStatut, getProgrammeMobilitePublic, getProgrammeMobiliteStats
+  soumettre, mesProjets, tousLesProjets, changerStatut, getProgrammeMobiliteStats
 } = require('../controllers/mobiliteController');
 const { verifierToken, verifierRole } = require('../middlewares/auth');
 const uploadMobilite = require('../config/multerMobilite');
 
 // Programme Mobilité Public
-router.get('/programme-infos', getProgrammeMobilitePublic);
 router.get('/programme-stats', getProgrammeMobiliteStats);
 
 // Étape 1 — Informations générales (crée ou met à jour le brouillon)

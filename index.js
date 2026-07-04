@@ -85,9 +85,10 @@ try {
   app.use('/api/faqs',        require('./src/routes/faq'));
   app.use('/api/legal',       require('./src/routes/legal'));
 
-  // Route publique — téléchargement des templates (sans authentification)
-  const { telecharger } = require('./src/controllers/documentTemplateController');
-  app.get('/api/templates/download/:nom_document', telecharger);
+  // Routes publiques — téléchargement des documents modèles (sans authentification)
+  const { telechargerDocumentModele, getDocumentsModelesParType } = require('./src/controllers/documentModeleController');
+  app.get('/api/types-projet/:id/documents-modeles', getDocumentsModelesParType);
+  app.get('/api/documents-modeles/:docId/telecharger', telechargerDocumentModele);
 
   console.log('Toutes les routes chargées avec succès.');
 } catch (err) {

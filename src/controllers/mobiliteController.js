@@ -1,4 +1,4 @@
-const { ProjetMobilite, ProgrammeMobilite, User, Notification } = require('../models/index');
+const { ProjetMobilite, User, Notification } = require('../models/index');
 const path = require('path');
 
 // ── ÉTAPE 1 : Informations générales ──────────────────────
@@ -59,7 +59,7 @@ const etape1 = async (req, res) => {
 const etape2 = async (req, res) => {
   try {
     const {
-      presentation_succincte, opportunite,
+      Presentation_succincte, opportunite,
       pertinence, objectifs_generaux, objectifs_specifiques,
     } = req.body;
 
@@ -71,12 +71,12 @@ const etape2 = async (req, res) => {
       return res.status(404).json({ message: 'Projet introuvable.' });
     }
 
-    if (!presentation_succincte || !opportunite || !pertinence || !objectifs_generaux || !objectifs_specifiques) {
+    if (!Presentation_succincte || !opportunite || !pertinence || !objectifs_generaux || !objectifs_specifiques) {
       return res.status(400).json({ message: 'Tous les champs de l\'étape 2 sont obligatoires.' });
     }
 
     await projet.update({
-      presentation_succincte, opportunite,
+      Presentation_succincte, opportunite,
       pertinence, objectifs_generaux, objectifs_specifiques,
       etape_courante: 2,
     });
@@ -290,19 +290,6 @@ const changerStatut = async (req, res) => {
   }
 };
 
-// ── PROGRAMME MOBILITÉ (Public) ───────────────────────────
-const getProgrammeMobilitePublic = async (req, res) => {
-  try {
-    const programme = await ProgrammeMobilite.findOne({ where: { id: 1 } });
-    if (!programme) {
-      return res.status(404).json({ message: 'Programme mobilité non configuré.' });
-    }
-    return res.status(200).json({ programme });
-  } catch (error) {
-    return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
-  }
-};
-
 // ── STATISTIQUES GLOBALES MOBILITÉ (Public) ────────────────
 const getProgrammeMobiliteStats = async (req, res) => {
   try {
@@ -338,7 +325,25 @@ const supprimerCandidature = async (req, res) => {
   }
 };
 
+// ── GET DETAIL MOBILITE BY ID (Admin) ────────────────────
+const getMobiliteById = async (req, res) => {
+  try {
+    const candidature = await ProjetMobilite.findByPk(req.params.id, {
+      include: [{
+        model: User, as: 'candidat',
+        attributes: ['id', 'nom', 'prenom', 'email', 'telephone'],
+      }]
+    });
+    if (!candidature) {
+      return res.status(404).json({ message: 'Candidature introuvable.' });
+    }
+    return res.status(200).json({ candidature });
+  } catch (error) {
+    return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
+  }
+};
+
 module.exports = {
   etape1, etape2, etape3, etape4,
-  soumettre, mesProjets, tousLesProjets, changerStatut, supprimerCandidature, getProgrammeMobilitePublic, getProgrammeMobiliteStats
+  soumettre, mesProjets, tousLesProjets, changerStatut, supprimerCandidature, getProgrammeMobiliteStats, getMobiliteById
 };

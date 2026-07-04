@@ -200,7 +200,7 @@ const Topbar = ({ title, subtitle }) => {
                 <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', padding: '4px 8px' }}>Projets</div>
                 {searchResults.projets.map(p => (
                   <div key={p.id} className="dropdown-item-hover" style={{ padding: '8px', cursor: 'pointer', borderRadius: '8px', display: 'flex', flexDirection: 'column' }}
-                       onClick={() => { setShowSearchDropdown(false); navigate('/admin/projets'); }}>
+                       onClick={() => { setShowSearchDropdown(false); navigate('/admin/soumissionnaires'); }}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)' }}>{p.titre}</span>
                     <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>Par {p.candidat?.prenom} {p.candidat?.nom}</span>
                   </div>

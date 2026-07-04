@@ -143,14 +143,30 @@ doc_business_model: {
     defaultValue: 1,
   },
   statut: {
-    type: DataTypes.ENUM(
-      'brouillon',
-      'soumis',
-      'en_examen',
-      'accepte',
-      'rejete'
-    ),
+    type: DataTypes.STRING(50),
     defaultValue: 'brouillon',
+    comment: 'brouillon | soumis | en_examen_conformite | non_conforme | en_evaluation_contenu | accepte | rejete',
+  },
+
+  // ── ÉVALUATION ────────────────────────────────────────
+  commentaire_conformite: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: 'Motif de non-conformité (étape 1)',
+  },
+  commentaire_evaluation: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: 'Motif de rejet (étape 2)',
+  },
+  evalue_par: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: 'FK vers User (évaluateur)',
+  },
+  date_evaluation: {
+    type: DataTypes.DATE,
+    allowNull: true,
   },
 
   // ── CLÉS ÉTRANGÈRES ───────────────────────────────────

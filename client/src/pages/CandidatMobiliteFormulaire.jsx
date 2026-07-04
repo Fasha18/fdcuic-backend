@@ -27,6 +27,21 @@ const STEPS = [
   )},
 ];
 
+/* ─── Données Pays & Régions ──────────────────────────────── */
+const PAYS = [
+  "Sénégal", "France", "Belgique", "Suisse", "Canada", "Maroc", "Côte d'Ivoire", "Mali", "Guinée", "Mauritanie",
+  "Algérie", "Tunisie", "Cameroun", "Gabon", "Togo", "Bénin", "Burkina Faso", "Niger", "Tchad", "Congo",
+  "RDC", "Madagascar", "États-Unis", "Royaume-Uni", "Allemagne", "Espagne", "Italie", "Portugal", "Pays-Bas",
+  "Suède", "Norvège", "Danemark", "Finlande", "Japon", "Chine", "Corée du Sud", "Inde", "Brésil", "Argentine",
+  "Mexique", "Colombie", "Chili", "Pérou", "Australie", "Nouvelle-Zélande", "Afrique du Sud", "Égypte", "Nigéria",
+  "Kenya", "Ghana", "Somalie", "Éthiopie", "Rwanda", "Ouganda", "Zambie", "Zimbabwe", "Angola", "Mozambique"
+];
+
+const REGIONS_SENEGAL = [
+  "Dakar", "Thiès", "Diourbel", "Fatick", "Kaolack", "Kaffrine", "Louga",
+  "Saint-Louis", "Matam", "Tambacounda", "Kédougou", "Kolda", "Sédhiou", "Ziguinchor"
+];
+
 /* ─── Badge "Déjà fourni" ─────────────────────────────────── */
 const AlreadyProvidedBadge = () => (
   <span style={{
@@ -481,7 +496,16 @@ export default function CandidatMobiliteFormulaire({ onLogout }) {
                   <div className="form-group" id="field-date_depart">
                     <label>Date de départ prévue *</label>
                     <input type="date" value={e1.date_depart}
-                      onChange={ev => setE1({...e1, date_depart: ev.target.value})}
+                      min={new Date().toISOString().split('T')[0]}
+                      onChange={ev => {
+                        const newDepart = ev.target.value;
+                        let newArrivee = e1.date_arrivee;
+                        // Si la date de départ change et devient postérieure à la date d'arrivée, on réinitialise l'arrivée
+                        if (newDepart && newArrivee && new Date(newDepart) >= new Date(newArrivee)) {
+                          newArrivee = '';
+                        }
+                        setE1({...e1, date_depart: newDepart, date_arrivee: newArrivee});
+                      }}
                       onBlur={() => handleBlur('date_depart')}
                       style={getInputStyle('date_depart')} />
                     <ErrorMsg msg={fieldErrors.date_depart} />
@@ -489,7 +513,8 @@ export default function CandidatMobiliteFormulaire({ onLogout }) {
                   <div className="form-group" id="field-date_arrivee">
                     <label>Date d'arrivée prévue *</label>
                     <input type="date" value={e1.date_arrivee}
-                      min={e1.date_depart || undefined}
+                      min={e1.date_depart ? (() => { const d = new Date(e1.date_depart); d.setDate(d.getDate() + 1); return d.toISOString().split('T')[0]; })() : ''}
+                      disabled={!e1.date_depart}
                       onChange={ev => setE1({...e1, date_arrivee: ev.target.value})}
                       onBlur={() => handleBlur('date_arrivee')}
                       style={getInputStyle('date_arrivee')} />
@@ -498,20 +523,32 @@ export default function CandidatMobiliteFormulaire({ onLogout }) {
 
                   <div className="form-group" id="field-pays_destination">
                     <label>Pays de destination *</label>
-                    <input type="text" value={e1.pays_destination}
-                      placeholder="Ex: France, Maroc, Canada..."
-                      onChange={ev => setE1({...e1, pays_destination: ev.target.value})}
+                    <input type="text" list="pays-list" value={e1.pays_destination}
+                      placeholder="Rechercher un pays..."
+                      onChange={ev => {
+                        const newPays = ev.target.value;
+                        setE1({...e1, pays_destination: newPays, region_destination: ''});
+                      }}
                       onBlur={() => handleBlur('pays_destination')}
                       style={getInputStyle('pays_destination')} />
+                    <datalist id="pays-list">
+                      {PAYS.map(p => <option key={p} value={p} />)}
+                    </datalist>
                     <ErrorMsg msg={fieldErrors.pays_destination} />
                   </div>
+                  
                   <div className="form-group" id="field-region_destination">
                     <label>Région / Ville de destination *</label>
-                    <input type="text" value={e1.region_destination}
-                      placeholder="Ex: Paris, Île-de-France..."
+                    <input type="text" list={e1.pays_destination === 'Sénégal' ? 'regions-senegal-list' : undefined} 
+                      value={e1.region_destination}
+                      placeholder={e1.pays_destination === 'Sénégal' ? "Sélectionner une région..." : (e1.pays_destination ? "Saisir la ville ou région..." : "Sélectionnez d'abord un pays")}
+                      disabled={!e1.pays_destination}
                       onChange={ev => setE1({...e1, region_destination: ev.target.value})}
                       onBlur={() => handleBlur('region_destination')}
-                      style={getInputStyle('region_destination')} />
+                      style={{...getInputStyle('region_destination'), backgroundColor: !e1.pays_destination ? 'var(--color-bg-secondary)' : undefined }} />
+                    <datalist id="regions-senegal-list">
+                      {REGIONS_SENEGAL.map(r => <option key={r} value={r} />)}
+                    </datalist>
                     <ErrorMsg msg={fieldErrors.region_destination} />
                   </div>
                 </div>

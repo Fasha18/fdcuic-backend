@@ -89,34 +89,6 @@ const adminService = {
   },
 
   // ── GESTION DU PROGRAMME MOBILITÉ (Unique) ──
-  getProgrammeMobilite: async () => {
-    try {
-      const response = await api.get('/admin/mobilite/programme');
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-  modifierProgrammeMobilite: async (data) => {
-    try {
-      const response = await api.put('/admin/mobilite/programme', data);
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
-  uploadImageProgrammeMobilite: async (file) => {
-    try {
-      const formData = new FormData();
-      formData.append('image_couverture', file);
-      const response = await api.post('/admin/mobilite/programme/image', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  },
   getCandidaturesMobilite: async (page = 1, search = '', statut = '') => {
     try {
       const response = await api.get('/admin/mobilite', {
@@ -130,6 +102,14 @@ const adminService = {
   changerStatutMobilite: async (id, statut) => {
     try {
       const response = await api.put(`/admin/mobilite/${id}/statut`, { statut });
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
+  getMobiliteById: async (id) => {
+    try {
+      const response = await api.get(`/admin/mobilite/${id}`);
       return response.data;
     } catch (error) {
       throw error;
@@ -159,24 +139,8 @@ const adminService = {
     const res = await api.get('/admin/candidats', { params: { page, limit } });
     return res.data;
   },
-  getDetailCandidat: async (id) => {
-    const res = await api.get(`/admin/candidats/${id}`);
-    return res.data;
-  },
-  getCandidatAppels: async (id) => {
-    const res = await api.get(`/admin/candidats/${id}/appels`);
-    return res.data;
-  },
-  getCandidatMobilites: async (id) => {
-    const res = await api.get(`/admin/candidats/${id}/mobilites`);
-    return res.data;
-  },
-  getCandidatHistorique: async (id) => {
-    const res = await api.get(`/admin/candidats/${id}/historique`);
-    return res.data;
-  },
-  getCandidatNotifications: async (id) => {
-    const res = await api.get(`/admin/candidats/${id}/notifications`);
+  getSoumissionnaireById: async (id) => {
+    const res = await api.get(`/admin/soumissionnaires/${id}`);
     return res.data;
   },
   supprimerCandidat: async (id) => {
@@ -189,20 +153,16 @@ const adminService = {
     const res = await api.get('/admin/types-projet');
     return res.data;
   },
-  getChampsTypeProjet: async (code) => {
-    const res = await api.get(`/admin/types-projet/${code}/champs`);
+  createTypeProjet: async (data) => {
+    const res = await api.post('/admin/types-projet', data);
     return res.data;
   },
-  ajouterChampTypeProjet: async (code, data) => {
-    const res = await api.post(`/admin/types-projet/${code}/champs`, data);
+  updateTypeProjet: async (id, data) => {
+    const res = await api.put(`/admin/types-projet/${id}`, data);
     return res.data;
   },
-  modifierChampTypeProjet: async (id, data) => {
-    const res = await api.put(`/admin/types-projet/champs/${id}`, data);
-    return res.data;
-  },
-  supprimerChampTypeProjet: async (id) => {
-    const res = await api.delete(`/admin/types-projet/champs/${id}`);
+  deleteTypeProjet: async (id) => {
+    const res = await api.delete(`/admin/types-projet/${id}`);
     return res.data;
   },
 
@@ -276,6 +236,22 @@ const adminService = {
     const res = await api.post(`/admin/templates/${id}/fichier`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
+    return res.data;
+  },
+
+  // ── DOSSIERS (détail + évaluation) ──
+  getDossierById: async (id) => {
+    const res = await api.get(`/admin/dossiers/${id}`);
+    return res.data;
+  },
+
+  evaluerConformite: async (id, data) => {
+    const res = await api.patch(`/admin/dossiers/${id}/conformite`, data);
+    return res.data;
+  },
+
+  evaluerContenu: async (id, data) => {
+    const res = await api.patch(`/admin/dossiers/${id}/evaluation`, data);
     return res.data;
   },
 };

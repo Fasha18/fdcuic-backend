@@ -1,3 +1,4 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../models/notification_model.dart';
@@ -102,31 +103,31 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         children: [
           // ── HEADER ──────────────────────────────────────
           Container(
-            decoration: const BoxDecoration(gradient: FDGradients.header),
+            decoration: BoxDecoration(gradient: FDGradients.header),
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 8, 20, 20),
+                padding: EdgeInsets.fromLTRB(8, 8, 20, 20),
                 child: Row(
                   children: [
                     IconButton(
                       onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                      icon: Icon(Icons.arrow_back_ios_new_rounded,
                           color: FDColors.white, size: 18),
                     ),
-                    const Expanded(
+                    Expanded(
                       child: Text(
                         'Notifications',
                         style: TextStyle(
                           color: FDColors.white,
-                          fontSize: 20,
+                          fontSize: 20.sp,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
                     ),
                     if (_nonLuesCount > 0)
                       Container(
-                        padding: const EdgeInsets.symmetric(
+                        padding: EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
                           color: FDColors.white.withValues(alpha: 0.15),
@@ -135,9 +136,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         ),
                         child: Text(
                           '$_nonLuesCount non lues',
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: FDColors.white,
-                            fontSize: 11,
+                            fontSize: 11.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -151,14 +152,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           // ── Bouton "Tout marquer comme lu" ───────────────
           if (_notifications.isNotEmpty && _nonLuesCount > 0)
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
               child: Align(
                 alignment: Alignment.centerRight,
                 child: GestureDetector(
                   onTap: _toutMarquerCommeLu,
                   child: Container(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
                       color: FDColors.royal.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(FDRadius.pill),
@@ -168,11 +169,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       children: [
                         Icon(Icons.done_all_rounded,
                             size: 14, color: FDColors.royal),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 4.w),
                         Text(
                           'Tout marquer comme lu',
                           style: TextStyle(
-                            fontSize: 11,
+                            fontSize: 11.sp,
                             fontWeight: FontWeight.w600,
                             color: FDColors.royal,
                           ),
@@ -195,7 +196,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   Widget _buildContent() {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator());
     }
 
     if (_hasError) {
@@ -204,13 +205,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.wifi_off_rounded, size: 48, color: FDColors.border),
-            const SizedBox(height: 12),
-            const Text(
+            SizedBox(height: 12.h),
+            Text(
               'Impossible de charger les notifications.',
               style: FDText.bodySub,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
             GestureDetector(
               onTap: () {
                 setState(() {
@@ -220,7 +221,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 _loadNotifications();
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 decoration: BoxDecoration(
                   color: FDColors.royal.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(FDRadius.sm),
@@ -230,7 +231,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   style: TextStyle(
                     color: FDColors.royal,
                     fontWeight: FontWeight.w600,
-                    fontSize: 13,
+                    fontSize: 13.sp,
                   ),
                 ),
               ),
@@ -247,8 +248,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           children: [
             Icon(Icons.notifications_off_outlined,
                 size: 52, color: FDColors.border),
-            const SizedBox(height: 14),
-            const Text(
+            SizedBox(height: 14.h),
+            Text(
               'Aucune notification pour le moment.',
               style: FDText.bodySub,
               textAlign: TextAlign.center,
@@ -264,12 +265,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         await _loadNotifications();
       },
       child: ListView.builder(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+        padding: EdgeInsets.fromLTRB(16, 12, 16, 32),
         itemCount: _notifications.length,
         itemBuilder: (context, i) {
           final notif = _notifications[i];
           return Padding(
-            padding: const EdgeInsets.only(bottom: 10),
+            padding: EdgeInsets.only(bottom: 10),
             child: _NotificationCard(
               notification: notif,
               onTap: () {
@@ -327,7 +328,7 @@ class _NotificationCard extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        padding: const EdgeInsets.all(14),
+        padding: EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: notification.lu
               ? FDColors.white
@@ -343,14 +344,14 @@ class _NotificationCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              width: 40, height: 40,
+              width: 40.w, height: 40.h,
               decoration: BoxDecoration(
                 color: _iconColor.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(_icon, color: _iconColor, size: 20),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -358,27 +359,27 @@ class _NotificationCard extends StatelessWidget {
                   Text(
                     notification.message,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 13.sp,
                       fontWeight: notification.lu ? FontWeight.w400 : FontWeight.w600,
                       color: FDColors.navy,
                       height: 1.4,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6.h),
                   Row(
                     children: [
                       Icon(Icons.access_time_rounded,
                           size: 11, color: FDColors.textSub),
-                      const SizedBox(width: 4),
+                      SizedBox(width: 4.w),
                       Text(
                         _formatDate(notification.dateEnvoi ?? ''),
-                        style: FDText.bodySub.copyWith(fontSize: 10),
+                        style: FDText.bodySub.copyWith(fontSize: 10.sp),
                       ),
                       if (!notification.lu) ...[
-                        const Spacer(),
+                        Spacer(),
                         Container(
-                          width: 8, height: 8,
-                          decoration: const BoxDecoration(
+                          width: 8.w, height: 8.h,
+                          decoration: BoxDecoration(
                             color: FDColors.royal,
                             shape: BoxShape.circle,
                           ),

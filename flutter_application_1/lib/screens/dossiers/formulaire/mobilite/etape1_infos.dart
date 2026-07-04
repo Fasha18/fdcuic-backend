@@ -1,3 +1,4 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 import '../../../../widgets/auth_widgets.dart';
 import '../../../../widgets/form_widgets.dart';
@@ -67,22 +68,22 @@ class _Etape1InfosMobState extends State<Etape1InfosMob> {
     return Form(
       key: widget.formKey,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+        padding: EdgeInsets.fromLTRB(20, 24, 20, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             FDLabel('Nom de la structure / Artiste'),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             FDTextField(
               controller: _structureCtrl, 
               hint: 'Ex: Collectif Dakar Urban', 
               icon: Icons.business_outlined,
               validator: FormValidators.text,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             FDLabel('Discipline'),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             FDDropdown(
               hint: 'Sélectionner la discipline',
               value: widget.formData['discipline'],
@@ -91,7 +92,7 @@ class _Etape1InfosMobState extends State<Etape1InfosMob> {
               onChanged: (v) => setState(() => widget.formData['discipline'] = v),
               validator: FormValidators.requiredField,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             Row(
               children: [
@@ -100,7 +101,7 @@ class _Etape1InfosMobState extends State<Etape1InfosMob> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       FDLabel('Date de départ'),
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6.h),
                       _DateField(
                         valeur: widget.formData['date_depart'],
                         hint: 'YYYY-MM-DD',
@@ -109,13 +110,13 @@ class _Etape1InfosMobState extends State<Etape1InfosMob> {
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
+                SizedBox(width: 12.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       FDLabel("Date d'arrivée"),
-                      const SizedBox(height: 6),
+                      SizedBox(height: 6.h),
                       _DateField(
                         valeur: widget.formData['date_arrivee'],
                         hint: 'YYYY-MM-DD',
@@ -126,20 +127,20 @@ class _Etape1InfosMobState extends State<Etape1InfosMob> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             FDLabel('Pays de destination'),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             FDTextField(
               controller: _paysCtrl, 
               hint: 'Ex: France', 
               icon: Icons.public_outlined,
               validator: FormValidators.text,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             FDLabel('Région de destination'),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             FDTextField(
               controller: _regionCtrl, 
               hint: 'Ex: Île-de-France', 
@@ -174,7 +175,7 @@ class _DateField extends FormField<String> {
                 GestureDetector(
                   onTap: onTap,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    padding: EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                     decoration: BoxDecoration(
                       color: FDColors.ice,
                       borderRadius: BorderRadius.circular(FDRadius.sm),
@@ -185,8 +186,8 @@ class _DateField extends FormField<String> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.calendar_today_outlined, size: 18, color: FDColors.textHint),
-                        const SizedBox(width: 12),
+                        Icon(Icons.calendar_today_outlined, size: 18, color: FDColors.textHint),
+                        SizedBox(width: 12.w),
                         Expanded(
                           child: Text(
                             valeur ?? hint,
@@ -201,10 +202,10 @@ class _DateField extends FormField<String> {
                 ),
                 if (state.hasError)
                   Padding(
-                    padding: const EdgeInsets.only(top: 6, left: 14),
+                    padding: EdgeInsets.only(top: 6, left: 14),
                     child: Text(
                       state.errorText!,
-                      style: const TextStyle(color: FDColors.coral, fontSize: 12),
+                      style: TextStyle(color: FDColors.coral, fontSize: 12.sp),
                     ),
                   ),
               ],

@@ -7,7 +7,6 @@ const Subvention = require('./Subvention');
 const Notification = require('./Notification');
 const ProjetMobilite = require('./ProjetMobilite');
 const AppelProjet = require('./AppelProjet');
-const ProgrammeMobilite = require('./ProgrammeMobilite');
 const SecteurActivite = require('./SecteurActivite');
 const TypeProjet = require('./TypeProjet');
 const ChampFormulaire = require('./ChampFormulaire');
@@ -15,6 +14,7 @@ const ActivityLog = require('./ActivityLog');
 const FAQ = require('./FAQ');
 const PageLegale = require('./PageLegale');
 const DocumentTemplate = require('./DocumentTemplate');
+const DocumentModele = require('./DocumentModele');
 
 // User soumet N Projets
 User.hasMany(Projet, { foreignKey: 'user_id', as: 'projets' });
@@ -54,9 +54,13 @@ AppelProjet.belongsTo(AppelAProjet, { foreignKey: 'appel_id', as: 'appel' });
 ActivityLog.belongsTo(User, { as: 'admin', foreignKey: 'admin_id' });
 User.hasMany(ActivityLog, { foreignKey: 'admin_id' });
 
-// TypeProjet → DocumentTemplate (1 à N)
+// TypeProjet → DocumentTemplate (1 à N) (Ancien système, conservé pour historique)
 TypeProjet.hasMany(DocumentTemplate, { foreignKey: 'type_projet_code', sourceKey: 'code', as: 'document_templates' });
 DocumentTemplate.belongsTo(TypeProjet, { foreignKey: 'type_projet_code', targetKey: 'code', as: 'type_projet' });
+
+// TypeProjet → DocumentModele (1 à N) (Nouveau système de fichiers)
+TypeProjet.hasMany(DocumentModele, { foreignKey: 'type_projet_id', as: 'documents_modeles' });
+DocumentModele.belongsTo(TypeProjet, { foreignKey: 'type_projet_id', as: 'type_projet' });
 
 
 module.exports = {
@@ -69,7 +73,6 @@ module.exports = {
   Notification,
   ProjetMobilite,
   AppelProjet,
-  ProgrammeMobilite,
   SecteurActivite,
   TypeProjet,
   ChampFormulaire,
@@ -77,5 +80,6 @@ module.exports = {
   FAQ,
   PageLegale,
   DocumentTemplate,
+  DocumentModele,
 };
 

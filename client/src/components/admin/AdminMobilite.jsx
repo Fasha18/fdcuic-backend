@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import adminService from '../../services/adminService';
 
 const STATUS_CONFIG = {
@@ -12,6 +13,7 @@ const AdminMobilite = () => {
   const [candidatures, setCandidatures] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [stats, setStats] = useState({ total: 0, en_analyse: 0, valides: 0, rejetes: 0 });
   
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -20,8 +22,7 @@ const AdminMobilite = () => {
   const [search, setSearch] = useState('');
   const [statutFilter, setStatutFilter] = useState('');
   
-  const [selectedCandidature, setSelectedCandidature] = useState(null);
-  const [isChangingStatus, setIsChangingStatus] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchCandidatures();
@@ -30,10 +31,14 @@ const AdminMobilite = () => {
   const fetchCandidatures = async () => {
     try {
       setLoading(true);
-      const data = await adminService.getCandidaturesMobilite(page, search, statutFilter);
+      const [data, statsData] = await Promise.all([
+        adminService.getCandidaturesMobilite(page, search, statutFilter),
+        adminService.getStatsMobilite()
+      ]);
       setCandidatures(data.candidatures || []);
       setTotalPages(data.totalPages || 1);
       setTotalItems(data.total || 0);
+      if (statsData?.stats) setStats(statsData.stats);
     } catch (err) {
       setError(err.response?.data?.message || err.message);
     } finally {
@@ -41,27 +46,13 @@ const AdminMobilite = () => {
     }
   };
 
-  const handleStatusChange = async (newStatut) => {
-    if (!selectedCandidature) return;
-    try {
-      setIsChangingStatus(true);
-      await adminService.changerStatutMobilite(selectedCandidature.id, newStatut);
-      // Update local state to reflect the change
-      setSelectedCandidature({ ...selectedCandidature, statut: newStatut });
-      fetchCandidatures();
-    } catch (err) {
-      alert(err.response?.data?.message || 'Erreur lors du changement de statut');
-    } finally {
-      setIsChangingStatus(false);
-    }
-  };
+
 
   const handleDelete = async (e, id) => {
     e.stopPropagation(); // prevent row click
     if (window.confirm("Êtes-vous sûr de vouloir supprimer définitivement cette candidature de mobilité ?")) {
       try {
         await adminService.supprimerCandidatureMobilite(id);
-        if (selectedCandidature?.id === id) setSelectedCandidature(null);
         fetchCandidatures();
       } catch (err) {
         alert(err.response?.data?.message || 'Erreur lors de la suppression');
@@ -89,7 +80,7 @@ const AdminMobilite = () => {
     <div className="content-grid" style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
       
       {/* ── LEFT TABLE SECTION ── */}
-      <div style={{ flex: selectedCandidature ? '1' : '1 1 100%', transition: 'all 0.3s' }}>
+      <div style={{ flex: '1 1 100%', transition: 'all 0.3s', minWidth: 0 }}>
         
         {/* TOPBAR */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
@@ -98,7 +89,7 @@ const AdminMobilite = () => {
               Candidatures Mobilité
             </h2>
             <p style={{ color: 'var(--color-text-secondary)', marginTop: 4, fontSize: 14 }}>
-              Gérez les demandes de financement pour la mobilité internationale ({totalItems} demandes)
+              Gérez les demandes de financement pour la mobilité internationale
             </p>
           </div>
           
@@ -128,6 +119,46 @@ const AdminMobilite = () => {
           </div>
         </div>
 
+        {/* STATS CARDS */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 24 }}>
+          <div className="card animate-fade-in-up" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--color-bg-body)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+            </div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 4 }}>Total</div>
+              <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--color-text-primary)', lineHeight: 1 }}>{stats.total}</div>
+            </div>
+          </div>
+          <div className="card animate-fade-in-up" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: 16, animationDelay: '0.05s' }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--color-orange-light)', color: 'var(--color-orange)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 4 }}>En analyse</div>
+              <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--color-text-primary)', lineHeight: 1 }}>{stats.en_analyse}</div>
+            </div>
+          </div>
+          <div className="card animate-fade-in-up" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: 16, animationDelay: '0.1s' }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--color-green-light)', color: 'var(--color-green)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 4 }}>Acceptées</div>
+              <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--color-text-primary)', lineHeight: 1 }}>{stats.valides}</div>
+            </div>
+          </div>
+          <div className="card animate-fade-in-up" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: 16, animationDelay: '0.15s' }}>
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--color-red-light)', color: 'var(--color-red)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            </div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 4 }}>Rejetées</div>
+              <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--color-text-primary)', lineHeight: 1 }}>{stats.rejetes}</div>
+            </div>
+          </div>
+        </div>
+
         {/* TABLE */}
         <div className="card animate-fade-in-up" style={{ padding: 0, overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
@@ -135,7 +166,7 @@ const AdminMobilite = () => {
               <thead>
                 <tr style={{ background: 'var(--color-bg-body)', borderBottom: '1px solid var(--color-border-light)' }}>
                   {['Candidat', 'Structure', 'Discipline', 'Destination', 'Dates', 'Statut', 'Actions'].map(h => (
-                    <th key={h} style={{ padding: '14px 20px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+                    <th key={h} style={{ padding: '14px 12px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.5px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -155,62 +186,62 @@ const AdminMobilite = () => {
                 ) : (
                   candidatures.map((c, i) => {
                     const statusInfo = STATUS_CONFIG[c.statut] || { color: '#64748b', bg: '#f1f5f9', label: c.statut };
-                    const isSelected = selectedCandidature?.id === c.id;
-                    
                     return (
                       <tr 
                         key={c.id} 
-                        onClick={() => setSelectedCandidature(c)}
+                        onClick={() => navigate(`/admin/mobilite/candidature/${c.id}`)}
                         style={{ 
                           borderBottom: i === candidatures.length - 1 ? 'none' : '1px solid var(--color-border-light)', 
-                          background: isSelected ? 'var(--color-primary-light)' : 'transparent',
+                          background: 'transparent',
                           cursor: 'pointer',
                           transition: 'background 0.2s'
                         }}
-                        onMouseOver={(e) => { if(!isSelected) e.currentTarget.style.background = 'var(--color-bg-hover)' }}
-                        onMouseOut={(e) => { if(!isSelected) e.currentTarget.style.background = 'transparent' }}
+                        onMouseOver={(e) => e.currentTarget.style.background = 'var(--color-bg-hover)'}
+                        onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
                       >
-                        <td style={{ padding: '16px 20px' }}>
-                          <div style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{c.candidat ? `${c.candidat.prenom} ${c.candidat.nom}` : 'Inconnu'}</div>
-                          <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>{c.candidat?.email}</div>
+                        <td style={{ padding: '12px 12px' }}>
+                          <div style={{ fontWeight: 600, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.candidat ? `${c.candidat.prenom} ${c.candidat.nom}` : 'Inconnu'}</div>
+                          <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.candidat?.email}</div>
                         </td>
-                        <td style={{ padding: '16px 20px', fontSize: 14, color: 'var(--color-text-secondary)', fontWeight: 500 }}>
+                        <td style={{ padding: '12px 12px', fontSize: 14, color: 'var(--color-text-secondary)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {c.nom_structure}
                         </td>
-                        <td style={{ padding: '16px 20px', fontSize: 13, color: 'var(--color-text-secondary)' }}>
+                        <td style={{ padding: '12px 12px', fontSize: 13, color: 'var(--color-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {c.discipline}
                         </td>
-                        <td style={{ padding: '16px 20px', fontSize: 13, color: 'var(--color-text-secondary)' }}>
+                        <td style={{ padding: '12px 12px', fontSize: 13, color: 'var(--color-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {c.pays_destination}
                         </td>
-                        <td style={{ padding: '16px 20px', fontSize: 13, color: 'var(--color-text-secondary)' }}>
-                          {formatDate(c.date_depart)} → {formatDate(c.date_arrivee)}
+                        <td style={{ padding: '12px 12px', fontSize: 13, color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
+                          {new Date(c.date_depart).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' })} – {new Date(c.date_arrivee).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
                         </td>
-                        <td style={{ padding: '16px 20px' }}>
+                        <td style={{ padding: '12px 12px' }}>
                           <span style={{ 
-                            fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 8, 
-                            background: statusInfo.bg, color: statusInfo.color 
+                            fontSize: 12, fontWeight: 600, padding: '6px 10px', borderRadius: 8, 
+                            background: statusInfo.bg, color: statusInfo.color,
+                            display: 'inline-flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap'
                           }}>
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: statusInfo.color }} />
                             {statusInfo.label}
                           </span>
                         </td>
-                        <td style={{ padding: '16px 20px' }}>
-                          <div style={{ display: 'flex', gap: 8 }}>
-                            <button style={{ 
-                              padding: '6px 12px', borderRadius: 6, border: '1px solid var(--color-border)', 
-                              background: 'var(--color-bg-card)', color: 'var(--color-text-primary)', 
-                              fontSize: 12, fontWeight: 600, cursor: 'pointer' 
-                            }}>
-                              Détails
+                        <td style={{ padding: '12px 12px' }}>
+                          <div style={{ display: 'flex', gap: 6 }}>
+                            <button title="Détails" onClick={(e) => { e.stopPropagation(); navigate(`/admin/mobilite/candidature/${c.id}`); }} style={{ 
+                              width: 32, height: 32, borderRadius: 8, border: 'none', 
+                              background: 'var(--color-bg-body)', color: 'var(--color-text-secondary)', 
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                              transition: 'all 0.2s'
+                            }} onMouseOver={e => { e.currentTarget.style.color = 'var(--color-primary)'; e.currentTarget.style.background = 'var(--color-primary-light)'; }} onMouseOut={e => { e.currentTarget.style.color = 'var(--color-text-secondary)'; e.currentTarget.style.background = 'var(--color-bg-body)'; }}>
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                             </button>
-                            <button 
-                              onClick={(e) => handleDelete(e, c.id)}
-                              style={{ 
-                              padding: '6px 12px', borderRadius: 6, border: 'none', 
-                              background: 'var(--color-red-light)', color: 'var(--color-red)', 
-                              fontSize: 12, fontWeight: 600, cursor: 'pointer' 
-                            }}>
-                              Supprimer
+                            <button title="Supprimer" onClick={(e) => handleDelete(e, c.id)} style={{ 
+                              width: 32, height: 32, borderRadius: 8, border: 'none', 
+                              background: 'var(--color-bg-body)', color: 'var(--color-text-secondary)', 
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                              transition: 'all 0.2s'
+                            }} onMouseOver={e => { e.currentTarget.style.color = 'var(--color-red)'; e.currentTarget.style.background = 'var(--color-red-light)'; }} onMouseOut={e => { e.currentTarget.style.color = 'var(--color-text-secondary)'; e.currentTarget.style.background = 'var(--color-bg-body)'; }}>
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
                             </button>
                           </div>
                         </td>
@@ -246,114 +277,6 @@ const AdminMobilite = () => {
           )}
         </div>
       </div>
-
-      {/* ── RIGHT DETAIL PANEL ── */}
-      {selectedCandidature && (
-        <div className="card animate-slide-left" style={{ width: 380, flexShrink: 0, padding: 0, position: 'sticky', top: 24, maxHeight: 'calc(100vh - 48px)', overflowY: 'auto' }}>
-          
-          <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--color-border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'sticky', top: 0, background: 'var(--color-bg-card)', zIndex: 10 }}>
-            <div>
-              <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 4 }}>Détails de la demande</h3>
-              <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>Soumise le {formatDate(selectedCandidature.createdAt)}</div>
-            </div>
-            <button onClick={() => setSelectedCandidature(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-text-tertiary)', padding: 4 }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </div>
-
-          <div style={{ padding: '24px' }}>
-            {/* Statut Control */}
-            <div style={{ marginBottom: 24, padding: 16, background: 'var(--color-bg-body)', borderRadius: 12 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', marginBottom: 12 }}>Gestion du statut</div>
-              
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {selectedCandidature.statut === 'soumis' && (
-                  <>
-                    <button disabled={isChangingStatus} onClick={() => handleStatusChange('en_examen')} className="btn-primary" style={{ flex: 1, padding: '8px 12px', fontSize: 13 }}>Passer en examen</button>
-                    <button disabled={isChangingStatus} onClick={() => handleStatusChange('rejete')} className="btn-secondary" style={{ flex: 1, padding: '8px 12px', fontSize: 13, background: 'var(--color-red-light)', color: 'var(--color-red)', borderColor: 'var(--color-red-light)' }}>Rejeter</button>
-                  </>
-                )}
-                
-                {selectedCandidature.statut === 'en_examen' && (
-                  <>
-                    <button disabled={isChangingStatus} onClick={() => handleStatusChange('accepte')} className="btn-primary" style={{ flex: 1, padding: '8px 12px', fontSize: 13, background: 'var(--color-green)' }}>Accepter</button>
-                    <button disabled={isChangingStatus} onClick={() => handleStatusChange('rejete')} className="btn-secondary" style={{ flex: 1, padding: '8px 12px', fontSize: 13, background: 'var(--color-red-light)', color: 'var(--color-red)', borderColor: 'var(--color-red-light)' }}>Rejeter</button>
-                  </>
-                )}
-
-                {(selectedCandidature.statut === 'accepte' || selectedCandidature.statut === 'rejete') && (
-                  <div style={{ width: '100%', textAlign: 'center', fontSize: 13, fontWeight: 500, color: 'var(--color-text-tertiary)' }}>
-                    Statut final atteint.
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Info Sections */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-              
-              <section>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>Candidat</div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)' }}>{selectedCandidature.candidat ? `${selectedCandidature.candidat.prenom} ${selectedCandidature.candidat.nom}` : 'Inconnu'}</div>
-                <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 2 }}>{selectedCandidature.candidat?.email}</div>
-              </section>
-
-              <section>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>Projet</div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8 }}>
-                  <div>
-                    <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>Structure :</span>
-                    <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-primary)' }}>{selectedCandidature.nom_structure}</div>
-                  </div>
-                  <div>
-                    <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>Discipline :</span>
-                    <div style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-text-primary)' }}>{selectedCandidature.discipline}</div>
-                  </div>
-                </div>
-              </section>
-
-              <section>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>Destination</div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text-primary)' }}>{selectedCandidature.pays_destination}</div>
-                <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 2 }}>{selectedCandidature.region_destination || 'Région non spécifiée'}</div>
-                <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                  {formatDate(selectedCandidature.date_depart)} au {formatDate(selectedCandidature.date_arrivee)}
-                </div>
-              </section>
-              
-              <section>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-primary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>Documents</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {['doc_ninea', 'doc_recepisse', 'doc_invitation', 'doc_cv_portfolio', 'doc_note_structure'].map(docKey => {
-                    if (!selectedCandidature[docKey]) return null;
-                    return (
-                      <a 
-                        key={docKey}
-                        href={`https://fdcuic-backend-production.up.railway.app/uploads/${selectedCandidature[docKey]}`} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'var(--color-bg-body)', borderRadius: 8, textDecoration: 'none', color: 'var(--color-text-secondary)', fontSize: 13, transition: 'all 0.2s' }}
-                        onMouseOver={(e) => e.currentTarget.style.color = 'var(--color-primary)'}
-                        onMouseOut={(e) => e.currentTarget.style.color = 'var(--color-text-secondary)'}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                        <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {docKey.replace('doc_', '').replace('_', ' ')}
-                        </span>
-                      </a>
-                    );
-                  })}
-                  {!selectedCandidature.doc_ninea && !selectedCandidature.doc_recepisse && !selectedCandidature.doc_invitation && (
-                    <div style={{ fontSize: 13, color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>Aucun document.</div>
-                  )}
-                </div>
-              </section>
-            </div>
-
-          </div>
-        </div>
-      )}
     </div>
   );
 };

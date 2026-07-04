@@ -63,53 +63,109 @@ const inscription = async (req, res) => {
   }
 };
 
-// ── ACTIVATION DU COMPTE ──────────────────────────────────
+const pageTemplate = (titre, icone, titreH1, message, actionHtml = '') => `
+  <html>
+    <head>
+      <meta charset="UTF-8"/>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+      <title>${titre} — FDCUIC</title>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f0f4f8;
+               display: flex; align-items: center; justify-content: center;
+               min-height: 100vh; margin: 0; padding: 20px; box-sizing: border-box; }
+        .card { background: white; border-radius: 12px; padding: 48px 32px;
+                text-align: center; max-width: 460px; width: 100%; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
+        .icon { font-size: 56px; margin-bottom: 20px; line-height: 1; }
+        h1 { color: #0D1B2A; font-size: 24px; margin-bottom: 16px; margin-top: 0; }
+        p { color: #4b5563; line-height: 1.6; margin-bottom: 28px; font-size: 15px; }
+        .btn { display: inline-block; background: #1B6CA8; border: none;
+               color: white; padding: 14px 32px; border-radius: 8px; font-size: 16px;
+               text-decoration: none; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn:hover { background: #145585; }
+        .btn-outline { background: transparent; border: 2px solid #1B6CA8; color: #1B6CA8; }
+        .btn-outline:hover { background: #f0f7fb; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <div class="icon">${icone}</div>
+        <h1>${titreH1}</h1>
+        <p>${message}</p>
+        ${actionHtml}
+      </div>
+    </body>
+  </html>
+`;
+
+// ── ACTIVATION DU COMPTE (GET) ─────────────────────────────
 const activerCompte = async (req, res) => {
   try {
     const { token } = req.params;
     const user = await User.findOne({ where: { token_activation: token } });
 
+    // Si le token n'existe pas en base
     if (!user) {
-      return res.status(400).json({ message: "Lien d'activation invalide ou expiré." });
+      return res.status(404).send(pageTemplate(
+        "Lien invalide", "❌", "Lien expiré ou invalide",
+        "Ce lien d'activation n'est plus valide ou a déjà été utilisé.<br/>Si votre compte n'est pas activé, veuillez vous connecter pour demander un nouveau lien."
+      ));
     }
+
+    // Si le compte est déjà activé
     if (user.est_active) {
-      return res.status(400).json({ message: 'Ce compte est déjà activé. Vous pouvez vous connecter.' });
+      return res.send(pageTemplate(
+        "Compte déjà activé", "✅", "Compte déjà actif",
+        "Votre compte est déjà activé. Vous pouvez vous connecter à la plateforme.",
+        `<a href="${process.env.FRONTEND_URL || 'https://fdcuic-backend-production.up.railway.app'}" class="btn">Aller à la connexion</a>`
+      ));
     }
 
-    await user.update({ est_active: true, token_activation: null });
-
-    return res.send(`
-      <html>
-        <head>
-          <meta charset="UTF-8"/>
-          <title>Compte activé — FDCUIC</title>
-          <style>
-            body { font-family: Arial, sans-serif; background: #f0f4f8;
-                   display: flex; align-items: center; justify-content: center;
-                   min-height: 100vh; margin: 0; }
-            .card { background: white; border-radius: 12px; padding: 48px;
-                    text-align: center; max-width: 420px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-            .icon { font-size: 56px; margin-bottom: 16px; }
-            h1 { color: #0D1B2A; font-size: 22px; margin-bottom: 12px; }
-            p { color: #555; line-height: 1.6; }
-            .btn { display: inline-block; margin-top: 24px; background: #1B6CA8;
-                   color: white; padding: 12px 28px; border-radius: 6px;
-                   text-decoration: none; font-weight: bold; }
-          </style>
-        </head>
-        <body>
-          <div class="card">
-            <div class="icon">✅</div>
-            <h1>Compte activé avec succès !</h1>
-            <p>Votre compte FDCUIC est maintenant actif.<br/>
-               Vous pouvez fermer cette page et retourner sur l'application mobile pour vous connecter.</p>
-          </div>
-        </body>
-      </html>
-    `);
+    // Le token est valide, on affiche la page de confirmation (pour bloquer le pre-fetch des bots emails)
+    return res.send(pageTemplate(
+      "Activer votre compte", "👋", `Bonjour ${user.prenom},`,
+      "Bienvenue sur FDCUIC !<br/>Veuillez cliquer sur le bouton ci-dessous pour confirmer votre adresse email et activer votre compte.",
+      `<form method="POST" action="/api/auth/activer/${token}">
+         <button type="submit" class="btn">Confirmer mon activation</button>
+       </form>`
+    ));
 
   } catch (error) {
-    return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
+    return res.status(500).send(pageTemplate("Erreur", "⚠️", "Erreur Serveur", "Une erreur est survenue lors de la vérification de votre lien."));
+  }
+};
+
+// ── CONFIRMATION DE L'ACTIVATION (POST) ────────────────────
+const confirmerActivation = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const user = await User.findOne({ where: { token_activation: token } });
+
+    if (!user) {
+      return res.status(404).send(pageTemplate(
+        "Erreur", "❌", "Lien expiré",
+        "Ce lien d'activation n'est plus valide ou a déjà été utilisé."
+      ));
+    }
+
+    if (user.est_active) {
+      return res.send(pageTemplate(
+        "Déjà activé", "✅", "Compte déjà actif",
+        "Votre compte est déjà activé.",
+        `<a href="${process.env.FRONTEND_URL || 'https://fdcuic-backend-production.up.railway.app'}" class="btn">Aller à la connexion</a>`
+      ));
+    }
+
+    // Activation effective
+    await user.update({ est_active: true, token_activation: null });
+
+    return res.send(pageTemplate(
+      "Compte activé", "🎉", "Compte activé avec succès !",
+      "Félicitations, votre compte FDCUIC est maintenant actif.<br/>Vous pouvez dès à présent vous connecter à la plateforme.",
+      `<a href="${process.env.FRONTEND_URL || 'https://fdcuic-backend-production.up.railway.app'}" class="btn">Me connecter</a>`
+    ));
+
+  } catch (error) {
+    return res.status(500).send(pageTemplate("Erreur", "⚠️", "Erreur Serveur", "Une erreur est survenue lors de l'activation."));
   }
 };
 
@@ -123,6 +179,14 @@ const connexion = async (req, res) => {
       return res.status(401).json({ message: 'Email ou mot de passe incorrect.' });
     }
 
+    if (user.est_supprime) {
+      return res.status(403).json({ message: 'Ce compte n\'existe plus.' });
+    }
+
+    if (user.est_desactive) {
+      return res.status(403).json({ message: 'Votre compte a été désactivé. Contactez l\'administration.' });
+    }
+
     if (!user.est_active) {
       return res.status(403).json({
         message: "Compte non activé. Veuillez vérifier votre email et cliquer sur le lien d'activation."
@@ -133,6 +197,8 @@ const connexion = async (req, res) => {
     if (!motDePasseValide) {
       return res.status(401).json({ message: 'Email ou mot de passe incorrect.' });
     }
+
+    await user.update({ derniere_connexion: new Date() });
 
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
@@ -249,6 +315,7 @@ const confirmerResetPassword = async (req, res) => {
 module.exports = {
   inscription,
   activerCompte,
+  confirmerActivation,
   connexion,
   demanderResetPassword,
   confirmerResetPassword,

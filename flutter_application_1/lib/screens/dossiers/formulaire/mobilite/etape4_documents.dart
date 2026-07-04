@@ -1,3 +1,4 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../../core/theme.dart';
@@ -19,7 +20,7 @@ class MobiliteEtape4Documents extends StatefulWidget {
 class _MobiliteEtape4DocumentsState extends State<MobiliteEtape4Documents> {
   final Map<String, String?> _fichiers = {};
 
-  final List<Map<String, String>> _docsRequis = const [
+  final List<Map<String, String>> _docsRequis = [
     {'key': 'doc_ninea', 'label': 'NINEA', 'requis': 'true'},
     {'key': 'doc_recepisse', 'label': 'Récépissé', 'requis': 'true'},
     {'key': 'doc_invitation', 'label': 'Lettre d\'invitation', 'requis': 'true'},
@@ -82,13 +83,13 @@ class _MobiliteEtape4DocumentsState extends State<MobiliteEtape4Documents> {
     return Form(
       key: widget.formKey,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+        padding: EdgeInsets.fromLTRB(20, 24, 20, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Info
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: FDColors.electricBlue.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(FDRadius.sm),
@@ -97,9 +98,9 @@ class _MobiliteEtape4DocumentsState extends State<MobiliteEtape4Documents> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline,
+                  Icon(Icons.info_outline,
                       size: 16, color: FDColors.electricBlue),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8.w),
                   Expanded(
                     child: Text(
                       'Formats acceptés : PDF, JPG, PNG. Taille max : 10 Mo.',
@@ -110,11 +111,11 @@ class _MobiliteEtape4DocumentsState extends State<MobiliteEtape4Documents> {
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
 
             // Liste des documents
             ..._docsRequis.map((doc) => Padding(
-              padding: const EdgeInsets.only(bottom: 14),
+              padding: EdgeInsets.only(bottom: 14),
               child: _DocUploadField(
                 label: doc['label']!,
                 isRequis: doc['requis'] == 'true',
@@ -152,7 +153,7 @@ class _DocUploadField extends StatelessWidget {
     return GestureDetector(
       onTap: uploaded ? null : onTap,
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: uploaded
               ? FDColors.mint.withValues(alpha: 0.06)
@@ -167,7 +168,7 @@ class _DocUploadField extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 40, height: 40,
+              width: 40.w, height: 40.h,
               decoration: BoxDecoration(
                 color: uploaded
                     ? FDColors.mint.withValues(alpha: 0.12)
@@ -182,7 +183,7 @@ class _DocUploadField extends StatelessWidget {
                 color: uploaded ? FDColors.mint : FDColors.textSub,
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -190,25 +191,25 @@ class _DocUploadField extends StatelessWidget {
                   Row(
                     children: [
                       Text(label,
-                          style: FDText.h3.copyWith(fontSize: 13)),
+                          style: FDText.h3.copyWith(fontSize: 13.sp)),
                       if (isRequis) ...[
-                        const SizedBox(width: 4),
+                        SizedBox(width: 4.w),
                         Text('*',
                             style: TextStyle(
                                 color: FDColors.coral,
-                                fontSize: 13,
+                                fontSize: 13.sp,
                                 fontWeight: FontWeight.w700)),
                       ],
                     ],
                   ),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2.h),
                   Text(
                     uploaded ? fichierNom! : 'Appuyer pour sélectionner',
                     style: FDText.bodySub.copyWith(
                       color: uploaded
                           ? FDColors.mint
                           : FDColors.textHint,
-                      fontSize: 11,
+                      fontSize: 11.sp,
                     ),
                   ),
                 ],
@@ -217,7 +218,7 @@ class _DocUploadField extends StatelessWidget {
             if (uploaded)
               GestureDetector(
                 onTap: onSupprimer,
-                child: const Icon(Icons.close,
+                child: Icon(Icons.close,
                     size: 16, color: FDColors.coral),
               ),
           ],

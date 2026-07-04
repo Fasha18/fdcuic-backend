@@ -50,10 +50,10 @@ const listerSecteurs = async (req, res) => {
 // POST admin — créer un secteur
 const creerSecteur = async (req, res) => {
   try {
-    const { code, nom, description, icone } = req.body;
+    const { nom, description, icone } = req.body;
 
-    if (!code || !nom) {
-      return res.status(400).json({ message: 'Le code et le nom sont obligatoires.' });
+    if (!nom) {
+      return res.status(400).json({ message: 'Le nom est obligatoire.' });
     }
 
     if (nom.length < 3) {
@@ -64,10 +64,24 @@ const creerSecteur = async (req, res) => {
       return res.status(400).json({ message: 'La description doit contenir au moins 10 caractères.' });
     }
 
-    // Vérifier l'unicité du code
-    const existant = await SecteurActivite.findOne({ where: { code } });
-    if (existant) {
-      return res.status(400).json({ message: `Le code "${code}" existe déjà.` });
+    // Auto-generate code from nom
+    let baseCode = nom
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+    
+    if (!baseCode) baseCode = 'secteur';
+
+    let code = baseCode;
+    let existant = await SecteurActivite.findOne({ where: { code } });
+    let counter = 1;
+
+    while (existant) {
+        code = `${baseCode}_${counter}`;
+        existant = await SecteurActivite.findOne({ where: { code } });
+        counter++;
     }
 
     const secteur = await SecteurActivite.create({ code, nom, description, icone });

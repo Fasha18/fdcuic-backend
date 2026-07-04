@@ -36,7 +36,7 @@ class _Etape3ProgrammeMobState extends State<Etape3ProgrammeMob> {
     return Form(
       key: widget.formKey,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+        padding: EdgeInsets.fromLTRB(20, 24, 20, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

@@ -1,3 +1,4 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -9,7 +10,7 @@ class WelcomeScreen extends StatelessWidget {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -31,34 +32,11 @@ class WelcomeScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Logo
-                    Container(
-                      width: 90,
-                      height: 90,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.3),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.account_balance_outlined,
-                        color: Colors.white,
-                        size: 44,
-                      ),
+                    Image.asset(
+                      'assets/images/FDCUIC_logo.png',
+                      height: 60.h,
                     ),
-                    const SizedBox(height: 20),
-                    const Text(
-                      'FDCUIC',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 2,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10.h),
 
                     // Tagline → texte gris foncé
                   ],
@@ -67,7 +45,7 @@ class WelcomeScreen extends StatelessWidget {
 
               // ── ZONE BOUTONS EN BAS ──────────────────────
               Padding(
-                padding: const EdgeInsets.fromLTRB(28, 0, 28, 48),
+                padding: EdgeInsets.fromLTRB(28, 0, 28, 48),
                 child: Column(
                   children: [
                     // Tagline
@@ -76,15 +54,15 @@ class WelcomeScreen extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.black.withValues(alpha: 0.4), // ← était blanc
-                        fontSize: 12,
+                        fontSize: 12.sp,
                       ),
                     ),
-                    const SizedBox(height: 28),
+                    SizedBox(height: 28.h),
 
                     // Bouton Se connecter (plein blanc)
                     SizedBox(
                       width: double.infinity,
-                      height: 54,
+                      height: 54.h,
                       child: ElevatedButton(
                         onPressed: () {
                           Navigator.pushNamed(context, '/login');
@@ -97,22 +75,22 @@ class WelcomeScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(16),
                           ),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Se connecter',
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: 15.sp,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 14),
+                    SizedBox(height: 14.h),
 
                     // Bouton Créer un compte (contour blanc)
                     SizedBox(
                       width: double.infinity,
-                      height: 54,
+                      height: 54.h,
                       child: OutlinedButton(
                         onPressed: () {
                           Navigator.pushNamed(context, '/register');
@@ -127,10 +105,10 @@ class WelcomeScreen extends StatelessWidget {
                             borderRadius: BorderRadius.circular(16),
                           ),
                         ),
-                        child: const Text(
+                        child: Text(
                           'Créer un compte',
                           style: TextStyle(
-                            fontSize: 15,
+                            fontSize: 15.sp,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

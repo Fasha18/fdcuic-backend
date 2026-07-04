@@ -1,3 +1,4 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 
 // ─────────────────────────────────────────────
@@ -107,78 +108,78 @@ class FDText {
   // puis utiliser GoogleFonts.spaceGrotesk(...)
 
   // Display / Titres forts
-  static const TextStyle h1 = TextStyle(
-    fontSize: 26,
+  static TextStyle get h1 => TextStyle(
+    fontSize: 26.sp,
     fontWeight: FontWeight.w700,
     color: FDColors.textPrimary,
     letterSpacing: -0.5,
   );
 
-  static const TextStyle h2 = TextStyle(
-    fontSize: 20,
+  static TextStyle get h2 => TextStyle(
+    fontSize: 20.sp,
     fontWeight: FontWeight.w700,
     color: FDColors.textPrimary,
     letterSpacing: -0.3,
   );
 
-  static const TextStyle h3 = TextStyle(
-    fontSize: 15,
+  static TextStyle get h3 => TextStyle(
+    fontSize: 15.sp,
     fontWeight: FontWeight.w700,
     color: FDColors.textPrimary,
   );
 
   // Corps de texte
-  static const TextStyle body = TextStyle(
-    fontSize: 13,
+  static TextStyle get body => TextStyle(
+    fontSize: 13.sp,
     fontWeight: FontWeight.w400,
     color: FDColors.textPrimary,
     height: 1.5,
   );
 
-  static const TextStyle bodySub = TextStyle(
-    fontSize: 12,
+  static TextStyle get bodySub => TextStyle(
+    fontSize: 12.sp,
     fontWeight: FontWeight.w400,
     color: FDColors.textSub,
     height: 1.5,
   );
 
   // Labels / Tags / Hints
-  static const TextStyle label = TextStyle(
-    fontSize: 10,
+  static TextStyle get label => TextStyle(
+    fontSize: 10.sp,
     fontWeight: FontWeight.w600,
     color: FDColors.textSub,
     letterSpacing: 0.08,
   );
 
-  static const TextStyle labelCaps = TextStyle(
-    fontSize: 9,
+  static TextStyle get labelCaps => TextStyle(
+    fontSize: 9.sp,
     fontWeight: FontWeight.w700,
     letterSpacing: 0.12,
   );
 
   // Boutons
-  static const TextStyle button = TextStyle(
-    fontSize: 13,
+  static TextStyle get button => TextStyle(
+    fontSize: 13.sp,
     fontWeight: FontWeight.w700,
     letterSpacing: 0.02,
   );
 
-  static const TextStyle buttonSm = TextStyle(
-    fontSize: 11,
+  static TextStyle get buttonSm => TextStyle(
+    fontSize: 11.sp,
     fontWeight: FontWeight.w700,
     letterSpacing: 0.02,
   );
 
   // Chiffres / stats
-  static const TextStyle statBig = TextStyle(
-    fontSize: 24,
+  static TextStyle get statBig => TextStyle(
+    fontSize: 24.sp,
     fontWeight: FontWeight.w700,
     color: FDColors.royal,
   );
 
   // Greeting name (italic via style)
-  static const TextStyle greetingName = TextStyle(
-    fontSize: 22,
+  static TextStyle get greetingName => TextStyle(
+    fontSize: 22.sp,
     fontWeight: FontWeight.w700,
     color: FDColors.white,
     height: 1.2,
@@ -191,18 +192,18 @@ class FDText {
 class FDRadius {
   FDRadius._();
 
-  static const double xs  = 6;
-  static const double sm  = 10;
-  static const double md  = 14;
-  static const double lg  = 18;
-  static const double xl  = 24;
-  static const double pill = 100;
+  static double get xs  => 6.r;
+  static double get sm  => 10.r;
+  static double get md  => 14.r;
+  static double get lg  => 18.r;
+  static double get xl  => 24.r;
+  static double get pill => 100.r;
 
-  static BorderRadius card    = BorderRadius.circular(md);
-  static BorderRadius cardLg  = BorderRadius.circular(lg);
-  static BorderRadius button  = BorderRadius.circular(sm);
-  static BorderRadius badge   = BorderRadius.circular(xs);
-  static BorderRadius rounded = BorderRadius.circular(pill);
+  static BorderRadius get card    => BorderRadius.circular(md);
+  static BorderRadius get cardLg  => BorderRadius.circular(lg);
+  static BorderRadius get button  => BorderRadius.circular(sm);
+  static BorderRadius get badge   => BorderRadius.circular(xs);
+  static BorderRadius get rounded => BorderRadius.circular(pill);
 }
 
 // ─────────────────────────────────────────────
@@ -286,7 +287,7 @@ ThemeData fdcuicTheme() {
         shape: RoundedRectangleBorder(
           borderRadius: FDRadius.button,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 13),
         textStyle: FDText.button,
         elevation: 0,
       ),
@@ -300,7 +301,7 @@ ThemeData fdcuicTheme() {
         shape: RoundedRectangleBorder(
           borderRadius: FDRadius.button,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 13),
         textStyle: FDText.button,
       ),
     ),
@@ -327,11 +328,11 @@ ThemeData fdcuicTheme() {
       ),
       hintStyle: FDText.body.copyWith(color: FDColors.textHint),
       labelStyle: FDText.label.copyWith(color: FDColors.textSub),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     ),
 
     // Dividers
-    dividerTheme: const DividerThemeData(
+    dividerTheme: DividerThemeData(
       color: FDColors.borderLight,
       thickness: 0.5,
     ),

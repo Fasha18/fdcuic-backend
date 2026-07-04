@@ -1,4 +1,4 @@
-const { TypeProjet, ChampFormulaire, AppelProjet } = require('../models/index');
+const { TypeProjet, AppelProjet } = require('../models/index');
 
 // GET admin — tous les types + stats
 const listerTypes = async (req, res) => {
@@ -27,71 +27,82 @@ const listerTypes = async (req, res) => {
   }
 };
 
-// GET admin — champs d'un type de projet
-const getChamps = async (req, res) => {
+// POST admin — ajouter un type de projet
+const creerType = async (req, res) => {
   try {
-    const { code } = req.params;
-    const champs = await ChampFormulaire.findAll({
-      where: { type_projet: code },
-      order: [['ordre', 'ASC']],
-    });
-    return res.status(200).json({ champs });
-  } catch (error) {
-    return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
-  }
-};
-
-// POST admin — ajouter un champ à un type
-const ajouterChamp = async (req, res) => {
-  try {
-    const { code } = req.params;
-    const { nom_champ, label, type_champ, obligatoire, ordre } = req.body;
-
-    if (!nom_champ || !label) {
-      return res.status(400).json({ message: 'nom_champ et label sont obligatoires.' });
+    const { label, description } = req.body;
+    
+    if (!label) {
+      return res.status(400).json({ message: 'Le titre (label) est obligatoire.' });
     }
 
-    const champ = await ChampFormulaire.create({
-      type_projet: code,
-      nom_champ,
+    // Générer un code à partir du label (lowercase, pas d'espaces, sans accents)
+    let baseCode = label
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-');
+    
+    // S'assurer de l'unicité
+    let code = baseCode;
+    let counter = 1;
+    while (await TypeProjet.findOne({ where: { code } })) {
+      code = `${baseCode}-${counter}`;
+      counter++;
+    }
+
+    const nouveauType = await TypeProjet.create({
+      code,
       label,
-      type_champ,
-      obligatoire,
-      ordre,
+      description: description || '',
+      actif: true
     });
 
-    return res.status(201).json({ message: 'Champ ajouté avec succès.', champ });
+    return res.status(201).json({ message: 'Type de projet créé avec succès.', type: nouveauType });
   } catch (error) {
     return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
   }
 };
 
-// PUT admin — modifier un champ
-const modifierChamp = async (req, res) => {
+// PUT admin — modifier un type de projet
+const modifierType = async (req, res) => {
   try {
-    const champ = await ChampFormulaire.findByPk(req.params.id);
-    if (!champ) {
-      return res.status(404).json({ message: 'Champ introuvable.' });
+    const { id } = req.params;
+    const { label, description } = req.body;
+
+    const typeProjet = await TypeProjet.findByPk(id);
+    if (!typeProjet) {
+      return res.status(404).json({ message: 'Type de projet introuvable.' });
     }
 
-    const { label, type_champ, obligatoire, actif, ordre } = req.body;
-    await champ.update({ label, type_champ, obligatoire, actif, ordre });
-    return res.status(200).json({ message: 'Champ mis à jour.', champ });
+    await typeProjet.update({ label, description });
+
+    return res.status(200).json({ message: 'Type de projet mis à jour.', type: typeProjet });
   } catch (error) {
     return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
   }
 };
 
-// DELETE admin — supprimer un champ
-const supprimerChamp = async (req, res) => {
+// DELETE admin — supprimer un type de projet (soft delete ou hard delete si non utilisé)
+const supprimerType = async (req, res) => {
   try {
-    const champ = await ChampFormulaire.findByPk(req.params.id);
-    if (!champ) {
-      return res.status(404).json({ message: 'Champ introuvable.' });
+    const { id } = req.params;
+    
+    const typeProjet = await TypeProjet.findByPk(id);
+    if (!typeProjet) {
+      return res.status(404).json({ message: 'Type de projet introuvable.' });
     }
 
-    await champ.destroy();
-    return res.status(200).json({ message: 'Champ supprimé avec succès.' });
+    // Vérifier si des dossiers l'utilisent
+    const totalAppels = await AppelProjet.count({ where: { type_projet: typeProjet.code } });
+    
+    if (totalAppels > 0) {
+      // Soft delete: on le rend inactif (pour l'instant la DB n'a peut-être pas prévu de filter par actif, mais c'est l'idée)
+      await typeProjet.update({ actif: false });
+      return res.status(200).json({ message: 'Type de projet désactivé car des dossiers y sont rattachés.' });
+    } else {
+      await typeProjet.destroy();
+      return res.status(200).json({ message: 'Type de projet supprimé avec succès.' });
+    }
   } catch (error) {
     return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
   }
@@ -99,8 +110,7 @@ const supprimerChamp = async (req, res) => {
 
 module.exports = {
   listerTypes,
-  getChamps,
-  ajouterChamp,
-  modifierChamp,
-  supprimerChamp,
+  creerType,
+  modifierType,
+  supprimerType,
 };

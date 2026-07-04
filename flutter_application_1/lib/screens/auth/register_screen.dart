@@ -1,5 +1,7 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
-import '../../widgets/auth_widgets.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../core/app_colors.dart';
 import '../../services/api_service.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -16,7 +18,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmController = TextEditingController();
+  
   bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirm = true;
 
   Future<void> _register() async {
     final nom = _nomController.text.trim();
@@ -55,7 +60,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(res['message'] ?? 'Inscription réussie !'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
         Navigator.pushReplacementNamed(context, '/login');
@@ -65,7 +70,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString().replaceAll('Exception: ', '')),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -85,135 +90,235 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
+  Widget _buildLabel(String text, bool isDark) {
+    return Text(text, style: GoogleFonts.sora(fontSize: 12.sp, fontWeight: FontWeight.w600,
+      color: isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary));
+  }
+
+  InputDecoration _inputDecoration(bool isDark) {
+    return InputDecoration(
+      filled: true,
+      fillColor: isDark ? AppColors.darkBgCard : AppColors.lightBgCard,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          width: 1,
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          width: 1,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: isDark ? AppColors.darkAccent : AppColors.lightAccent,
+          width: 1.5,
+        ),
+      ),
+      labelStyle: GoogleFonts.sora(
+        fontSize: 12.sp,
+        color: isDark ? AppColors.darkTxtSecondary : AppColors.lightTxtSecondary,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      body: GradientBackground(
-        child: SafeArea(
+      backgroundColor: isDark ? AppColors.darkBgPrimary : AppColors.lightBgPrimary,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: EdgeInsets.all(24),
           child: Column(
             children: [
-              const SizedBox(height: 28),
-              const FDLogo(size: 64),
-              const SizedBox(height: 24),
-              Expanded(
-                child: WhiteSheet(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              SizedBox(height: 24.h),
+
+              // Logo FDCUIC
+              Image.asset(
+                'assets/images/FDCUIC_logo.png',
+                height: 48.h,
+              ),
+              SizedBox(height: 8.h),
+              Text('ESPACE CANDIDAT',
+                style: GoogleFonts.sora(
+                  fontSize: 10.sp, fontWeight: FontWeight.w600,
+                  letterSpacing: 0.12,
+                  color: isDark ? AppColors.darkAccent : AppColors.lightAccent,
+                )),
+
+              SizedBox(height: 32.h),
+
+              // Carte formulaire
+              Container(
+                padding: EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkBgCard : AppColors.lightBgCard,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Créer un compte',
+                      style: GoogleFonts.sora(
+                        fontSize: 20.sp, fontWeight: FontWeight.w700,
+                        color: isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary,
+                      )),
+                    SizedBox(height: 4.h),
+                    Text('Rejoignez la plateforme FDCUIC',
+                      style: GoogleFonts.sora(
+                        fontSize: 13.sp,
+                        color: isDark ? AppColors.darkTxtSecondary : AppColors.lightTxtSecondary,
+                      )),
+                    SizedBox(height: 24.h),
+
+                    // Nom + Prénom
+                    Row(
                       children: [
-                        const Text(
-                          'Créer un compte',
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF0D1B4B),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildLabel('Nom', isDark),
+                              SizedBox(height: 8.h),
+                              TextField(
+                                controller: _nomController,
+                                style: GoogleFonts.sora(fontSize: 14.sp, color: isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary),
+                                decoration: _inputDecoration(isDark),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Rejoignez la plateforme FDCUIC',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.black.withValues(alpha: 0.45),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildLabel('Prénom', isDark),
+                              SizedBox(height: 8.h),
+                              TextField(
+                                controller: _prenomController,
+                                style: GoogleFonts.sora(fontSize: 14.sp, color: isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary),
+                                decoration: _inputDecoration(isDark),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 24),
-
-                        // Nom + Prénom côte à côte
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const FDLabel('Nom'),
-                                  const SizedBox(height: 6),
-                                  FDTextField(
-                                    controller: _nomController,
-                                    hint: 'Diallo',
-                                    icon: Icons.person_outline_rounded,
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const FDLabel('Prénom'),
-                                  const SizedBox(height: 6),
-                                  FDTextField(
-                                    controller: _prenomController,
-                                    hint: 'Aminata',
-                                    icon: Icons.person_outline_rounded,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Téléphone
-                        const FDLabel('Téléphone'),
-                        const SizedBox(height: 6),
-                        FDTextField(
-                          controller: _telController,
-                          hint: '+221 77 000 00 00',
-                          icon: Icons.phone_outlined,
-                          keyboardType: TextInputType.phone,
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Email
-                        const FDLabel('Email'),
-                        const SizedBox(height: 6),
-                        FDTextField(
-                          controller: _emailController,
-                          hint: 'exemple@email.com',
-                          icon: Icons.mail_outline_rounded,
-                          keyboardType: TextInputType.emailAddress,
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Mot de passe
-                        const FDLabel('Mot de passe'),
-                        const SizedBox(height: 6),
-                        FDPasswordField(
-                          controller: _passwordController,
-                          hint: 'Minimum 8 caractères',
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Confirmation
-                        const FDLabel('Confirmer le mot de passe'),
-                        const SizedBox(height: 6),
-                        FDPasswordField(
-                          controller: _confirmController,
-                          hint: 'Répétez le mot de passe',
-                        ),
-                        const SizedBox(height: 32),
-
-                        // Bouton S'inscrire
-                        FDButton(
-                          label: 'S\'inscrire',
-                          isLoading: _isLoading,
-                          onTap: _register,
-                        ),
-                        const SizedBox(height: 24),
-
-                        // Lien connexion
-                        FDAuthLink(
-                          question: 'Déjà un compte ?',
-                          linkText: 'Se connecter',
-                          onTap: () => Navigator.pushReplacementNamed(context, '/login'),
-                        ),
-                        const SizedBox(height: 16),
                       ],
                     ),
-                  ),
+                    SizedBox(height: 16.h),
+
+                    // Téléphone
+                    _buildLabel('Téléphone', isDark),
+                    SizedBox(height: 8.h),
+                    TextField(
+                      controller: _telController,
+                      keyboardType: TextInputType.phone,
+                      style: GoogleFonts.sora(fontSize: 14.sp, color: isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary),
+                      decoration: _inputDecoration(isDark),
+                    ),
+                    SizedBox(height: 16.h),
+
+                    // Email
+                    _buildLabel('Email', isDark),
+                    SizedBox(height: 8.h),
+                    TextField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      style: GoogleFonts.sora(fontSize: 14.sp, color: isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary),
+                      decoration: _inputDecoration(isDark),
+                    ),
+                    SizedBox(height: 16.h),
+
+                    // Mot de passe
+                    _buildLabel('Mot de passe', isDark),
+                    SizedBox(height: 8.h),
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      style: GoogleFonts.sora(fontSize: 14.sp, color: isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary),
+                      decoration: _inputDecoration(isDark).copyWith(
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                            color: isDark ? AppColors.darkTxtSecondary : AppColors.lightTxtSecondary,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16.h),
+
+                    // Confirmation mot de passe
+                    _buildLabel('Confirmer le mot de passe', isDark),
+                    SizedBox(height: 8.h),
+                    TextField(
+                      controller: _confirmController,
+                      obscureText: _obscureConfirm,
+                      style: GoogleFonts.sora(fontSize: 14.sp, color: isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary),
+                      decoration: _inputDecoration(isDark).copyWith(
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscureConfirm ? Icons.visibility_off : Icons.visibility,
+                            color: isDark ? AppColors.darkTxtSecondary : AppColors.lightTxtSecondary,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscureConfirm = !_obscureConfirm;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 24.h),
+
+                    // Bouton inscription
+                    ElevatedButton(
+                      onPressed: _isLoading ? null : _register,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isDark ? AppColors.darkAccent : AppColors.lightAccent,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                        minimumSize: const Size(double.infinity, 52),
+                        textStyle: GoogleFonts.sora(fontSize: 15.sp, fontWeight: FontWeight.w600),
+                      ),
+                      child: _isLoading 
+                        ? SizedBox(height: 20.h, width: 20.w, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : Text('S\'inscrire'),
+                    ),
+
+                    SizedBox(height: 16.h),
+
+                    // Lien connexion
+                    Center(
+                      child: GestureDetector(
+                        onTap: () => Navigator.pushReplacementNamed(context, '/login'),
+                        child: RichText(text: TextSpan(children: [
+                          TextSpan(text: "Déjà un compte ? ",
+                            style: GoogleFonts.sora(fontSize: 13.sp,
+                              color: isDark ? AppColors.darkTxtSecondary : AppColors.lightTxtSecondary)),
+                          TextSpan(text: "Se connecter",
+                            style: GoogleFonts.sora(fontSize: 13.sp, fontWeight: FontWeight.w600,
+                              color: isDark ? AppColors.darkAccent : AppColors.lightAccent)),
+                        ])),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ],

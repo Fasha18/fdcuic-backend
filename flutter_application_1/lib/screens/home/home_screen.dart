@@ -1,3 +1,4 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -14,6 +15,7 @@ import '../appels/appels_screen.dart';
 import '../dossiers/mes_dossiers_screen.dart';
 import '../profil/profil_screen.dart';
 import '../appels/appel_detail_screen.dart';
+import '../../widgets/appel_card.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool hideBottomNav;
@@ -165,7 +167,7 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
         
         // ── 3.1 HEADER ───────────────────────
         Padding(
-          padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
+          padding: EdgeInsets.fromLTRB(24, 0, 24, 12),
           child: Row(
             children: [
               Column(
@@ -174,7 +176,7 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
                   Text(
                     "FDCUIC",
                     style: GoogleFonts.sora(
-                      fontSize: 19,
+                      fontSize: 19.sp,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 0.05,
                       color: c.txtPrimary,
@@ -183,7 +185,7 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
                   Text(
                     "ESPACE CANDIDAT",
                     style: GoogleFonts.sora(
-                      fontSize: 9,
+                      fontSize: 9.sp,
                       fontWeight: FontWeight.w600,
                       color: c.accentPurple,
                       letterSpacing: 0.12,
@@ -191,13 +193,13 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
                   ),
                 ],
               ),
-              const Spacer(),
+              Spacer(),
               // Toggle dark/light
               GestureDetector(
                 onTap: () => widget.themeProvider.toggle(),
                 child: Container(
-                  width: 36,
-                  height: 36,
+                  width: 36.w,
+                  height: 36.h,
                   decoration: BoxDecoration(
                     color: c.bgAccent,
                     borderRadius: BorderRadius.circular(11),
@@ -210,13 +212,13 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              SizedBox(width: 10.w),
               // Cloche notif
               GestureDetector(
                 onTap: () => Navigator.pushNamed(context, AppRoutes.notifs),
                 child: Container(
-                  width: 42,
-                  height: 42,
+                  width: 42.w,
+                  height: 42.h,
                   decoration: BoxDecoration(
                     color: c.bgCard,
                     borderRadius: BorderRadius.circular(13),
@@ -231,8 +233,8 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
                           top: 9,
                           right: 9,
                           child: Container(
-                            width: 7,
-                            height: 7,
+                            width: 7.w,
+                            height: 7.h,
                             decoration: BoxDecoration(
                               color: const Color(0xFFFB7185),
                               borderRadius: BorderRadius.circular(50),
@@ -257,7 +259,7 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
               children: [
                 // ── 3.2 HERO GREETING ─────────────
                 Container(
-                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
+                  padding: EdgeInsets.fromLTRB(24, 8, 24, 20),
                   decoration: BoxDecoration(
                     color: c.bgHeader,
                     border: Border(bottom: BorderSide(color: c.borderMain, width: 1)),
@@ -268,13 +270,13 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
                       Text(
                         "TABLEAU DE BORD",
                         style: GoogleFonts.sora(
-                          fontSize: 11,
+                          fontSize: 11.sp,
                           fontWeight: FontWeight.w600,
                           color: c.txtSecondary,
                           letterSpacing: 0.1,
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.baseline,
                         textBaseline: TextBaseline.alphabetic,
@@ -282,14 +284,14 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
                           Text(
                             "Bonjour,",
                             style: GoogleFonts.sora(
-                              fontSize: 28,
+                              fontSize: 28.sp,
                               fontWeight: FontWeight.w700,
                               color: c.txtPrimary,
                             ),
                           ),
-                          const SizedBox(width: 10),
+                          SizedBox(width: 10.w),
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 2),
                             decoration: BoxDecoration(
                               color: c.bgAccent,
                               borderRadius: BorderRadius.circular(10),
@@ -297,7 +299,7 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
                             child: Text(
                               _user?['prenom'] ?? 'Candidat',
                               style: GoogleFonts.sora(
-                                fontSize: 28,
+                                fontSize: 28.sp,
                                 fontWeight: FontWeight.w700,
                                 color: c.accentText,
                               ),
@@ -305,11 +307,11 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: 8.h),
                       Text(
                         "Suivez vos dossiers et découvrez les opportunités ouvertes.",
                         style: GoogleFonts.sora(
-                          fontSize: 13,
+                          fontSize: 13.sp,
                           color: c.txtSecondary,
                           height: 1.6,
                         ),
@@ -319,29 +321,29 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
                   ),
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // ── SECTION: MES DOSSIERS ─────────
                 _SectionHeader(title: "Mes dossiers", actionText: "Voir tout", onTap: () => widget.onNavigateToTab(2), c: c),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 
                 // ── 3.3 DOSSIER STAT ROW ──────────
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: EdgeInsets.symmetric(horizontal: 24),
                   child: Row(
                     children: [
                       DossierStatCard(
                         label: "Dossiers soumis",
                         badge: "Total",
                         count: _totalDossiers,
-                        accentColor: const Color(0xFF7C5CFC),
-                        iconBg: isDark ? const Color(0xFF160E38) : const Color(0xFFEDE9FF),
+                        accentColor: isDark ? AppColors.darkAccent : AppColors.lightAccent,
+                        iconBg: isDark ? AppColors.darkBgAccent : AppColors.lightBgAccent,
                         icon: Icons.folder_outlined,
                         c: c,
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12.w),
                       DossierStatCard(
                         label: "En cours",
                         badge: "Actifs",
@@ -351,7 +353,7 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
                         icon: Icons.access_time_outlined,
                         c: c,
                       ),
-                      const SizedBox(width: 12),
+                      SizedBox(width: 12.w),
                       DossierStatCard(
                         label: "Accepté",
                         badge: "OK",
@@ -365,35 +367,35 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                SizedBox(height: 24.h),
                 Divider(color: c.borderMain, thickness: 1, height: 1),
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // ── SECTION: APPEL EN VEDETTE ─────
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: EdgeInsets.symmetric(horizontal: 24),
                   child: Row(
                     children: [
                       Text(
                         "Appel en vedette",
-                        style: GoogleFonts.sora(fontSize: 16, fontWeight: FontWeight.w600, color: c.txtPrimary),
+                        style: GoogleFonts.sora(fontSize: 16.sp, fontWeight: FontWeight.w600, color: c.txtPrimary),
                       ),
-                      const Spacer(),
+                      Spacer(),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
                           color: const Color(0xFFDCFCE7),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           "Ouvert",
-                          style: GoogleFonts.sora(fontSize: 10, fontWeight: FontWeight.w700, color: const Color(0xFF16A34A)),
+                          style: GoogleFonts.sora(fontSize: 10.sp, fontWeight: FontWeight.w700, color: const Color(0xFF16A34A)),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
 
                 // ── 3.4 FEATURED APPEL CARD ───────
                 FeaturedAppelCard(
@@ -420,29 +422,30 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
                   },
                 ),
 
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
 
                 // ── SECTION: APPELS À PROJETS ─────
                 _SectionHeader(title: "Appels à projets", actionText: "Voir tout", onTap: () => widget.onNavigateToTab(1), c: c),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
 
                 // ── 3.5 APPEL CARDS ───────────────
                 if (_appelsOuverts.isEmpty)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    padding: EdgeInsets.symmetric(horizontal: 24),
                     child: Text("Aucun appel à projets pour le moment.", style: GoogleFonts.sora(color: c.txtSecondary)),
                   )
                 else
-                  ..._appelsOuverts.take(3).map((appel) => GestureDetector(
+                  ..._appelsOuverts.take(3).map((appel) => AppelCard(
+                    appel: appel,
+                    isDark: isDark,
                     onTap: () {
                       Navigator.push(context, MaterialPageRoute(
                         builder: (_) => AppelDetailScreen(appel: appel)
                       ));
                     },
-                    child: AppelCardUI(appel: appel, c: c, isDark: isDark),
                   )),
 
-                const SizedBox(height: 30),
+                SizedBox(height: 30.h),
               ],
             ),
           ),
@@ -467,14 +470,14 @@ class _SectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: EdgeInsets.symmetric(horizontal: 24),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: GoogleFonts.sora(fontSize: 16, fontWeight: FontWeight.w600, color: c.txtPrimary)),
+          Text(title, style: GoogleFonts.sora(fontSize: 16.sp, fontWeight: FontWeight.w600, color: c.txtPrimary)),
           GestureDetector(
             onTap: onTap,
-            child: Text(actionText, style: GoogleFonts.sora(fontSize: 13, fontWeight: FontWeight.w600, color: c.accentPurple)),
+            child: Text(actionText, style: GoogleFonts.sora(fontSize: 13.sp, fontWeight: FontWeight.w600, color: c.accentPurple)),
           ),
         ],
       ),
@@ -506,7 +509,8 @@ class DossierStatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 128,
+      width: 128.w,
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: c.bgCard,
         borderRadius: BorderRadius.circular(18),
@@ -517,15 +521,15 @@ class DossierStatCard extends StatelessWidget {
           Positioned(
             left: 0, top: 0, bottom: 0,
             child: Container(
-              width: 3,
+              width: 4,
               decoration: BoxDecoration(
                 color: accentColor,
-                borderRadius: const BorderRadius.only(topLeft: Radius.circular(17), bottomLeft: Radius.circular(17)),
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(17), bottomLeft: Radius.circular(17)),
               ),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
+            padding: EdgeInsets.fromLTRB(18, 14, 14, 14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -533,26 +537,26 @@ class DossierStatCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
-                      width: 32, height: 32,
+                      width: 32.w, height: 32.h,
                       decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(9)),
                       child: Icon(icon, color: accentColor, size: 16),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      padding: EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(color: iconBg, borderRadius: BorderRadius.circular(20)),
-                      child: Text(badge, style: GoogleFonts.sora(fontSize: 10, fontWeight: FontWeight.w600, color: accentColor)),
+                      child: Text(badge, style: GoogleFonts.sora(fontSize: 10.sp, fontWeight: FontWeight.w600, color: accentColor)),
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
+                SizedBox(height: 12.h),
                 Text(
                   count.toString(),
-                  style: GoogleFonts.sora(fontSize: 24, fontWeight: FontWeight.w700, color: c.txtPrimary, letterSpacing: -0.02),
+                  style: GoogleFonts.sora(fontSize: 24.sp, fontWeight: FontWeight.w700, color: c.txtPrimary, letterSpacing: -0.02),
                 ),
-                const SizedBox(height: 3),
+                SizedBox(height: 3.h),
                 Text(
                   label,
-                  style: GoogleFonts.sora(fontSize: 11, color: c.txtSecondary, fontWeight: FontWeight.w500),
+                  style: GoogleFonts.sora(fontSize: 11.sp, color: c.txtSecondary, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -580,7 +584,8 @@ class FeaturedAppelCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 24),
+        margin: EdgeInsets.symmetric(horizontal: 24),
+        clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           color: mobBg,
           borderRadius: BorderRadius.circular(18),
@@ -591,51 +596,51 @@ class FeaturedAppelCard extends StatelessWidget {
             Positioned(
               left: 0, top: 0, bottom: 0,
               child: Container(
-                width: 3,
+                width: 4,
                 decoration: BoxDecoration(
                   color: c.accentPurple,
-                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(17), bottomLeft: Radius.circular(17)),
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(17), bottomLeft: Radius.circular(17)),
                 ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
-              child: Row(
-                children: [
-                  Container(
-                    width: 44, height: 44,
+            padding: EdgeInsets.fromLTRB(18, 16, 16, 16),
+            child: Row(
+              children: [
+                Container(
+                    width: 44.w, height: 44.h,
                     decoration: BoxDecoration(color: mobInner, borderRadius: BorderRadius.circular(13)),
                     child: Icon(Icons.flight_takeoff_rounded, color: c.accentPurple, size: 21),
                   ),
-                  const SizedBox(width: 14),
+                  SizedBox(width: 14.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
                           children: [
-                            Text("Mobilité", style: GoogleFonts.sora(fontSize: 15, fontWeight: FontWeight.w600, color: c.txtPrimary)),
-                            const SizedBox(width: 8),
+                            Text("Mobilité", style: GoogleFonts.sora(fontSize: 15.sp, fontWeight: FontWeight.w600, color: c.txtPrimary)),
+                            SizedBox(width: 8.w),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                              padding: EdgeInsets.symmetric(horizontal: 9, vertical: 3),
                               decoration: BoxDecoration(color: c.accentPurple, borderRadius: BorderRadius.circular(20)),
                               child: Text(
                                 "Ouvert",
-                                style: GoogleFonts.sora(fontSize: 10, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.04),
+                                style: GoogleFonts.sora(fontSize: 10.sp, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 0.04),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 4),
-                        Text("Soutien aux déplacements culturels", style: GoogleFonts.sora(fontSize: 12, color: c.txtSecondary)),
+                        SizedBox(height: 4.h),
+                        Text("Soutien aux déplacements culturels", style: GoogleFonts.sora(fontSize: 12.sp, color: c.txtSecondary)),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 14),
+                  SizedBox(width: 14.w),
                   Container(
-                    width: 36, height: 36,
+                    width: 36.w, height: 36.h,
                     decoration: BoxDecoration(color: c.accentPurple, borderRadius: BorderRadius.circular(11)),
-                    child: const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 17),
+                    child: Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 17),
                   ),
                 ],
               ),
@@ -647,134 +652,7 @@ class FeaturedAppelCard extends StatelessWidget {
   }
 }
 
-// ── 3.5 APPEL CARD ──
-class AppelCardUI extends StatelessWidget {
-  final AppelAProjet appel;
-  final AppColors c;
-  final bool isDark;
 
-  const AppelCardUI({super.key, required this.appel, required this.c, required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    Color catColor;
-    Color catBg;
-    IconData icon;
-
-    final type = appel.typeProjet?.toLowerCase() ?? '';
-    if (type.contains('structuration')) {
-      catColor = const Color(0xFF0891B2);
-      catBg = isDark ? const Color(0xFF071918) : const Color(0xFFE0F7FA);
-      icon = Icons.corporate_fare_outlined;
-    } else if (type.contains('evenementiel') || type.contains('événe')) {
-      catColor = const Color(0xFFEA580C);
-      catBg = isDark ? const Color(0xFF1A0E05) : const Color(0xFFFFF0E8);
-      icon = Icons.celebration_outlined;
-    } else {
-      // Default / Formation
-      catColor = c.accentPurple;
-      catBg = isDark ? const Color(0xFF10103A) : const Color(0xFFEDE9FF);
-      icon = Icons.school_outlined;
-    }
-
-    final isOpen = appel.statut.toLowerCase() == 'ouvert';
-
-    // Formatage basique de la date (ex: 22 juil.)
-    String dateLabel = appel.dateFin;
-    if (dateLabel.length > 10) dateLabel = dateLabel.substring(0, 10);
-
-    return Container(
-      margin: const EdgeInsets.fromLTRB(24, 0, 24, 12),
-      decoration: BoxDecoration(
-        color: c.bgCard,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: c.borderMain, width: 1),
-      ),
-      child: Stack(
-        children: [
-          Positioned(
-            left: 0, top: 0, bottom: 0,
-            child: Container(
-              width: 3,
-              decoration: BoxDecoration(
-                color: catColor,
-                borderRadius: const BorderRadius.only(topLeft: Radius.circular(17), bottomLeft: Radius.circular(17)),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 14, 14),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 40, height: 40,
-                  decoration: BoxDecoration(color: catBg, borderRadius: BorderRadius.circular(11)),
-                  child: Icon(icon, color: catColor, size: 19),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Text(
-                              appel.titre,
-                              style: GoogleFonts.sora(fontSize: 13, fontWeight: FontWeight.w600, color: c.txtPrimary, height: 1.35),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: isOpen ? const Color(0xFFDCFCE7) : const Color(0xFFFEF9C3),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              isOpen ? "Ouvert" : "Bientôt",
-                              style: GoogleFonts.sora(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w700,
-                                color: isOpen ? const Color(0xFF16A34A) : const Color(0xFFCA8A04)
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        children: [
-                          Text(
-                            appel.typeProjet ?? 'Projet',
-                            style: GoogleFonts.sora(fontSize: 11, fontWeight: FontWeight.w600, color: catColor),
-                          ),
-                          const SizedBox(width: 12),
-                          Icon(Icons.calendar_today_outlined, size: 11, color: c.txtSecondary),
-                          const SizedBox(width: 4),
-                          Text(
-                            dateLabel,
-                            style: GoogleFonts.sora(fontSize: 11, color: c.txtSecondary),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Icon(Icons.chevron_right_rounded, color: c.borderMain, size: 18),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 // ── 3.6 BOTTOM NAV BAR ──
 class FDCBottomNav extends StatelessWidget {
@@ -787,7 +665,7 @@ class FDCBottomNav extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 74 + MediaQuery.of(context).padding.bottom,
+      height: 74.h + MediaQuery.of(context).padding.bottom,
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).padding.bottom),
       decoration: BoxDecoration(
         color: colors.navBg,
@@ -823,23 +701,23 @@ class _NavItem extends StatelessWidget {
       onTap: () => onTap(index),
       behavior: HitTestBehavior.opaque,
       child: SizedBox(
-        width: 64,
+        width: 64.w,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              width: 44, height: 34,
+              width: 44.w, height: 34.h,
               decoration: BoxDecoration(
                 color: isActive ? c.navActiveBg : Colors.transparent,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, size: 22, color: isActive ? c.navActive : c.navInactive),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4.h),
             Text(
               label,
               style: GoogleFonts.sora(
-                fontSize: 10,
+                fontSize: 10.sp,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                 color: isActive ? c.navActive : c.navInactive,
                 letterSpacing: 0.02,

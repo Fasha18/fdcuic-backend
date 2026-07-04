@@ -1,3 +1,4 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 import '../../../../widgets/auth_widgets.dart';
 import '../../../../widgets/form_widgets.dart';
@@ -83,32 +84,32 @@ class _Etape1InfosState extends State<Etape1Infos> {
     return Form(
       key: widget.formKey,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+        padding: EdgeInsets.fromLTRB(20, 24, 20, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             FDLabel('Prénom et nom du porteur'),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             FDTextField(
               controller: _prenomNomCtrl, 
               hint: 'Ex: Aminata Diallo', 
               icon: Icons.person_outline_rounded,
               validator: FormValidators.text,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             FDLabel('Nom de la structure'),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             FDTextField(
               controller: _nomStructureCtrl, 
               hint: 'Ex: Collectif Dakar Urban', 
               icon: Icons.business_outlined,
               validator: FormValidators.text,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             FDLabel('Type de projet'),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             FDDropdown(
               hint: 'Sélectionner le type',
               value: widget.formData['type_projet'],
@@ -117,14 +118,14 @@ class _Etape1InfosState extends State<Etape1Infos> {
               onChanged: (v) => setState(() => widget.formData['type_projet'] = v),
               validator: FormValidators.requiredField,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             FDLabel("Secteur d'activité"),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             if (_isLoadingSecteurs)
-              const Center(child: Padding(
+              Center(child: Padding(
                 padding: EdgeInsets.all(8.0),
-                child: SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: FDColors.royal)),
+                child: SizedBox(height: 20.h, width: 20.w, child: CircularProgressIndicator(strokeWidth: 2, color: FDColors.royal)),
               ))
             else
               FDDropdown(
@@ -138,10 +139,10 @@ class _Etape1InfosState extends State<Etape1Infos> {
                 onChanged: (v) => setState(() => widget.formData['secteur_activite'] = v),
                 validator: FormValidators.requiredField,
               ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             FDLabel('Région'),
-            const SizedBox(height: 6),
+            SizedBox(height: 6.h),
             FDDropdown(
               hint: 'Sélectionner la région',
               value: widget.formData['region'],
@@ -150,7 +151,7 @@ class _Etape1InfosState extends State<Etape1Infos> {
               onChanged: (v) => setState(() => widget.formData['region'] = v),
               validator: FormValidators.requiredField,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             FDChampTexte(
               "Activité de l'entreprise", 

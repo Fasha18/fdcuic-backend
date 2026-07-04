@@ -1,3 +1,4 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 import '../core/theme.dart';
 
@@ -11,7 +12,7 @@ class GradientBackground extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
@@ -38,32 +39,9 @@ class FDLogo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
-          width: size,
-          height: size,
-          decoration: BoxDecoration(
-            color: FDColors.white.withValues(alpha: 0.15),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: FDColors.white.withValues(alpha: 0.3),
-              width: 1.5,
-            ),
-          ),
-          child: Icon(
-            Icons.account_balance_outlined,
-            color: FDColors.white,
-            size: size * 0.5,
-          ),
-        ),
-        const SizedBox(height: 12),
-        const Text(
-          'FDCUIC',
-          style: TextStyle(
-            color: FDColors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 2,
-          ),
+        Image.asset(
+          'assets/images/FDCUIC_logo.png',
+          height: size * 0.8,
         ),
       ],
     );
@@ -81,7 +59,7 @@ class WhiteSheet extends StatelessWidget {
       width: double.infinity,
       decoration: BoxDecoration(
         color: FDColors.white,
-        borderRadius: const BorderRadius.only(
+        borderRadius: BorderRadius.only(
           topLeft: Radius.circular(32),
           topRight: Radius.circular(32),
         ),
@@ -101,7 +79,7 @@ class FDLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(text, style: FDText.label.copyWith(
       color: FDColors.textPrimary,
-      fontSize: 13,
+      fontSize: 13.sp,
       fontWeight: FontWeight.w600,
     ));
   }
@@ -115,7 +93,7 @@ class FDTextField extends StatelessWidget {
   final TextEditingController? controller;
   final String? Function(String?)? validator;
 
-  const FDTextField({
+  FDTextField({
     super.key,
     required this.hint,
     required this.icon,
@@ -169,7 +147,7 @@ class _FDPasswordFieldState extends State<FDPasswordField> {
       validator: widget.validator,
       decoration: InputDecoration(
         hintText: widget.hint,
-        prefixIcon: const Icon(
+        prefixIcon: Icon(
           Icons.lock_outline_rounded,
           size: 18,
           color: FDColors.textHint,
@@ -206,7 +184,7 @@ class FDButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 54,
+      height: 54.h,
       child: DecoratedBox(
         decoration: BoxDecoration(
           gradient: FDGradients.ctaButton, // ton gradient existant
@@ -224,9 +202,9 @@ class FDButton extends StatelessWidget {
             ),
           ),
           child: isLoading
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
+              ? SizedBox(
+                  width: 24.w,
+                  height: 24.h,
                   child: CircularProgressIndicator(
                     color: FDColors.white,
                     strokeWidth: 2.5,
@@ -234,7 +212,7 @@ class FDButton extends StatelessWidget {
                 )
               : Text(label, style: FDText.button.copyWith(
                   color: FDColors.white,
-                  fontSize: 15,
+                  fontSize: 15.sp,
                 )),
         ),
       ),
@@ -252,11 +230,11 @@ class FDOutlineButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
-      height: 54,
+      height: 54.h,
       child: OutlinedButton(
         onPressed: onTap,
         // style vient du outlinedButtonTheme global
-        child: Text(label, style: FDText.button.copyWith(fontSize: 15)),
+        child: Text(label, style: FDText.button.copyWith(fontSize: 15.sp)),
       ),
     );
   }

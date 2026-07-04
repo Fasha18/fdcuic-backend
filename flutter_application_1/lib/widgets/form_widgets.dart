@@ -1,5 +1,6 @@
 
 
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 import '../core/theme.dart';
 import 'auth_widgets.dart';
@@ -30,12 +31,12 @@ class FDDropdown extends StatelessWidget {
       hint: Text(hint,
           style: FDText.bodySub.copyWith(color: FDColors.textHint)),
       isExpanded: true,
-      icon: const Icon(Icons.keyboard_arrow_down_rounded,
+      icon: Icon(Icons.keyboard_arrow_down_rounded,
           color: FDColors.textSub),
       style: FDText.body.copyWith(color: FDColors.textPrimary),
       dropdownColor: FDColors.white,
       decoration: InputDecoration(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         filled: true,
         fillColor: FDColors.ice,
         border: OutlineInputBorder(
@@ -65,7 +66,7 @@ class FDTextArea extends StatelessWidget {
   final int maxLines;
   final String? Function(String?)? validator;
 
-  const FDTextArea({
+  FDTextArea({
     super.key,
     required this.controller,
     required this.hint,
@@ -104,12 +105,12 @@ class FDChampTexte extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.only(bottom: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           FDLabel(label),
-          const SizedBox(height: 6),
+          SizedBox(height: 6.h),
           FDTextArea(controller: ctrl, hint: hint, maxLines: maxLines, validator: validator),
         ],
       ),
@@ -125,7 +126,7 @@ class FDInfoBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: FDColors.electricBlue.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(FDRadius.sm),
@@ -133,8 +134,8 @@ class FDInfoBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.info_outline, size: 16, color: FDColors.electricBlue),
-          const SizedBox(width: 8),
+          Icon(Icons.info_outline, size: 16, color: FDColors.electricBlue),
+          SizedBox(width: 8.w),
           Expanded(
             child: Text(message,
                 style: FDText.bodySub.copyWith(color: FDColors.electricBlue)),
@@ -168,7 +169,7 @@ class FDDocUploadField extends StatelessWidget {
     return GestureDetector(
       onTap: uploaded ? null : onTap,
       child: Container(
-        padding: const EdgeInsets.all(14),
+        padding: EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: uploaded ? FDColors.mint.withValues(alpha: 0.06) : FDColors.white,
           borderRadius: BorderRadius.circular(FDRadius.sm),
@@ -181,7 +182,7 @@ class FDDocUploadField extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 40, height: 40,
+              width: 40.w, height: 40.h,
               decoration: BoxDecoration(
                 color: uploaded
                     ? FDColors.mint.withValues(alpha: 0.12)
@@ -194,30 +195,30 @@ class FDDocUploadField extends StatelessWidget {
                 color: uploaded ? FDColors.mint : FDColors.textSub,
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Text(label, style: FDText.h3.copyWith(fontSize: 13)),
+                      Text(label, style: FDText.h3.copyWith(fontSize: 13.sp)),
                       if (isRequis) ...[
-                        const SizedBox(width: 4),
-                        const Text('*',
+                        SizedBox(width: 4.w),
+                        Text('*',
                             style: TextStyle(
                                 color: FDColors.coral,
-                                fontSize: 13,
+                                fontSize: 13.sp,
                                 fontWeight: FontWeight.w700)),
                       ],
                     ],
                   ),
-                  const SizedBox(height: 2),
+                  SizedBox(height: 2.h),
                   Text(
                     uploaded ? fichierNom! : 'Appuyer pour sélectionner',
                     style: FDText.bodySub.copyWith(
                       color: uploaded ? FDColors.mint : FDColors.textHint,
-                      fontSize: 11,
+                      fontSize: 11.sp,
                     ),
                   ),
                 ],
@@ -226,7 +227,7 @@ class FDDocUploadField extends StatelessWidget {
             if (uploaded)
               GestureDetector(
                 onTap: onSupprimer,
-                child: const Icon(Icons.close, size: 16, color: FDColors.coral),
+                child: Icon(Icons.close, size: 16, color: FDColors.coral),
               ),
           ],
         ),
@@ -251,7 +252,7 @@ class FDRecapSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: FDColors.white,
         borderRadius: BorderRadius.circular(FDRadius.sm),
@@ -261,7 +262,7 @@ class FDRecapSection extends StatelessWidget {
       child: Row(
         children: [
           Container(
-            width: 40, height: 40,
+            width: 40.w, height: 40.h,
             decoration: BoxDecoration(
               color: complet ? FDColors.mint.withValues(alpha: 0.10) : FDColors.ice,
               borderRadius: BorderRadius.circular(FDRadius.xs),
@@ -270,9 +271,9 @@ class FDRecapSection extends StatelessWidget {
                 size: 20,
                 color: complet ? FDColors.mint : FDColors.silver),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
           Expanded(
-            child: Text(titre, style: FDText.h3.copyWith(fontSize: 13)),
+            child: Text(titre, style: FDText.h3.copyWith(fontSize: 13.sp)),
           ),
           Icon(
             complet ? Icons.check_circle : Icons.radio_button_unchecked,

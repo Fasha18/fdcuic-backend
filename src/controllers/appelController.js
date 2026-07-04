@@ -4,14 +4,13 @@ const { AppelAProjet } = require('../models');
 
 const creerAppel = async (req, res) => {
     try {
-        const { titre, description, type_projet, date_ouverture, date_cloture, criteres } = req.body;
+        const { titre, description, type_projet, date_ouverture, date_cloture } = req.body;
         const appel = await AppelAProjet.create({
             titre,
             description,
             type_projet,
             date_debut: date_ouverture,
             date_fin: date_cloture,
-            criteres,
             statut: 'ouvert',
         });
         return res.status(201).json({

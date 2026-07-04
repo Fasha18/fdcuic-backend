@@ -1,3 +1,4 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme.dart';
 import '../../../../widgets/step_progress_bar.dart';
@@ -192,21 +193,21 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
           title: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: FDColors.mint.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.check_circle_outline,
+                child: Icon(Icons.check_circle_outline,
                     color: FDColors.mint, size: 24),
               ),
-              const SizedBox(width: 12),
-              const Expanded(
+              SizedBox(width: 12.w),
+              Expanded(
                 child: Text('Dossier soumis !', style: FDText.h3),
               ),
             ],
           ),
-          content: const Text(
+          content: Text(
             'Votre dossier a été soumis avec succès. '
             'Vous pouvez suivre son avancement depuis « Mes Dossiers ».',
             style: FDText.body,
@@ -216,7 +217,7 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
               onPressed: () {
                 Navigator.of(context).popUntil((route) => route.isFirst);
               },
-              child: const Text('OK'),
+              child: Text('OK'),
             ),
           ],
         ),
@@ -279,11 +280,11 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
 
   Widget _buildHeader() {
     return Container(
-      decoration: const BoxDecoration(gradient: FDGradients.header),
+      decoration: BoxDecoration(gradient: FDGradients.header),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+          padding: EdgeInsets.fromLTRB(16, 12, 16, 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -293,32 +294,32 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
                     child: Container(
-                      padding: const EdgeInsets.all(6),
+                      padding: EdgeInsets.all(6),
                       decoration: BoxDecoration(
                         color: FDColors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(FDRadius.sm),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.arrow_back_ios_new_rounded,
                         color: FDColors.white,
                         size: 18,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  const Expanded(
+                  SizedBox(width: 12.w),
+                  Expanded(
                     child: Text(
                       'Appel à Projet',
                       style: TextStyle(
                         color: FDColors.white,
-                        fontSize: 20,
+                        fontSize: 20.sp,
                         fontWeight: FontWeight.w800,
                       ),
                     ),
                   ),
                   // Badge étape
                   Container(
-                    padding: const EdgeInsets.symmetric(
+                    padding: EdgeInsets.symmetric(
                         horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: FDColors.white.withValues(alpha: 0.15),
@@ -326,16 +327,16 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
                     ),
                     child: Text(
                       '$_currentStep / $_totalSteps',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: FDColors.white,
-                        fontSize: 11,
+                        fontSize: 11.sp,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20.h),
 
               // Barre d'étapes
               StepProgressBar(
@@ -369,22 +370,22 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: _isSubmitting ? null : _prevStep,
-                icon: const Icon(Icons.arrow_back_rounded, size: 18),
-                label: const Text('Précédent'),
+                icon: Icon(Icons.arrow_back_rounded, size: 18),
+                label: Text('Précédent'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: FDColors.royal,
                   side: const BorderSide(color: FDColors.royal, width: 1.5),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(FDRadius.sm),
                   ),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: EdgeInsets.symmetric(vertical: 14),
                 ),
               ),
             )
           else
-            const Spacer(),
+            Spacer(),
 
-          const SizedBox(width: 12),
+          SizedBox(width: 12.w),
 
           // Bouton Suivant / Soumettre
           Expanded(
@@ -400,9 +401,9 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
                     ? null
                     : (_currentStep == _totalSteps ? _submitDossier : _nextStep),
                 icon: _isSubmitting
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
+                    ? SizedBox(
+                        width: 18.w,
+                        height: 18.h,
                         child: CircularProgressIndicator(
                             color: FDColors.white, strokeWidth: 2),
                       )
@@ -421,7 +422,7 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
                   backgroundColor: Colors.transparent,
                   shadowColor: Colors.transparent,
                   foregroundColor: _isSubmitting ? FDColors.textSub : FDColors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  padding: EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(FDRadius.sm),
                   ),

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const rateLimit = require('express-rate-limit');
 const {
-  inscription, activerCompte, connexion,
+  inscription, activerCompte, confirmerActivation, connexion,
   demanderResetPassword, confirmerResetPassword,
 } = require('../controllers/authController');
 
@@ -40,6 +40,7 @@ const limiterReset = rateLimit({
 // ── ROUTES ────────────────────────────────────────────────
 router.post('/inscription', limiterInscription, inscription);
 router.get('/activer/:token', activerCompte);
+router.post('/activer/:token', confirmerActivation);
 router.post('/connexion', limiterConnexion, connexion);
 
 // Réinitialisation de mot de passe

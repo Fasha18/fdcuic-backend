@@ -45,7 +45,8 @@ const sendBrevoEmail = async (toEmail, toName, subject, content, isText = false)
 };
 
 const envoyerEmailActivation = async (email, prenom, token) => {
-  const lien = `https://fdcuic-backend-production.up.railway.app/api/auth/activer/${token}`;
+  const baseUrl = process.env.BACKEND_URL || 'https://fdcuic-backend-production.up.railway.app';
+  const lien = `${baseUrl}/api/auth/activer/${token}`;
   
   const text = `Bonjour ${prenom},
 

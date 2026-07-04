@@ -1,9 +1,12 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
-import '../../core/theme.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../core/app_colors.dart';
 import '../../models/appel_a_projet.dart';
 import '../../models/programme_mobilite.dart';
 import '../../services/api_service.dart';
 import 'appel_detail_screen.dart';
+import '../../widgets/appel_card.dart';
 
 class AppelsScreen extends StatefulWidget {
   final bool hideBottomNav;
@@ -12,9 +15,8 @@ class AppelsScreen extends StatefulWidget {
   State<AppelsScreen> createState() => _AppelsScreenState();
 }
 
-class _AppelsScreenState extends State<AppelsScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _AppelsScreenState extends State<AppelsScreen> {
+  String _currentTab = 'Appels à projets';
   
   List<AppelAProjet> _appels = [];
   ProgrammeMobilite? _mobilite;
@@ -23,7 +25,6 @@ class _AppelsScreenState extends State<AppelsScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _loadData();
   }
 
@@ -49,9 +50,23 @@ class _AppelsScreenState extends State<AppelsScreen>
       }
     } catch (e) {
       debugPrint('Erreur chargement appels: $e');
+      if (mounted) {
+        setState(() {
+          _appels = [
+            AppelAProjet(
+              id: -1,
+              titre: 'ERREUR',
+              description: e.toString(),
+              dateDebut: '',
+              dateFin: '',
+              statut: 'ouvert'
+            )
+          ];
+        });
+      }
     }
 
-    // Charger la mobilité (indépendamment)
+    // Charger la mobilité
     try {
       final mobiliteData = await ApiService.getProgrammeMobilite();
       if (mounted) {
@@ -75,96 +90,96 @@ class _AppelsScreenState extends State<AppelsScreen>
   }
 
   @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     if (_isLoading) {
-      return const Scaffold(
-        backgroundColor: FDColors.skyBg,
+      return Scaffold(
+        backgroundColor: isDark ? AppColors.darkBgPrimary : AppColors.lightBgPrimary,
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
-      backgroundColor: FDColors.skyBg,
+      backgroundColor: isDark ? AppColors.darkBgPrimary : AppColors.lightBgPrimary,
       body: Column(
         children: [
-          // ── HEADER ──────────────────────────────────────
+          // HEADER
           Container(
-            decoration: const BoxDecoration(gradient: FDGradients.header),
+            color: isDark ? AppColors.darkBgHeader : AppColors.lightBgHeader,
+            padding: EdgeInsets.fromLTRB(24, 0, 24, 16),
             child: SafeArea(
               bottom: false,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Explorer',
-                          style: TextStyle(
-                            color: FDColors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                          ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('Explorer',
+                        style: GoogleFonts.sora(fontSize: 22.sp, fontWeight: FontWeight.w700,
+                          color: isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary)),
+                      Container(
+                        width: 36.w, height: 36.h,
+                        decoration: BoxDecoration(
+                          color: isDark ? AppColors.darkBgAccent : AppColors.lightBgAccent,
+                          shape: BoxShape.circle,
                         ),
-                        Container(
-                          width: 36, height: 36,
-                          decoration: BoxDecoration(
-                            color: FDColors.white.withValues(alpha: 0.12),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.search_rounded,
-                            color: FDColors.white,
-                            size: 18,
-                          ),
+                        child: Icon(
+                          Icons.search_rounded,
+                          color: isDark ? AppColors.darkAccent : AppColors.lightAccent,
+                          size: 18,
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // ── TABS ──────────────────────────────────
-                  TabBar(
-                    controller: _tabController,
-                    indicatorColor: FDColors.white,
-                    indicatorWeight: 3,
-                    labelColor: FDColors.white,
-                    unselectedLabelColor: FDColors.white.withValues(alpha: 0.5),
-                    labelStyle: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    unselectedLabelStyle: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w400,
-                    ),
-                    tabs: const [
-                      Tab(text: 'Appels à projets'),
-                      Tab(text: 'Mobilité'),
+                      ),
                     ],
+                  ),
+                  SizedBox(height: 16.h),
+
+                  // Onglets
+                  Row(
+                    children: ['Appels à projets', 'Mobilité'].map((tab) {
+                      final isActive = _currentTab == tab;
+                      return GestureDetector(
+                        onTap: () => setState(() => _currentTab = tab),
+                        child: Container(
+                          margin: EdgeInsets.only(right: 8),
+                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: isActive
+                              ? (isDark ? AppColors.darkBgAccent : AppColors.lightBgAccent)
+                              : Colors.transparent,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isActive
+                                ? (isDark ? AppColors.darkAccent : AppColors.lightAccent)
+                                : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(tab,
+                            style: GoogleFonts.sora(
+                              fontSize: 13.sp, fontWeight: FontWeight.w600,
+                              color: isActive
+                                ? (isDark ? AppColors.darkAccent : AppColors.lightAccent)
+                                : (isDark ? AppColors.darkTxtSecondary : AppColors.lightTxtSecondary),
+                            )),
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ],
               ),
             ),
           ),
 
-          // ── CONTENU TABS ─────────────────────────────────
+          // Séparateur
+          Divider(height: 1, color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
+
+          // Corps
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _AppelsTab(appels: _appels),
-                _MobiliteTab(programme: _mobilite),
-              ],
-            ),
+            child: _currentTab == 'Appels à projets'
+                ? _AppelsTab(appels: _appels, isDark: isDark)
+                : _MobiliteTab(programme: _mobilite, isDark: isDark),
           ),
         ],
       ),
@@ -177,7 +192,8 @@ class _AppelsScreenState extends State<AppelsScreen>
 // ════════════════════════════════════════════════
 class _AppelsTab extends StatefulWidget {
   final List<AppelAProjet> appels;
-  const _AppelsTab({required this.appels});
+  final bool isDark;
+  const _AppelsTab({required this.appels, required this.isDark});
 
   @override
   State<_AppelsTab> createState() => _AppelsTabState();
@@ -194,32 +210,40 @@ class _AppelsTabState extends State<_AppelsTab> {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // ── FILTRES ─────────────────────────────────────
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: Row(
-            children: [
-              _FiltreChip(
-                label: 'Tous',
-                actif: _filtre == 'tous',
-                onTap: () => setState(() => _filtre = 'tous'),
-              ),
-              const SizedBox(width: 8),
-              _FiltreChip(
-                label: 'Ouverts',
-                actif: _filtre == 'ouvert',
-                onTap: () => setState(() => _filtre = 'ouvert'),
-                color: FDColors.mint,
-              ),
-              const SizedBox(width: 8),
-              _FiltreChip(
-                label: 'Fermés',
-                actif: _filtre == 'fermé',
-                onTap: () => setState(() => _filtre = 'fermé'),
-                color: FDColors.silver,
-              ),
-            ],
+          padding: EdgeInsets.fromLTRB(24, 16, 24, 8),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _FiltreChip(
+                  label: 'Tous',
+                  actif: _filtre == 'tous',
+                  onTap: () => setState(() => _filtre = 'tous'),
+                  color: widget.isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary,
+                  isDark: widget.isDark,
+                ),
+                SizedBox(width: 8.w),
+                _FiltreChip(
+                  label: 'Ouverts',
+                  actif: _filtre == 'ouvert',
+                  onTap: () => setState(() => _filtre = 'ouvert'),
+                  color: AppColors.success,
+                  isDark: widget.isDark,
+                ),
+                SizedBox(width: 8.w),
+                _FiltreChip(
+                  label: 'Fermés',
+                  actif: _filtre == 'fermé',
+                  onTap: () => setState(() => _filtre = 'fermé'),
+                  color: widget.isDark ? AppColors.darkTxtSecondary : AppColors.lightTxtSecondary,
+                  isDark: widget.isDark,
+                ),
+              ],
+            ),
           ),
         ),
 
@@ -230,20 +254,18 @@ class _AppelsTabState extends State<_AppelsTab> {
                   message: _filtre == 'tous' 
                       ? 'Aucun appel à projets pour le moment.' 
                       : 'Aucun appel $_filtre pour le moment.',
+                  isDark: widget.isDark,
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                  padding: EdgeInsets.only(top: 8, bottom: 24),
                   itemCount: _filtres.length,
-                  itemBuilder: (context, i) => Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: _AppelCard(
-                      appel: _filtres[i],
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              AppelDetailScreen(appel: _filtres[i]),
-                        ),
+                  itemBuilder: (context, i) => AppelCard(
+                    appel: _filtres[i],
+                    isDark: widget.isDark,
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => AppelDetailScreen(appel: _filtres[i]),
                       ),
                     ),
                   ),
@@ -259,23 +281,23 @@ class _AppelsTabState extends State<_AppelsTab> {
 // ════════════════════════════════════════════════
 class _MobiliteTab extends StatelessWidget {
   final ProgrammeMobilite? programme;
-  const _MobiliteTab({required this.programme});
+  final bool isDark;
+  const _MobiliteTab({required this.programme, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
+      padding: EdgeInsets.fromLTRB(24, 20, 24, 32),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // ── CARTE HERO ────────────────────────────────
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(20),
+            padding: EdgeInsets.all(24),
             decoration: BoxDecoration(
-              gradient: FDGradients.featuredCard,
-              borderRadius: BorderRadius.circular(FDRadius.lg),
-              boxShadow: FDShadow.ice,
+              color: isDark ? AppColors.darkAccent : AppColors.lightAccent,
+              borderRadius: BorderRadius.circular(24),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -283,27 +305,26 @@ class _MobiliteTab extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: FDColors.mint.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(FDRadius.xs),
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                       child: Row(
                         children: [
                           Container(
-                            width: 6, height: 6,
-                            decoration: const BoxDecoration(
-                              color: FDColors.mint,
+                            width: 6.w, height: 6.h,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
                               shape: BoxShape.circle,
                             ),
                           ),
-                          const SizedBox(width: 5),
-                          const Text(
+                          SizedBox(width: 6.w),
+                          Text(
                             'Ouvert toute l\'année',
-                            style: TextStyle(
-                              color: FDColors.mint,
-                              fontSize: 10,
+                            style: GoogleFonts.sora(
+                              color: Colors.white,
+                              fontSize: 10.sp,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -312,93 +333,94 @@ class _MobiliteTab extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                SizedBox(height: 16.h),
                 Text(
                   programme?.titre ?? 'Mobilité',
-                  style: const TextStyle(
-                    color: FDColors.white,
-                    fontSize: 18,
+                  style: GoogleFonts.sora(
+                    color: Colors.white,
+                    fontSize: 20.sp,
                     fontWeight: FontWeight.w800,
                     height: 1.3,
                   ),
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: 8.h),
                 Text(
                   programme?.description ?? 'Postulez pour un soutien aux déplacements tout au long de l\'année.',
-                  style: TextStyle(
-                    color: FDColors.white.withValues(alpha: 0.65),
-                    fontSize: 13,
+                  style: GoogleFonts.sora(
+                    color: Colors.white.withValues(alpha: 0.8),
+                    fontSize: 13.sp,
                     height: 1.5,
                   ),
                 ),
-                const SizedBox(height: 20),
-                SizedBox(
-                  width: double.infinity,
-                  height: 46,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // → Navigation vers formulaire mobilité
-                      Navigator.pushNamed(context, '/formulaire-mobilite');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: FDColors.white,
-                      foregroundColor: FDColors.navy,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(FDRadius.sm),
-                      ),
+                SizedBox(height: 24.h),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pushNamed(context, '/formulaire-mobilite');
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: isDark ? AppColors.darkAccent : AppColors.lightAccent,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                    child: const Text(
-                      'Déposer ma candidature →',
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    minimumSize: const Size(double.infinity, 52),
+                    textStyle: GoogleFonts.sora(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
+                  child: Text('Déposer ma candidature →'),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          SizedBox(height: 32.h),
 
           // ── CRITÈRES D'ÉLIGIBILITÉ ────────────────────
           if (programme?.criteresEligibilite != null) ...[
-            const Text(
+            Text(
               'Critères d\'éligibilité',
-              style: FDText.h3,
+              style: GoogleFonts.sora(
+                fontSize: 18.sp,
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary,
+              ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 16.h),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: FDColors.white,
-                borderRadius: BorderRadius.circular(FDRadius.md),
-                border: Border.all(color: FDColors.border, width: 0.5),
-                boxShadow: FDShadow.card,
+                color: isDark ? AppColors.darkBgCard : AppColors.lightBgCard,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: isDark ? AppColors.darkBorder : AppColors.lightBorder, width: 1),
               ),
               child: Column(
                 children: programme!.criteresEligibilite!
                     .split('·')
                     .where((c) => c.trim().isNotEmpty)
                     .map((critere) => Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 6),
+                          padding: EdgeInsets.symmetric(vertical: 8),
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Container(
-                                width: 6, height: 6,
-                                margin: const EdgeInsets.only(top: 5, right: 10),
-                                decoration: const BoxDecoration(
-                                  color: FDColors.royal,
+                                width: 6.w, height: 6.h,
+                                margin: EdgeInsets.only(top: 6, right: 12),
+                                decoration: BoxDecoration(
+                                  color: isDark ? AppColors.darkAccent : AppColors.lightAccent,
                                   shape: BoxShape.circle,
                                 ),
                               ),
                               Expanded(
                                 child: Text(
                                   critere.trim(),
-                                  style: FDText.body,
+                                  style: GoogleFonts.sora(
+                                    fontSize: 13.sp,
+                                    height: 1.5,
+                                    color: isDark ? AppColors.darkTxtSecondary : AppColors.lightTxtSecondary,
+                                  ),
                                 ),
                               ),
                             ],
@@ -407,46 +429,54 @@ class _MobiliteTab extends StatelessWidget {
                     .toList(),
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 32.h),
           ],
 
           // ── ÉTAPES DU FORMULAIRE ──────────────────────
-          const Text('Le formulaire en 5 étapes', style: FDText.h3),
-          const SizedBox(height: 12),
+          Text('Le formulaire en 5 étapes', 
+            style: GoogleFonts.sora(
+              fontSize: 18.sp,
+              fontWeight: FontWeight.w700,
+              color: isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary,
+            )),
+          SizedBox(height: 16.h),
           ..._etapesMobilite.asMap().entries.map((entry) {
             final i = entry.key;
             final etape = entry.value;
             return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
+              padding: EdgeInsets.only(bottom: 16),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    width: 32, height: 32,
+                    width: 32.w, height: 32.h,
                     decoration: BoxDecoration(
-                      color: FDColors.ice,
+                      color: isDark ? AppColors.darkBgAccent : AppColors.lightBgAccent,
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: FDColors.border, width: 0.5),
+                          color: isDark ? AppColors.darkBorderAccent : AppColors.lightBorderAccent, width: 1),
                     ),
                     child: Center(
                       child: Text(
                         '${i + 1}',
-                        style: TextStyle(
-                          fontSize: 13,
+                        style: GoogleFonts.sora(
+                          fontSize: 13.sp,
                           fontWeight: FontWeight.w700,
-                          color: FDColors.royal,
+                          color: isDark ? AppColors.darkAccent : AppColors.lightAccent,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 16.w),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(etape['titre']!,
-                            style: FDText.h3.copyWith(fontSize: 13)),
-                        Text(etape['desc']!, style: FDText.bodySub),
+                            style: GoogleFonts.sora(fontSize: 14.sp, fontWeight: FontWeight.w600, color: isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary)),
+                        SizedBox(height: 4.h),
+                        Text(etape['desc']!, 
+                            style: GoogleFonts.sora(fontSize: 13.sp, color: isDark ? AppColors.darkTxtSecondary : AppColors.lightTxtSecondary)),
                       ],
                     ),
                   ),
@@ -472,136 +502,19 @@ class _MobiliteTab extends StatelessWidget {
 //  WIDGETS LOCAUX
 // ════════════════════════════════════════════════
 
-class _AppelCard extends StatelessWidget {
-  final AppelAProjet appel;
-  final VoidCallback onTap;
-  const _AppelCard({required this.appel, required this.onTap});
-
-  IconData get _icon {
-    switch (appel.typeProjet) {
-      case 'evenementiel': return Icons.calendar_today_outlined;
-      case 'structuration': return Icons.business_outlined;
-      case 'formation': return Icons.school_outlined;
-      default: return Icons.folder_outlined;
-    }
-  }
-
-  Color get _typeColor {
-    switch (appel.typeProjet) {
-      case 'evenementiel': return FDColors.violet;
-      case 'structuration': return FDColors.royal;
-      case 'formation': return FDColors.electricBlue;
-      default: return FDColors.silver;
-    }
-  }
-
-  String get _typeLabel {
-    switch (appel.typeProjet) {
-      case 'evenementiel': return 'Événementiel';
-      case 'structuration': return 'Structuration';
-      case 'formation': return 'Formation';
-      default: return 'Appel';
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: FDColors.white,
-          borderRadius: BorderRadius.circular(FDRadius.md),
-          border: Border.all(color: FDColors.border, width: 0.5),
-          boxShadow: FDShadow.card,
-        ),
-        child: Row(
-          children: [
-            // Icône type
-            Container(
-              width: 46, height: 46,
-              decoration: BoxDecoration(
-                color: appel.estOuvert
-                    ? _typeColor.withValues(alpha: 0.10)
-                    : FDColors.ice,
-                borderRadius: BorderRadius.circular(FDRadius.sm),
-              ),
-              child: Icon(
-                _icon,
-                color: appel.estOuvert ? _typeColor : FDColors.silver,
-                size: 22,
-              ),
-            ),
-            const SizedBox(width: 14),
-
-            // Infos
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      _MiniTag(_typeLabel, _typeColor,
-                          _typeColor.withValues(alpha: 0.10)),
-                      const SizedBox(width: 6),
-                      _MiniTag(
-                        appel.estOuvert ? 'Ouvert' : 'Fermé',
-                        appel.estOuvert ? FDColors.mint : FDColors.silver,
-                        appel.estOuvert
-                            ? FDColors.mint.withValues(alpha: 0.10)
-                            : FDColors.ice,
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(appel.titre,
-                      style: FDText.h3.copyWith(fontSize: 14)),
-                  const SizedBox(height: 3),
-                  Row(
-                    children: [
-                      Icon(Icons.access_time_rounded,
-                          size: 12, color: FDColors.textSub),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Clôture : ${_formatDate(appel.dateFin)}',
-                        style: FDText.bodySub.copyWith(fontSize: 11),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
-            Icon(Icons.chevron_right_rounded,
-                color: FDColors.border, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _formatDate(String date) {
-    final parts = date.split('-');
-    if (parts.length != 3) return date;
-    const mois = [
-      '', 'jan.', 'fév.', 'mar.', 'avr.', 'mai', 'juin',
-      'juil.', 'août', 'sep.', 'oct.', 'nov.', 'déc.'
-    ];
-    return '${parts[2]} ${mois[int.parse(parts[1])]} ${parts[0]}';
-  }
-}
-
 class _FiltreChip extends StatelessWidget {
   final String label;
   final bool actif;
   final VoidCallback onTap;
   final Color color;
+  final bool isDark;
+  
   const _FiltreChip({
     required this.label,
     required this.actif,
     required this.onTap,
-    this.color = FDColors.royal,
+    required this.color,
+    required this.isDark,
   });
 
   @override
@@ -610,48 +523,22 @@ class _FiltreChip extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: actif ? color.withValues(alpha: 0.12) : FDColors.white,
-          borderRadius: BorderRadius.circular(FDRadius.pill),
+          color: actif ? color.withValues(alpha: 0.12) : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: actif ? color : FDColors.border,
-            width: actif ? 1.5 : 0.5,
+            color: actif ? color : (isDark ? AppColors.darkBorder : AppColors.lightBorder),
+            width: 1,
           ),
         ),
         child: Text(
           label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: actif ? FontWeight.w700 : FontWeight.w400,
-            color: actif ? color : FDColors.textSub,
+          style: GoogleFonts.sora(
+            fontSize: 13.sp,
+            fontWeight: actif ? FontWeight.w600 : FontWeight.w500,
+            color: actif ? color : (isDark ? AppColors.darkTxtSecondary : AppColors.lightTxtSecondary),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _MiniTag extends StatelessWidget {
-  final String text;
-  final Color color, bg;
-  const _MiniTag(this.text, this.color, this.bg);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: bg,
-        borderRadius: BorderRadius.circular(FDRadius.xs),
-      ),
-      child: Text(
-        text,
-        style: TextStyle(
-          fontSize: 9,
-          fontWeight: FontWeight.w700,
-          color: color,
-          letterSpacing: 0.1,
         ),
       ),
     );
@@ -660,7 +547,8 @@ class _MiniTag extends StatelessWidget {
 
 class _EmptyState extends StatelessWidget {
   final String message;
-  const _EmptyState({required this.message});
+  final bool isDark;
+  const _EmptyState({required this.message, required this.isDark});
 
   @override
   Widget build(BuildContext context) {
@@ -668,10 +556,18 @@ class _EmptyState extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.inbox_outlined, size: 48, color: FDColors.border),
-          const SizedBox(height: 12),
+          Container(
+            width: 64.w, height: 64.h,
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkBgAccent : AppColors.lightBgAccent,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Icon(Icons.inbox_outlined, size: 30, color: isDark ? AppColors.darkAccent : AppColors.lightAccent),
+          ),
+          SizedBox(height: 16.h),
           Text(message,
-              style: FDText.bodySub, textAlign: TextAlign.center),
+              style: GoogleFonts.sora(fontSize: 14.sp, color: isDark ? AppColors.darkTxtSecondary : AppColors.lightTxtSecondary), 
+              textAlign: TextAlign.center),
         ],
       ),
     );

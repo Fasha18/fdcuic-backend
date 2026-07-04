@@ -1,3 +1,4 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme.dart';
 import '../../../../widgets/form_widgets.dart';
@@ -26,7 +27,7 @@ class _Etape4RecapitulatifState extends State<Etape4Recapitulatif> {
     return Form(
       key: widget.formKey,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+        padding: EdgeInsets.fromLTRB(20, 24, 20, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -35,26 +36,26 @@ class _Etape4RecapitulatifState extends State<Etape4Recapitulatif> {
               icone: Icons.info_outline,
               complet: true,
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             const FDRecapSection(
               titre: 'Étape 2 — Détails et impacts',
               icone: Icons.analytics_outlined,
               complet: true,
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             const FDRecapSection(
               titre: 'Étape 3 — Documents',
               icone: Icons.folder_outlined,
               complet: true,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             GestureDetector(
               onTap: () {
                 setState(() => _confirme = !_confirme);
               },
               child: Container(
-                padding: const EdgeInsets.all(14),
+                padding: EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: _confirme ? FDColors.mint.withValues(alpha: 0.06) : FDColors.white,
                   borderRadius: BorderRadius.circular(FDRadius.sm),
@@ -70,11 +71,11 @@ class _Etape4RecapitulatifState extends State<Etape4Recapitulatif> {
                       color: _confirme ? FDColors.mint : FDColors.silver,
                       size: 20,
                     ),
-                    const SizedBox(width: 10),
+                    SizedBox(width: 10.w),
                     Expanded(
                       child: Text(
                         'Je certifie que les informations fournies sont exactes et complètes.',
-                        style: FDText.body.copyWith(fontSize: 13),
+                        style: FDText.body.copyWith(fontSize: 13.sp),
                       ),
                     ),
                   ],

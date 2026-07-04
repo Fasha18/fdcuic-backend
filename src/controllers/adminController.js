@@ -1,4 +1,4 @@
-const { AppelProjet, ProjetMobilite, User, Subvention, AppelAProjet, ProgrammeMobilite } = require('../models/index');
+const { AppelProjet, ProjetMobilite, User, Subvention, AppelAProjet } = require('../models/index');
 const { Op } = require('sequelize');
 const sequelize = require('../config/database');
 
@@ -374,89 +374,7 @@ const getCandidaturesAppel = async (req, res) => {
   }
 };
 
-// ════════════════════════════════════════════════════════════
-//  PROGRAMME MOBILITÉ (Singleton — Admin)
-// ════════════════════════════════════════════════════════════
-const getProgrammeMobilite = async (req, res) => {
-  try {
-    // findOrCreate garantit qu'une seule entrée existe (id=1)
-    const [programme] = await ProgrammeMobilite.findOrCreate({
-      where: { id: 1 },
-      defaults: {
-        titre: 'Programme de Mobilité Internationale',
-        description: 'Description du programme de mobilité...',
-        statut: 'actif',
-      }
-    });
 
-    // Compter les candidatures mobilité
-    const totalCandidatures = await ProjetMobilite.count();
-
-    // 1. Fetch Timeline (candidatures groupées par date)
-    const timelineData = await ProjetMobilite.findAll({
-      attributes: [
-        [sequelize.fn('DATE', sequelize.col('createdAt')), 'date'],
-        [sequelize.fn('COUNT', sequelize.col('id')), 'count']
-      ],
-      group: [sequelize.fn('DATE', sequelize.col('createdAt'))],
-      order: [[sequelize.fn('DATE', sequelize.col('createdAt')), 'ASC']],
-      raw: true
-    });
-
-    // 2. Fetch Recent Candidatures (5 dernières)
-    const recentes = await ProjetMobilite.findAll({
-      include: [{ model: User, as: 'candidat', attributes: ['id', 'nom', 'prenom', 'email'] }],
-      order: [['createdAt', 'DESC']],
-      limit: 5
-    });
-
-    return res.status(200).json({
-      programme,
-      totalCandidatures,
-      timeline: timelineData,
-      recentes
-    });
-  } catch (error) {
-    return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
-  }
-};
-
-const modifierProgrammeMobilite = async (req, res) => {
-  try {
-    const [programme] = await ProgrammeMobilite.findOrCreate({
-      where: { id: 1 },
-      defaults: {
-        titre: 'Programme de Mobilité Internationale',
-        description: 'Description du programme de mobilité...',
-        statut: 'actif',
-      }
-    });
-
-    await programme.update(req.body);
-    return res.status(200).json({ message: 'Programme de mobilité mis à jour.', programme });
-  } catch (error) {
-    return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
-  }
-};
-
-const uploadImageProgrammeMobilite = async (req, res) => {
-  try {
-    const [programme] = await ProgrammeMobilite.findOrCreate({
-      where: { id: 1 },
-      defaults: {
-        titre: 'Programme de Mobilité Internationale',
-        description: 'Description du programme de mobilité...',
-        statut: 'actif',
-      }
-    });
-    if (!req.file) return res.status(400).json({ message: 'Aucune image fournie.' });
-
-    await programme.update({ image_couverture: req.file.filename });
-    return res.status(200).json({ message: 'Image uploadée.', image: req.file.filename, programme });
-  } catch (error) {
-    return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
-  }
-};
 
 // ── Candidatures mobilité (liste paginée) ──
 const getCandidaturesMobilite = async (req, res) => {
@@ -500,6 +418,7 @@ const getCandidaturesMobilite = async (req, res) => {
       totalPages: Math.ceil(total / limit),
     });
   } catch (error) {
+    console.error('ERREUR getCandidaturesMobilite:', error);
     return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
   }
 };
@@ -550,11 +469,340 @@ const rechercheCandidats = async (req, res) => {
   }
 };
 
+// ════════════════════════════════════════════════════════════
+// CANDIDATURES (TOUS LES INSCRITS)
+// ════════════════════════════════════════════════════════════
+const getCandidatures = async (req, res) => {
+  try {
+    const { statut, search, page = 1, limit = 20 } = req.query;
+
+    const whereClause = { role: 'candidat' };
+
+    if (statut === 'actif') {
+      whereClause.est_active = true;
+      whereClause.est_desactive = false;
+      whereClause.est_supprime = false;
+    } else if (statut === 'en_attente') {
+      whereClause.est_active = false;
+      whereClause.est_supprime = false;
+    } else if (statut === 'desactive') {
+      whereClause.est_desactive = true;
+    } else {
+      whereClause.est_supprime = false;
+    }
+
+    if (search) {
+      whereClause[Op.or] = [
+        { nom: { [Op.iLike]: `%${search}%` } },
+        { prenom: { [Op.iLike]: `%${search}%` } },
+        { email: { [Op.iLike]: `%${search}%` } }
+      ];
+    }
+
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await User.findAndCountAll({
+      where: whereClause,
+      attributes: [
+        'id', 'nom', 'prenom', 'email', 'telephone',
+        'est_active', 'est_desactive', 'est_supprime',
+        'derniere_connexion', 'createdAt'
+      ],
+      order: [['createdAt', 'DESC']],
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    });
+
+    const usersWithStatus = rows.map(user => {
+      let statutCompte = 'en_attente';
+      if (user.est_supprime) statutCompte = 'supprime';
+      else if (user.est_desactive) statutCompte = 'desactive';
+      else if (user.est_active) statutCompte = 'actif';
+
+      return {
+        ...user.toJSON(),
+        statut_compte: statutCompte
+      };
+    });
+
+    return res.status(200).json({
+      total: count,
+      page: parseInt(page),
+      totalPages: Math.ceil(count / limit),
+      candidatures: usersWithStatus
+    });
+  } catch (error) {
+    console.error('Erreur récupération candidatures:', error.message);
+    return res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+
+const getCandidatureById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findByPk(id, {
+      attributes: [
+        'id', 'nom', 'prenom', 'email', 'telephone', 'role',
+        'est_active', 'est_desactive', 'est_supprime',
+        'derniere_connexion'
+      ]
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'Compte non trouvé' });
+    }
+
+    const nombreDossiers = await AppelProjet.count({ where: { user_id: id } });
+    const nombreMobilites = await ProjetMobilite.count({ where: { user_id: id } });
+
+    return res.status(200).json({
+      ...user.toJSON(),
+      statistiques: {
+        nombre_dossiers_appels: nombreDossiers,
+        nombre_dossiers_mobilite: nombreMobilites,
+        a_deja_soumis: (nombreDossiers + nombreMobilites) > 0
+      }
+    });
+  } catch (error) {
+    console.error('Erreur détail candidature:', error.message);
+    return res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+
+const desactiverCandidature = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByPk(id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'Compte non trouvé' });
+    }
+
+    await user.update({ est_desactive: true });
+
+    return res.status(200).json({ message: 'Compte désactivé avec succès', user });
+  } catch (error) {
+    console.error('Erreur désactivation:', error.message);
+    return res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+
+const reactiverCandidature = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByPk(id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'Compte non trouvé' });
+    }
+
+    await user.update({ est_desactive: false });
+
+    return res.status(200).json({ message: 'Compte réactivé avec succès', user });
+  } catch (error) {
+    console.error('Erreur réactivation:', error.message);
+    return res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+
+const supprimerCandidatureSoft = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByPk(id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'Compte non trouvé' });
+    }
+
+    await user.update({
+      est_supprime: true,
+      est_desactive: true
+    });
+
+    return res.status(200).json({ message: 'Compte supprimé avec succès' });
+  } catch (error) {
+    console.error('Erreur suppression:', error.message);
+    return res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+
+const renvoyerActivationCandidature = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByPk(id);
+
+    if (!user) {
+      return res.status(404).json({ message: 'Compte non trouvé' });
+    }
+
+    if (user.est_active) {
+      return res.status(400).json({ message: 'Ce compte est déjà activé' });
+    }
+
+    const { envoyerEmailActivation } = require('../services/emailService');
+    await envoyerEmailActivation(user.email, user.prenom, user.token_activation);
+
+    return res.status(200).json({ message: 'Email d\'activation renvoyé avec succès' });
+  } catch (error) {
+    console.error('Erreur renvoi activation:', error.message);
+    return res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+
+// ════════════════════════════════════════════════════════════
+// SOUMISSIONNAIRES
+// ════════════════════════════════════════════════════════════
+const getSoumissionnaires = async (req, res) => {
+  try {
+    const { search, statut, page = 1, limit = 20 } = req.query;
+    const offset = (page - 1) * limit;
+
+    const usersAvecDossiersAppels = await AppelProjet.findAll({
+      attributes: [[sequelize.fn('DISTINCT', sequelize.col('user_id')), 'user_id']],
+      raw: true
+    });
+
+    const usersAvecMobilite = await ProjetMobilite.findAll({
+      attributes: [[sequelize.fn('DISTINCT', sequelize.col('user_id')), 'user_id']],
+      raw: true
+    });
+
+    const idsAppels = usersAvecDossiersAppels.map(u => u.user_id);
+    const idsMobilite = usersAvecMobilite.map(u => u.user_id);
+    const idsUniques = [...new Set([...idsAppels, ...idsMobilite])];
+
+    if (idsUniques.length === 0) {
+      return res.status(200).json({ total: 0, page: 1, totalPages: 0, soumissionnaires: [] });
+    }
+
+    const whereClause = {
+      id: { [Op.in]: idsUniques },
+      est_supprime: false
+    };
+
+    if (search) {
+      whereClause[Op.or] = [
+        { nom: { [Op.iLike]: `%${search}%` } },
+        { prenom: { [Op.iLike]: `%${search}%` } },
+        { email: { [Op.iLike]: `%${search}%` } }
+      ];
+    }
+
+    const { count, rows } = await User.findAndCountAll({
+      where: whereClause,
+      attributes: ['id', 'nom', 'prenom', 'email', 'telephone'],
+      order: [['id', 'DESC']],
+      limit: parseInt(limit),
+      offset: parseInt(offset)
+    });
+
+    const soumissionnairesData = await Promise.all(
+      rows.map(async (user) => {
+        const dossiers = await AppelProjet.findAll({
+          where: { user_id: user.id },
+          attributes: ['id', 'statut', 'type_projet', 'createdAt'],
+          order: [['createdAt', 'DESC']]
+        });
+
+        const mobilites = await ProjetMobilite.findAll({
+          where: { user_id: user.id },
+          attributes: ['id', 'statut', 'createdAt'],
+          order: [['createdAt', 'DESC']]
+        });
+
+        const dernierDossier = dossiers[0] || mobilites[0] || null;
+
+        return {
+          ...user.toJSON(),
+          nombre_dossiers: dossiers.length,
+          nombre_mobilites: mobilites.length,
+          dernier_statut: dernierDossier ? dernierDossier.statut : null,
+          derniere_soumission: dernierDossier ? dernierDossier.createdAt : null
+        };
+      })
+    );
+
+    let resultatsFinal = soumissionnairesData;
+    if (statut) {
+      resultatsFinal = soumissionnairesData.filter(s => s.dernier_statut === statut);
+    }
+
+    return res.status(200).json({
+      total: count,
+      page: parseInt(page),
+      totalPages: Math.ceil(count / limit),
+      soumissionnaires: resultatsFinal
+    });
+  } catch (error) {
+    console.error('Erreur récupération soumissionnaires:', error.message);
+    return res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+
+const getSoumissionnaireById = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findByPk(id, {
+      attributes: ['id', 'nom', 'prenom', 'email', 'telephone']
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'Soumissionnaire non trouvé' });
+    }
+
+    const dossiers = await AppelProjet.findAll({
+      where: { user_id: id },
+      order: [['createdAt', 'DESC']]
+    });
+
+    const mobilites = await ProjetMobilite.findAll({
+      where: { user_id: id },
+      order: [['createdAt', 'DESC']]
+    });
+
+    const { Notification } = require('../models/index');
+    let notifications = [];
+    if (Notification) {
+        notifications = await Notification.findAll({
+        where: { user_id: id },
+        order: [['createdAt', 'DESC']],
+        limit: 20
+        });
+    }
+
+    return res.status(200).json({
+      infos: user,
+      dossiers_appels: dossiers,
+      dossiers_mobilite: mobilites,
+      notifications,
+      statistiques: {
+        total_soumissions: dossiers.length + mobilites.length,
+        acceptes: dossiers.filter(d => d.statut === 'accepte').length,
+        rejetes: dossiers.filter(d => d.statut === 'rejete').length,
+        en_examen: dossiers.filter(d => d.statut === 'en_examen').length,
+        en_attente: dossiers.filter(d => d.statut === 'soumis').length
+      }
+    });
+  } catch (error) {
+    console.error('Erreur détail soumissionnaire:', error.message);
+    return res.status(500).json({ message: 'Erreur serveur' });
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getCampagnes, getCampagneById, modifierCampagne, supprimerCampagne, uploadImageCampagne,
   getCandidaturesAppel,
-  getProgrammeMobilite, modifierProgrammeMobilite, uploadImageProgrammeMobilite,
   getCandidaturesMobilite,
-  rechercheCandidats
+  rechercheCandidats,
+  getCandidatures,
+  getCandidatureById,
+  desactiverCandidature,
+  reactiverCandidature,
+  supprimerCandidatureSoft,
+  renvoyerActivationCandidature,
+  getSoumissionnaires,
+  getSoumissionnaireById
 };

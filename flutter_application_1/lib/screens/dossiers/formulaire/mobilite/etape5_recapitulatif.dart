@@ -1,3 +1,4 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/theme.dart';
 import '../../../../widgets/form_widgets.dart';
@@ -35,19 +36,19 @@ class _Etape5RecapMobState extends State<Etape5RecapMob> {
     return Form(
       key: widget.formKey,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+        padding: EdgeInsets.fromLTRB(20, 24, 20, 32),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ..._etapes.map((e) => Padding(
-              padding: const EdgeInsets.only(bottom: 12),
+              padding: EdgeInsets.only(bottom: 12),
               child: FDRecapSection(
                 titre: e['titre']!,
                 icone: _iconFor(e['icone']!),
                 complet: true,
               ),
             )),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
 
             FormField<bool>(
               initialValue: _confirme,
@@ -67,7 +68,7 @@ class _Etape5RecapMobState extends State<Etape5RecapMob> {
                         state.didChange(_confirme);
                       },
                       child: Container(
-                        padding: const EdgeInsets.all(14),
+                        padding: EdgeInsets.all(14),
                         decoration: BoxDecoration(
                           color: _confirme ? FDColors.mint.withValues(alpha: 0.06) : FDColors.white,
                           borderRadius: BorderRadius.circular(FDRadius.sm),
@@ -83,11 +84,11 @@ class _Etape5RecapMobState extends State<Etape5RecapMob> {
                               color: state.hasError ? FDColors.coral : (_confirme ? FDColors.mint : FDColors.silver),
                               size: 20,
                             ),
-                            const SizedBox(width: 10),
+                            SizedBox(width: 10.w),
                             Expanded(
                               child: Text(
                                 'Je certifie que les informations fournies sont exactes.',
-                                style: FDText.body.copyWith(fontSize: 13),
+                                style: FDText.body.copyWith(fontSize: 13.sp),
                               ),
                             ),
                           ],
@@ -96,10 +97,10 @@ class _Etape5RecapMobState extends State<Etape5RecapMob> {
                     ),
                     if (state.hasError)
                       Padding(
-                        padding: const EdgeInsets.only(top: 6, left: 14),
+                        padding: EdgeInsets.only(top: 6, left: 14),
                         child: Text(
                           state.errorText!,
-                          style: const TextStyle(color: FDColors.coral, fontSize: 12),
+                          style: TextStyle(color: FDColors.coral, fontSize: 12.sp),
                         ),
                       ),
                   ],

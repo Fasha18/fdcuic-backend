@@ -43,10 +43,6 @@ const candidatService = {
     const res = await api.get('/mobilite/mes-projets');
     return res.data;
   },
-  getProgrammeMobilite: async () => {
-    const res = await api.get('/mobilite/programme-infos');
-    return res.data;
-  },
   getProgrammeMobiliteStats: async () => {
     const res = await api.get('/mobilite/programme-stats');
     return res.data;

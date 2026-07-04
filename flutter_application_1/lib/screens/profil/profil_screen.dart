@@ -1,8 +1,9 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../core/theme.dart';
-import '../../widgets/auth_widgets.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../core/app_colors.dart';
 import '../../services/api_service.dart';
 import '../../utils/form_validators.dart';
 
@@ -48,123 +49,122 @@ class _ProfilScreenState extends State<ProfilScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Profil mis à jour avec succès'),
-        backgroundColor: FDColors.mint,
+        backgroundColor: AppColors.success,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     if (_user == null) {
-      return const Scaffold(
-        backgroundColor: FDColors.skyBg,
+      return Scaffold(
+        backgroundColor: isDark ? AppColors.darkBgPrimary : AppColors.lightBgPrimary,
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
+    final nom = _user!['nom'] as String? ?? '';
+    final prenom = _user!['prenom'] as String? ?? '';
+    final email = _user!['email'] as String? ?? '';
+    final role = _user!['role'] as String? ?? 'CANDIDAT';
+    final initial = nom.isNotEmpty ? nom.substring(0, 1).toUpperCase() : 'U';
+
     return Scaffold(
-      backgroundColor: FDColors.skyBg,
-      body: CustomScrollView(
-        slivers: [
-          SliverAppBar(
-            expandedHeight: 290.0,
-            floating: false,
-            pinned: true,
-            backgroundColor: FDColors.navy,
-            elevation: 0,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.logout_rounded, color: FDColors.white),
-                tooltip: 'Se déconnecter',
-                onPressed: _logout,
-              ),
-              const SizedBox(width: 8),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              background: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.only(top: 90, bottom: 10),
-                decoration: const BoxDecoration(
-                  gradient: FDGradients.header,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: FDColors.white,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: FDColors.navy.withValues(alpha: 0.2),
-                            blurRadius: 15,
-                            offset: const Offset(0, 5),
-                          )
-                        ],
+      backgroundColor: isDark ? AppColors.darkBgPrimary : AppColors.lightBgPrimary,
+      body: Column(
+        children: [
+          // HEADER PROFIL
+          Container(
+            color: isDark ? AppColors.darkBgHeader : AppColors.lightBgHeader,
+            padding: EdgeInsets.fromLTRB(24, 0, 24, 20),
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  // Barre navigation retour
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () => Navigator.pop(context),
+                        child: Icon(Icons.arrow_back_ios_new_rounded, size: 18,
+                          color: isDark ? AppColors.darkTxtSecondary : AppColors.lightTxtSecondary),
                       ),
-                      child: Center(
-                        child: Text(
-                          _user!['nom']?.substring(0, 1).toUpperCase() ?? 'U',
-                          style: const TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w800,
-                            color: FDColors.royal,
-                          ),
-                        ),
+                      GestureDetector(
+                        onTap: _logout,
+                        child: Icon(Icons.logout_rounded, size: 20,
+                          color: isDark ? AppColors.darkTxtSecondary : AppColors.lightTxtSecondary),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20.h),
+
+                  // Avatar avec initiale
+                  Container(
+                    width: 72.w, height: 72.h,
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.darkAccent : AppColors.lightAccent,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isDark ? AppColors.darkBorderAccent : AppColors.lightBorderAccent,
+                        width: 2,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      '${_user!['prenom']} ${_user!['nom']}',
-                      style: const TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: FDColors.white,
+                    child: Center(
+                      child: Text(initial,
+                        style: GoogleFonts.sora(fontSize: 28.sp, fontWeight: FontWeight.w700,
+                          color: Colors.white)),
+                    ),
+                  ),
+                  SizedBox(height: 12.h),
+
+                  // Nom
+                  Text('$prenom $nom',
+                    style: GoogleFonts.sora(fontSize: 18.sp, fontWeight: FontWeight.w700,
+                      color: isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary)),
+                  SizedBox(height: 4.h),
+
+                  // Email
+                  Text(email,
+                    style: GoogleFonts.sora(fontSize: 13.sp,
+                      color: isDark ? AppColors.darkTxtSecondary : AppColors.lightTxtSecondary)),
+                  SizedBox(height: 12.h),
+
+                  // Badge CANDIDAT
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.darkBgAccent : AppColors.lightBgAccent,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: isDark ? AppColors.darkBorderAccent : AppColors.lightBorderAccent,
+                        width: 1,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _user!['email'],
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: FDColors.white.withValues(alpha: 0.9),
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: FDColors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(FDRadius.pill),
-                        border: Border.all(color: FDColors.white.withValues(alpha: 0.3)),
-                      ),
-                      child: Text(
-                        _user!['role']?.toUpperCase() ?? 'CANDIDAT',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w800,
-                          color: FDColors.white,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                    child: Text(role.toUpperCase(),
+                      style: GoogleFonts.sora(fontSize: 11.sp, fontWeight: FontWeight.w700,
+                        letterSpacing: 0.08,
+                        color: isDark ? AppColors.darkAccent : AppColors.lightAccent)),
+                  ),
+                ],
               ),
             ),
           ),
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 30, 20, 100),
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                _ProfilInfosForm(user: _user!, onUserUpdated: _onUserUpdated),
-                const SizedBox(height: 30),
-                const _ProfilPasswordForm(),
-                const SizedBox(height: 40),
-              ]),
+
+          // CORPS — formulaires
+          Expanded(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  _ProfilInfosForm(user: _user!, onUserUpdated: _onUserUpdated, isDark: isDark),
+                  SizedBox(height: 20.h),
+                  _ProfilPasswordForm(isDark: isDark),
+                  SizedBox(height: 40.h),
+                ],
+              ),
             ),
           ),
         ],
@@ -176,8 +176,9 @@ class _ProfilScreenState extends State<ProfilScreen> {
 class _ProfilInfosForm extends StatefulWidget {
   final Map<String, dynamic> user;
   final Function(Map<String, dynamic>) onUserUpdated;
+  final bool isDark;
 
-  const _ProfilInfosForm({required this.user, required this.onUserUpdated});
+  const _ProfilInfosForm({required this.user, required this.onUserUpdated, required this.isDark});
 
   @override
   State<_ProfilInfosForm> createState() => _ProfilInfosFormState();
@@ -216,7 +217,7 @@ class _ProfilInfosFormState extends State<_ProfilInfosForm> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(e.toString()),
-          backgroundColor: FDColors.coral,
+          backgroundColor: AppColors.error,
         ));
       }
     } finally {
@@ -226,86 +227,123 @@ class _ProfilInfosFormState extends State<_ProfilInfosForm> {
     }
   }
 
+  Widget _buildLabel(String text) {
+    return Text(text, style: GoogleFonts.sora(fontSize: 12.sp, fontWeight: FontWeight.w600,
+      color: widget.isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary));
+  }
+
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      filled: true,
+      fillColor: widget.isDark ? AppColors.darkBgCard : AppColors.lightBgCard,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: widget.isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          width: 1,
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: widget.isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          width: 1,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: widget.isDark ? AppColors.darkAccent : AppColors.lightAccent,
+          width: 1.5,
+        ),
+      ),
+      labelStyle: GoogleFonts.sora(
+        fontSize: 12.sp,
+        color: widget.isDark ? AppColors.darkTxtSecondary : AppColors.lightTxtSecondary,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: FDColors.white,
-        borderRadius: BorderRadius.circular(FDRadius.md),
-        boxShadow: FDShadow.card,
+        color: widget.isDark ? AppColors.darkBgCard : AppColors.lightBgCard,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: widget.isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          width: 1,
+        ),
       ),
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Informations personnelles', style: FDText.h3),
-            const SizedBox(height: 20),
+            Text('Informations personnelles',
+              style: GoogleFonts.sora(fontSize: 16.sp, fontWeight: FontWeight.w600,
+                color: widget.isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary)),
+            SizedBox(height: 20.h),
+            
+            _buildLabel('Prénom'),
+            SizedBox(height: 8.h),
             TextFormField(
               initialValue: _prenom,
-              decoration: _inputDecoration('Prénom', Icons.person_outline),
+              style: GoogleFonts.sora(fontSize: 14.sp, color: widget.isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary),
+              decoration: _inputDecoration('Prénom'),
               validator: FormValidators.requiredField,
               onSaved: (val) => _prenom = val!,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
+            
+            _buildLabel('Nom'),
+            SizedBox(height: 8.h),
             TextFormField(
               initialValue: _nom,
-              decoration: _inputDecoration('Nom', Icons.person_outline),
+              style: GoogleFonts.sora(fontSize: 14.sp, color: widget.isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary),
+              decoration: _inputDecoration('Nom'),
               validator: FormValidators.requiredField,
               onSaved: (val) => _nom = val!,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
+            
+            _buildLabel('Téléphone'),
+            SizedBox(height: 8.h),
             TextFormField(
               initialValue: _telephone,
-              decoration: _inputDecoration('Téléphone', Icons.phone_outlined),
+              style: GoogleFonts.sora(fontSize: 14.sp, color: widget.isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary),
+              decoration: _inputDecoration('Téléphone'),
               keyboardType: TextInputType.phone,
               validator: FormValidators.phone,
               onSaved: (val) => _telephone = val!,
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
+            
             _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: FDColors.royal,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(FDRadius.sm),
-                        ),
-                      ),
-                      onPressed: _submit,
-                      child: const Text(
-                        'Mettre à jour le profil',
-                        style: TextStyle(
-                            color: FDColors.white, fontWeight: FontWeight.w700),
-                      ),
+                ? Center(child: CircularProgressIndicator())
+                : ElevatedButton(
+                    onPressed: _submit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: widget.isDark ? AppColors.darkAccent : AppColors.lightAccent,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      minimumSize: const Size(double.infinity, 52),
+                      textStyle: GoogleFonts.sora(fontSize: 15.sp, fontWeight: FontWeight.w600),
                     ),
+                    child: Text('Mettre à jour le profil'),
                   ),
           ],
         ),
       ),
     );
   }
-
-  InputDecoration _inputDecoration(String label, IconData icon) {
-    return InputDecoration(
-      labelText: label,
-      prefixIcon: Icon(icon, color: FDColors.royal),
-      filled: true,
-      fillColor: FDColors.ice,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(FDRadius.sm),
-        borderSide: BorderSide.none,
-      ),
-    );
-  }
 }
 
 class _ProfilPasswordForm extends StatefulWidget {
-  const _ProfilPasswordForm();
+  final bool isDark;
+  const _ProfilPasswordForm({required this.isDark});
 
   @override
   State<_ProfilPasswordForm> createState() => _ProfilPasswordFormState();
@@ -334,7 +372,7 @@ class _ProfilPasswordFormState extends State<_ProfilPasswordForm> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Mot de passe mis à jour avec succès'),
-            backgroundColor: FDColors.mint,
+            backgroundColor: AppColors.success,
           ),
         );
         _formKey.currentState!.reset();
@@ -343,7 +381,7 @@ class _ProfilPasswordFormState extends State<_ProfilPasswordForm> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text(e.toString()),
-          backgroundColor: FDColors.coral,
+          backgroundColor: AppColors.error,
         ));
       }
     } finally {
@@ -353,31 +391,91 @@ class _ProfilPasswordFormState extends State<_ProfilPasswordForm> {
     }
   }
 
+  Widget _buildLabel(String text) {
+    return Text(text, style: GoogleFonts.sora(fontSize: 12.sp, fontWeight: FontWeight.w600,
+      color: widget.isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary));
+  }
+
+  InputDecoration _inputDecoration(String label) {
+    return InputDecoration(
+      filled: true,
+      fillColor: widget.isDark ? AppColors.darkBgCard : AppColors.lightBgCard,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: widget.isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          width: 1,
+        ),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: widget.isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          width: 1,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: widget.isDark ? AppColors.darkAccent : AppColors.lightAccent,
+          width: 1.5,
+        ),
+      ),
+      labelStyle: GoogleFonts.sora(
+        fontSize: 12.sp,
+        color: widget.isDark ? AppColors.darkTxtSecondary : AppColors.lightTxtSecondary,
+      ),
+      suffixIcon: IconButton(
+        icon: Icon(
+          _obscureText ? Icons.visibility_off : Icons.visibility,
+          color: widget.isDark ? AppColors.darkTxtSecondary : AppColors.lightTxtSecondary,
+        ),
+        onPressed: () {
+          setState(() {
+            _obscureText = !_obscureText;
+          });
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: FDColors.white,
-        borderRadius: BorderRadius.circular(FDRadius.md),
-        boxShadow: FDShadow.card,
+        color: widget.isDark ? AppColors.darkBgCard : AppColors.lightBgCard,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: widget.isDark ? AppColors.darkBorder : AppColors.lightBorder,
+          width: 1,
+        ),
       ),
       child: Form(
         key: _formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Sécurité', style: FDText.h3),
-            const SizedBox(height: 20),
+            Text('Sécurité', style: GoogleFonts.sora(fontSize: 16.sp, fontWeight: FontWeight.w600,
+              color: widget.isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary)),
+            SizedBox(height: 20.h),
+            
+            _buildLabel('Mot de passe actuel'),
+            SizedBox(height: 8.h),
             TextFormField(
               obscureText: _obscureText,
+              style: GoogleFonts.sora(fontSize: 14.sp, color: widget.isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary),
               decoration: _inputDecoration('Mot de passe actuel'),
               validator: FormValidators.requiredField,
               onSaved: (val) => _actuel = val!,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
+            
+            _buildLabel('Nouveau mot de passe'),
+            SizedBox(height: 8.h),
             TextFormField(
               obscureText: _obscureText,
+              style: GoogleFonts.sora(fontSize: 14.sp, color: widget.isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary),
               decoration: _inputDecoration('Nouveau mot de passe'),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'Requis';
@@ -387,9 +485,13 @@ class _ProfilPasswordFormState extends State<_ProfilPasswordForm> {
               onChanged: (val) => _nouveau = val,
               onSaved: (val) => _nouveau = val!,
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16.h),
+            
+            _buildLabel('Confirmer mot de passe'),
+            SizedBox(height: 8.h),
             TextFormField(
               obscureText: _obscureText,
+              style: GoogleFonts.sora(fontSize: 14.sp, color: widget.isDark ? AppColors.darkTxtPrimary : AppColors.lightTxtPrimary),
               decoration: _inputDecoration('Confirmer mot de passe'),
               validator: (v) {
                 if (v == null || v.isEmpty) return 'Requis';
@@ -398,50 +500,24 @@ class _ProfilPasswordFormState extends State<_ProfilPasswordForm> {
               },
               onSaved: (val) => _confirmation = val!,
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: 24.h),
+            
             _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton(
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: FDColors.royal,
-                        side: const BorderSide(color: FDColors.royal, width: 1.5),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(FDRadius.sm),
-                        ),
-                      ),
-                      onPressed: _submit,
-                      child: const Text('Changer le mot de passe'),
+                ? Center(child: CircularProgressIndicator())
+                : ElevatedButton(
+                    onPressed: _submit,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: widget.isDark ? AppColors.darkAccent : AppColors.lightAccent,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      minimumSize: const Size(double.infinity, 52),
+                      textStyle: GoogleFonts.sora(fontSize: 15.sp, fontWeight: FontWeight.w600),
                     ),
+                    child: Text('Changer le mot de passe'),
                   ),
           ],
         ),
-      ),
-    );
-  }
-
-  InputDecoration _inputDecoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      prefixIcon: const Icon(Icons.lock_outline, color: FDColors.royal),
-      suffixIcon: IconButton(
-        icon: Icon(
-          _obscureText ? Icons.visibility_off : Icons.visibility,
-          color: FDColors.textSub,
-        ),
-        onPressed: () {
-          setState(() {
-            _obscureText = !_obscureText;
-          });
-        },
-      ),
-      filled: true,
-      fillColor: FDColors.ice,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(FDRadius.sm),
-        borderSide: BorderSide.none,
       ),
     );
   }

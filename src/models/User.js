@@ -43,6 +43,20 @@ const User = sequelize.define('User', {
       allowNull: true,
       comment: 'Token unique envoyé par email pour activation',
     },
+    est_desactive: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      comment: 'Désactivé manuellement par admin (soft ban)',
+    },
+    est_supprime: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+      comment: 'Soft delete pour conserver l\'intégrité des dossiers',
+    },
+    derniere_connexion: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
     // ── RESET MOT DE PASSE ──────────────────────────────────
     reset_token: {
       type: DataTypes.STRING,
@@ -57,7 +71,7 @@ const User = sequelize.define('User', {
   },
   {
     tableName: 'user',
-    timestamps: false,
+    timestamps: true,
   }
 );
 

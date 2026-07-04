@@ -20,7 +20,6 @@ const SecteurModal = ({ isOpen, onClose, onSaveSuccess, secteur }) => {
   ];
 
   const [formData, setFormData] = useState({
-    code: '',
     nom: '',
     description: '',
     icone: 'palette',
@@ -34,14 +33,13 @@ const SecteurModal = ({ isOpen, onClose, onSaveSuccess, secteur }) => {
     if (isOpen) {
       if (secteur) {
         setFormData({
-          code: secteur.code,
           nom: secteur.nom,
           description: secteur.description || '',
           icone: secteur.icone || 'palette',
           actif: secteur.actif,
         });
       } else {
-        setFormData({ code: '', nom: '', description: '', icone: 'palette', actif: true });
+        setFormData({ nom: '', description: '', icone: 'palette', actif: true });
       }
       setError(null);
     }
@@ -63,11 +61,6 @@ const SecteurModal = ({ isOpen, onClose, onSaveSuccess, secteur }) => {
     setError(null);
 
     // Frontend Validations
-    if (!/^[a-z_]+$/.test(formData.code)) {
-      setError("Le code ne doit contenir que des lettres minuscules et des underscores.");
-      setLoading(false);
-      return;
-    }
     if (formData.nom.length < 3 || formData.nom.length > 50) {
       setError("Le nom doit contenir entre 3 et 50 caractères.");
       setLoading(false);
@@ -119,20 +112,6 @@ const SecteurModal = ({ isOpen, onClose, onSaveSuccess, secteur }) => {
         )}
 
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: 14, fontWeight: 500, color: 'var(--color-text-secondary)' }}>Code *</label>
-            <input 
-              type="text" 
-              name="code" 
-              value={formData.code} 
-              onChange={handleChange} 
-              required 
-              disabled={isEditing}
-              placeholder="ex: STRUCTURATION"
-              style={{ width: '100%', padding: '10px 12px', borderRadius: '8px', border: '1px solid var(--color-border)', background: isEditing ? 'var(--color-bg-input)' : 'var(--color-bg-body)', color: 'var(--color-text-primary)' }}
-            />
-          </div>
-
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', marginBottom: '8px', fontSize: 14, fontWeight: 500, color: 'var(--color-text-secondary)' }}>Nom *</label>
             <input 

@@ -1,3 +1,4 @@
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 import '../core/theme.dart';
 
@@ -25,7 +26,7 @@ class StepProgressBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4),
+      padding: EdgeInsets.symmetric(horizontal: 4),
       child: Row(
         children: List.generate(totalSteps * 2 - 1, (index) {
           // Index pair = cercle, impair = ligne
@@ -52,15 +53,15 @@ class StepProgressBar extends StatelessWidget {
     if (isCompleted) {
       bgColor = completedColor;
       borderColor = completedColor;
-      child = const Icon(Icons.check_rounded, size: 14, color: FDColors.white);
+      child = Icon(Icons.check_rounded, size: 14, color: FDColors.white);
     } else if (isActive) {
       bgColor = activeColor;
       borderColor = activeColor;
       child = Text(
         '$step',
-        style: const TextStyle(
+        style: TextStyle(
           color: FDColors.white,
-          fontSize: 11,
+          fontSize: 11.sp,
           fontWeight: FontWeight.w800,
         ),
       );
@@ -71,15 +72,15 @@ class StepProgressBar extends StatelessWidget {
         '$step',
         style: TextStyle(
           color: inactiveColor,
-          fontSize: 11,
+          fontSize: 11.sp,
           fontWeight: FontWeight.w600,
         ),
       );
     }
 
     final circle = Container(
-      width: 28,
-      height: 28,
+      width: 28.w,
+      height: 28.h,
       decoration: BoxDecoration(
         color: bgColor,
         shape: BoxShape.circle,
@@ -104,16 +105,16 @@ class StepProgressBar extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           circle,
-          const SizedBox(height: 4),
+          SizedBox(height: 4.h),
           SizedBox(
-            width: 56,
+            width: 56.w,
             child: Text(
               labels![step - 1],
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                fontSize: 9,
+                fontSize: 9.sp,
                 fontWeight:
                     isActive ? FontWeight.w700 : FontWeight.w400,
                 color: isActive || isCompleted
@@ -134,7 +135,7 @@ class StepProgressBar extends StatelessWidget {
     return Expanded(
       child: Container(
         height: 2,
-        margin: const EdgeInsets.symmetric(horizontal: 2),
+        margin: EdgeInsets.symmetric(horizontal: 2),
         decoration: BoxDecoration(
           color: isCompleted ? completedColor : inactiveColor.withValues(alpha: 0.3),
           borderRadius: BorderRadius.circular(1),

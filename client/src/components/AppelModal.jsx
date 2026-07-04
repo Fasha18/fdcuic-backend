@@ -7,7 +7,6 @@ const AppelModal = ({ isOpen, onClose, onSaveSuccess, appel = null }) => {
     date_debut: '',
     date_fin: '',
     description: '',
-    criteres: '',
   });
 
   const [imageFile, setImageFile] = useState(null);
@@ -21,7 +20,6 @@ const AppelModal = ({ isOpen, onClose, onSaveSuccess, appel = null }) => {
         date_debut: appel.date_debut || '',
         date_fin: appel.date_fin || '',
         description: appel.description || '',
-        criteres: appel.criteres || '',
       });
     } else {
       setFormData({
@@ -29,7 +27,6 @@ const AppelModal = ({ isOpen, onClose, onSaveSuccess, appel = null }) => {
         date_debut: '',
         date_fin: '',
         description: '',
-        criteres: '',
       });
     }
     setImageFile(null);
@@ -125,22 +122,30 @@ const AppelModal = ({ isOpen, onClose, onSaveSuccess, appel = null }) => {
           <div className="form-row">
             <div className="form-group">
               <label>Date d'ouverture</label>
-              <input type="date" name="date_debut" value={formData.date_debut} onChange={handleChange} required disabled={appel && appel.statut === 'ouvert'} />
+              <input type="date" name="date_debut" value={formData.date_debut} 
+                min={new Date().toISOString().split('T')[0]}
+                onChange={(e) => {
+                  const newDebut = e.target.value;
+                  let newFin = formData.date_fin;
+                  if (newDebut && newFin && new Date(newDebut) >= new Date(newFin)) {
+                    newFin = '';
+                  }
+                  setFormData({ ...formData, date_debut: newDebut, date_fin: newFin });
+                }} 
+                required disabled={appel && appel.statut === 'ouvert'} />
             </div>
             <div className="form-group">
               <label>Date de fermeture</label>
-              <input type="date" name="date_fin" value={formData.date_fin} onChange={handleChange} required disabled={appel && appel.statut === 'ouvert'} />
+              <input type="date" name="date_fin" value={formData.date_fin} 
+                min={formData.date_debut ? (() => { const d = new Date(formData.date_debut); d.setDate(d.getDate() + 1); return d.toISOString().split('T')[0]; })() : ''}
+                disabled={(appel && appel.statut === 'ouvert') || !formData.date_debut}
+                onChange={handleChange} required />
             </div>
           </div>
 
           <div className="form-group">
             <label>Description</label>
             <textarea name="description" value={formData.description} onChange={handleChange} required rows={4} placeholder="Décrivez les objectifs de cet appel à projets..." disabled={appel && appel.statut === 'ouvert'}></textarea>
-          </div>
-
-          <div className="form-group">
-            <label>Conditions d'éligibilité</label>
-            <textarea name="criteres" value={formData.criteres} onChange={handleChange} rows={3} placeholder="Listez les conditions requises..." disabled={appel && appel.statut === 'ouvert'}></textarea>
           </div>
 
           <div className="modal-footer">

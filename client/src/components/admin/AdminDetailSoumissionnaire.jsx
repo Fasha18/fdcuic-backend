@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import adminService from '../../services/adminService';
 
 const Accordion = ({ title, defaultOpen = true, children }) => {
@@ -25,11 +26,14 @@ const Accordion = ({ title, defaultOpen = true, children }) => {
 
 const getStatusBadge = (statut) => {
   const styles = {
-    brouillon: { bg: '#F5F5F5', color: '#757575', label: 'Brouillon' },
-    soumis: { bg: '#E3F2FD', color: '#1E88E5', label: 'Soumis' },
-    en_examen: { bg: '#FFF3E0', color: '#F57C00', label: 'En examen' },
-    accepte: { bg: '#E8F5E9', color: '#43A047', label: 'Accepté' },
-    rejete: { bg: '#FFEBEE', color: '#E53935', label: 'Rejeté' },
+    brouillon:              { bg: '#F5F5F5',   color: '#757575', label: 'Brouillon' },
+    soumis:                 { bg: '#E3F2FD',   color: '#1E88E5', label: 'Soumis' },
+    en_examen:              { bg: '#FFF3E0',   color: '#F57C00', label: 'En examen' },
+    en_examen_conformite:   { bg: '#FFF3E0',   color: '#F57C00', label: 'Vérif. conformité' },
+    non_conforme:           { bg: '#FFEBEE',   color: '#E53935', label: 'Non conforme' },
+    en_evaluation_contenu:  { bg: '#EDE7F6',   color: '#7C5CFC', label: 'Évaluation contenu' },
+    accepte:                { bg: '#E8F5E9',   color: '#43A047', label: 'Accepté' },
+    rejete:                 { bg: '#FFEBEE',   color: '#E53935', label: 'Rejeté' },
   };
   const s = styles[statut] || styles.brouillon;
   return (
@@ -39,13 +43,16 @@ const getStatusBadge = (statut) => {
   );
 };
 
-const AdminDetailSoumissionnaire = ({ candidatId, onBack }) => {
+const AdminDetailSoumissionnaire = () => {
+  const navigate = useNavigate();
+  const { id: candidatId } = useParams();
   const [data, setData] = useState(null);
   const [appels, setAppels] = useState([]);
   const [mobilites, setMobilites] = useState([]);
   const [historique, setHistorique] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // States pour les panels détaillés de candidatures
   const [expandedAppel, setExpandedAppel] = useState(null);
@@ -58,22 +65,21 @@ const AdminDetailSoumissionnaire = ({ candidatId, onBack }) => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [detailRes, appelsRes, mobilitesRes, histRes, notifRes] = await Promise.all([
-        adminService.getDetailCandidat(candidatId),
-        adminService.getCandidatAppels(candidatId),
-        adminService.getCandidatMobilites(candidatId),
-        adminService.getCandidatHistorique(candidatId),
-        adminService.getCandidatNotifications(candidatId)
-      ]);
+      setError(null);
+      const res = await adminService.getSoumissionnaireById(candidatId);
 
-      setData(detailRes);
-      setAppels(appelsRes.candidatures || []);
-      setMobilites(mobilitesRes.candidatures || []);
-      setHistorique(histRes.events || []);
-      setNotifications(notifRes.notifications || []);
-    } catch (error) {
-      console.error(error);
-      alert('Erreur lors du chargement des détails du candidat.');
+      if (!res.infos) {
+        throw new Error("Profil du candidat introuvable.");
+      }
+
+      setData({ candidat: res.infos, statistiques: res.statistiques });
+      setAppels(res.dossiers_appels || []);
+      setMobilites(res.dossiers_mobilite || []);
+      setHistorique([]); // Not returned by backend yet
+      setNotifications(res.notifications || []);
+    } catch (err) {
+      console.error("Erreur détaillée:", err);
+      setError(err.response?.data?.message || err.message || 'Erreur lors du chargement des détails du candidat.');
     } finally {
       setLoading(false);
     }
@@ -83,24 +89,39 @@ const AdminDetailSoumissionnaire = ({ candidatId, onBack }) => {
     return <div style={{ padding: 40, textAlign: 'center' }}>Chargement des données...</div>;
   }
 
-  if (!data) return null;
+  if (error) {
+    return (
+      <div className="content-grid animate-fade-in-up">
+        <div style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--color-bg-card)', borderRadius: 12, border: '1px solid var(--color-border)' }}>
+          <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#FFEBEE', color: '#E53935', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px auto' }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 12, color: 'var(--color-text-primary)' }}>Impossible de charger le dossier</h2>
+          <p style={{ color: 'var(--color-text-secondary)', marginBottom: 24 }}>{error}</p>
+          <button className="btn-primary" onClick={() => navigate('/admin/soumissionnaires')}>Retour aux soumissionnaires</button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data || !data.candidat) return null;
 
   const { candidat, statistiques } = data;
-  const initiales = `${candidat.prenom?.[0] || ''}${candidat.nom?.[0] || ''}`.toUpperCase();
+  const initiales = `${candidat.prenom?.[0] || ''}${candidat.nom?.[0] || ''}`.toUpperCase() || '?';
 
   return (
     <div className="content-grid animate-fade-in-up">
       {/* TOPBAR */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <button onClick={onBack} style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', borderRadius: '50%', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <button onClick={() => navigate('/admin/soumissionnaires')} style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border)', borderRadius: '50%', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-primary)" strokeWidth="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
           </button>
           <div>
             <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--color-text-primary)' }}>
               Profil de {candidat.prenom} {candidat.nom}
             </h2>
-            <p style={{ color: 'var(--color-text-secondary)', fontSize: 14 }}>Détail complet du soumissionnaire</p>
+            <p style={{ color: 'var(--color-text-secondary)', fontSize: 14 }}>Détail complet</p>
           </div>
         </div>
       </div>
@@ -169,11 +190,23 @@ const AdminDetailSoumissionnaire = ({ candidatId, onBack }) => {
                       <td style={{ padding: '12px', fontSize: 14 }}>{a.nom_structure || 'N/A'}</td>
                       <td style={{ padding: '12px' }}>{getStatusBadge(a.statut)}</td>
                       <td style={{ padding: '12px', fontSize: 13, color: 'var(--color-text-secondary)' }}>{new Date(a.createdAt).toLocaleDateString('fr-FR')}</td>
-                      <td style={{ padding: '12px' }}>
-                        <button onClick={() => setExpandedAppel(expandedAppel === a.id ? null : a.id)} className="btn-secondary" style={{ padding: '6px 12px', fontSize: 12 }}>
-                          {expandedAppel === a.id ? 'Fermer' : 'Voir le dossier'}
-                        </button>
-                      </td>
+                       <td style={{ padding: '12px' }}>
+                         <button
+                           onClick={() => navigate(`/admin/dossiers/${a.id}`)}
+                           style={{
+                             display: 'inline-flex', alignItems: 'center', gap: 6,
+                             padding: '7px 14px', borderRadius: 8, border: 'none',
+                             background: 'linear-gradient(135deg, #4F6AF620, #7C5CFC20)',
+                             color: '#7C5CFC', fontWeight: 700, fontSize: 12,
+                             cursor: 'pointer', transition: 'all 0.2s',
+                           }}
+                           onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #4F6AF6, #7C5CFC)'; e.currentTarget.style.color = '#fff'; }}
+                           onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #4F6AF620, #7C5CFC20)'; e.currentTarget.style.color = '#7C5CFC'; }}
+                         >
+                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                           Évaluer le dossier
+                         </button>
+                       </td>
                     </tr>
                     {expandedAppel === a.id && (
                       <tr>

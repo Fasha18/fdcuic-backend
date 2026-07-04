@@ -10,21 +10,9 @@ import {
   PieChart, Pie, Cell, CartesianGrid,
 } from 'recharts';
 
-import Sidebar from '../components/Sidebar';
-import StatCard from '../components/StatCard';
-import ChartCard from '../components/ChartCard';
-import DataTable from '../components/DataTable';
 import AppelModal from '../components/AppelModal';
-import MobiliteModal from '../components/MobiliteModal';
 import adminService from '../services/adminService';
 
-// Nouveaux composants Admin
-import AdminSecteurs from '../components/admin/AdminSecteurs';
-import AdminTypesProjet from '../components/admin/AdminTypesProjet';
-import AdminPersonnel from '../components/admin/AdminPersonnel';
-import AdminSoumissionnaires from '../components/admin/AdminSoumissionnaires';
-import AdminBrouillons from '../components/admin/AdminBrouillons';
-import AdminProjets from '../components/admin/AdminProjets';
 import AdminMobilite from '../components/admin/AdminMobilite';
 
 /* ── Constantes métier ───────────────────────────────────── */
@@ -68,7 +56,6 @@ const TABS = [
   { id: 'campagnes', label: 'Appels à projets' },
   { id: 'mobilite', label: 'Mobilité' },
   { id: 'finances', label: 'Finances' },
-  { id: 'projets', label: 'Candidatures' },
   { id: 'brouillons', label: 'Dossiers Brouillons' },
   { id: 'soumissionnaires', label: 'Soumissionnaires' },
   { id: 'personnel', label: 'Personnel FDCUIC' },
@@ -104,8 +91,6 @@ export default function Dashboard({ activeTab = 'apercu', onLogout }) {
   const [errorCampagnes, setErrorCampagnes] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
-  const [programmeMobilite, setProgrammeMobilite] = useState(null);
-  const [candidaturesMobiliteCount, setCandidaturesMobiliteCount] = useState(0);
   const [loadingMobilite, setLoadingMobilite] = useState(false);
 
   const [toast, setToast] = useState({ message: '', type: '' });
@@ -145,18 +130,6 @@ export default function Dashboard({ activeTab = 'apercu', onLogout }) {
   useEffect(() => {
     if (activeTab === 'campagnes' && campagnes.length === 0 && !loadingCampagnes && !errorCampagnes) {
       fetchCampagnesData();
-    }
-    
-    if (activeTab === 'mobilite' && !programmeMobilite && !loadingMobilite) {
-      setLoadingMobilite(true);
-      adminService.getProgrammeMobilite().then(res => {
-        setProgrammeMobilite(res.programme);
-        setCandidaturesMobiliteCount(res.totalCandidatures || 0);
-        setLoadingMobilite(false);
-      }).catch(err => {
-        console.error(err);
-        setLoadingMobilite(false);
-      });
     }
   }, [activeTab]);
 
