@@ -193,9 +193,18 @@ const server = app.listen(PORT, () => {
 // Connecter la base de données en arrière-plan (ne bloque PAS le serveur)
 (async () => {
   try {
-    const { sequelize } = require('./src/models/index');
+    const { sequelize, User } = require('./src/models/index');
     await sequelize.authenticate();
     console.log('Connexion PostgreSQL réussie !');
+    
+    // Synchronisation spécifique pour la table User
+    try {
+      await User.sync({ alter: true });
+      console.log('Table User synchronisée avec succès (alter: true)');
+    } catch (syncErr) {
+      console.error('Erreur lors de la synchronisation de la table User:', syncErr.message);
+    }
+    
     // La synchronisation est supprimée en production pour éviter les blocages
     // await sequelize.sync({ force: false, alter: true });
     console.log('DB authentifiée avec succès !');
