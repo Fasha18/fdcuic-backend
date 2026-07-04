@@ -15,11 +15,23 @@ module.exports = {
       type: Sequelize.DATE,
       allowNull: true
     });
+    await queryInterface.addColumn('user', 'createdAt', {
+      type: Sequelize.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+    });
+    await queryInterface.addColumn('user', 'updatedAt', {
+      type: Sequelize.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
+    });
   },
 
   async down (queryInterface, Sequelize) {
     await queryInterface.removeColumn('user', 'est_desactive');
     await queryInterface.removeColumn('user', 'est_supprime');
     await queryInterface.removeColumn('user', 'derniere_connexion');
+    await queryInterface.removeColumn('user', 'createdAt');
+    await queryInterface.removeColumn('user', 'updatedAt');
   }
 };
