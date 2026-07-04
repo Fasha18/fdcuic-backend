@@ -17,8 +17,14 @@ console.error = (...args) => {
   originalError(...args);
 };
 
-app.get('/api/debug-logs', (req, res) => {
-  res.send(logs.join('\n'));
+app.get('/api/debug-logs', async (req, res) => {
+  try {
+    const { User } = require('./src/models/index');
+    const latestUser = await User.findOne({ order: [['id', 'DESC']] });
+    res.json({ logs, latestUser });
+  } catch (e) {
+    res.json({ logs, error: e.message });
+  }
 });
 
 
