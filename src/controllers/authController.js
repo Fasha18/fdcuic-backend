@@ -115,8 +115,7 @@ const activerCompte = async (req, res) => {
     if (user.est_active) {
       return res.send(pageTemplate(
         "Compte déjà activé", "✅", "Compte déjà actif",
-        "Votre compte est déjà activé. Vous pouvez vous connecter à la plateforme.",
-        `<a href="${process.env.FRONTEND_URL || 'https://fdcuic-backend-production.up.railway.app'}" class="btn">Aller à la connexion</a>`
+        "Votre compte est déjà activé. Vous pouvez retourner à l'application pour vous connecter."
       ));
     }
 
@@ -130,6 +129,7 @@ const activerCompte = async (req, res) => {
     ));
 
   } catch (error) {
+    console.error("ERREUR DANS ACTIVER COMPTE:", error);
     return res.status(500).send(pageTemplate("Erreur", "⚠️", "Erreur Serveur", "Une erreur est survenue lors de la vérification de votre lien."));
   }
 };
@@ -147,21 +147,20 @@ const confirmerActivation = async (req, res) => {
       ));
     }
 
+    // Si le compte est déjà activé
     if (user.est_active) {
       return res.send(pageTemplate(
         "Déjà activé", "✅", "Compte déjà actif",
-        "Votre compte est déjà activé.",
-        `<a href="${process.env.FRONTEND_URL || 'https://fdcuic-backend-production.up.railway.app'}" class="btn">Aller à la connexion</a>`
+        "Votre compte est déjà activé. Vous pouvez retourner à l'application pour vous connecter."
       ));
     }
 
     // Activation effective
-    await user.update({ est_active: true, token_activation: null });
+    await user.update({ est_active: true });
 
     return res.send(pageTemplate(
       "Compte activé", "🎉", "Compte activé avec succès !",
-      "Félicitations, votre compte FDCUIC est maintenant actif.<br/>Vous pouvez dès à présent vous connecter à la plateforme.",
-      `<a href="${process.env.FRONTEND_URL || 'https://fdcuic-backend-production.up.railway.app'}" class="btn">Me connecter</a>`
+      "Félicitations, votre compte FDCUIC est maintenant actif.<br/>Vous pouvez dès à présent vous connecter depuis l'application."
     ));
 
   } catch (error) {
