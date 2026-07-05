@@ -202,16 +202,18 @@ const server = app.listen(PORT, () => {
     const { sequelize, User } = require('./src/models/index');
     await sequelize.authenticate();
     console.log('Connexion PostgreSQL réussie !');
-    
-    // Synchronisation spécifique pour la table User
+    // Synchronisation spécifique pour les tables qui ont de nouvelles colonnes
     try {
       await User.sync({ alter: true });
-      console.log('Table User synchronisée avec succès (alter: true)');
+      const { AppelProjet, ProjetMobilite } = require('./src/models/index');
+      await AppelProjet.sync({ alter: true });
+      await ProjetMobilite.sync({ alter: true });
+      console.log('Tables spécifiques synchronisées avec succès (alter: true)');
     } catch (syncErr) {
-      console.error('Erreur lors de la synchronisation de la table User:', syncErr.message);
+      console.error('Erreur lors de la synchronisation des tables:', syncErr.message);
     }
     
-    // La synchronisation est supprimée en production pour éviter les blocages
+    // La synchronisation globale est supprimée en production pour éviter les blocages
     // await sequelize.sync({ force: false, alter: true });
     console.log('DB authentifiée avec succès !');
   } catch (error) {
