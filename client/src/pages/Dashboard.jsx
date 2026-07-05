@@ -128,6 +128,8 @@ export default function Dashboard({ activeTab = 'apercu', onLogout }) {
 
   /* ── Fetch Tab Data ── */
   useEffect(() => {
+    // Réinitialiser l'erreur si on change d'onglet
+    setError(null);
     if (activeTab === 'campagnes' && campagnes.length === 0 && !loadingCampagnes && !errorCampagnes) {
       fetchCampagnesData();
     }
