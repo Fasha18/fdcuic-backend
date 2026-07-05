@@ -54,9 +54,7 @@ const AdminDetailSoumissionnaire = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // States pour les panels détaillés de candidatures
-  const [expandedAppel, setExpandedAppel] = useState(null);
-  const [expandedMobilite, setExpandedMobilite] = useState(null);
+  // States pour les panels détaillés de candidatures (désormais remplacés par une redirection directe)
 
   useEffect(() => {
     fetchData();
@@ -208,38 +206,8 @@ const AdminDetailSoumissionnaire = () => {
                          </button>
                        </td>
                     </tr>
-                    {expandedAppel === a.id && (
-                      <tr>
-                        <td colSpan={6} style={{ padding: 0 }}>
-                          <div style={{ background: 'var(--color-bg-body)', padding: 24, borderBottom: '1px solid var(--color-border)' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-                              <div>
-                                <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>Informations du projet</h4>
-                                <div style={{ display: 'grid', gap: 12 }}>
-                                  <div><span style={{ color: 'var(--color-text-tertiary)', fontSize: 12, display: 'block' }}>Secteur</span> <strong style={{ fontSize: 14 }}>{a.secteur_activite || 'N/A'}</strong></div>
-                                  <div><span style={{ color: 'var(--color-text-tertiary)', fontSize: 12, display: 'block' }}>Région</span> <strong style={{ fontSize: 14 }}>{a.region || 'N/A'}</strong></div>
-                                  <div><span style={{ color: 'var(--color-text-tertiary)', fontSize: 12, display: 'block' }}>Localisation</span> <strong style={{ fontSize: 14 }}>{a.localisation || 'N/A'}</strong></div>
-                                  <div><span style={{ color: 'var(--color-text-tertiary)', fontSize: 12, display: 'block' }}>Bénéficiaires</span> <p style={{ margin: 0, fontSize: 14 }}>{a.beneficiaires || 'N/A'}</p></div>
-                                </div>
-                              </div>
-                              <div>
-                                <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>Documents</h4>
-                                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 8 }}>
-                                  {a.doc_ninea_recepisse && <li><a href={`https://fdcuic-backend-production.up.railway.app/${a.doc_ninea_recepisse}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 NINEA / Récépissé</a></li>}
-                                  {a.doc_cni_passeport && <li><a href={`https://fdcuic-backend-production.up.railway.app/${a.doc_cni_passeport}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 CNI / Passeport</a></li>}
-                                  {a.doc_budget && <li><a href={`https://fdcuic-backend-production.up.railway.app/${a.doc_budget}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 Budget</a></li>}
-                                  {a.doc_plan_action && <li><a href={`https://fdcuic-backend-production.up.railway.app/${a.doc_plan_action}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 Plan d'action</a></li>}
-                                </ul>
-                              </div>
-                            </div>
-                            <div style={{ marginTop: 24 }}>
-                              <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>Description</h4>
-                              <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>{a.nature_projet || 'Aucune description fournie.'}</p>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
+                    </tr>
+                  </React.Fragment>
                   </React.Fragment>
                 ))}
               </tbody>
@@ -277,41 +245,24 @@ const AdminDetailSoumissionnaire = () => {
                       </td>
                       <td style={{ padding: '12px' }}>{getStatusBadge(m.statut)}</td>
                       <td style={{ padding: '12px' }}>
-                        <button onClick={() => setExpandedMobilite(expandedMobilite === m.id ? null : m.id)} className="btn-secondary" style={{ padding: '6px 12px', fontSize: 12 }}>
-                          {expandedMobilite === m.id ? 'Fermer' : 'Voir le dossier'}
+                        <button
+                          onClick={() => navigate(`/admin/mobilite/candidature/${m.id}`)}
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: 6,
+                            padding: '7px 14px', borderRadius: 8, border: 'none',
+                            background: 'linear-gradient(135deg, #4F6AF620, #7C5CFC20)',
+                            color: '#7C5CFC', fontWeight: 700, fontSize: 12,
+                            cursor: 'pointer', transition: 'all 0.2s',
+                          }}
+                          onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #4F6AF6, #7C5CFC)'; e.currentTarget.style.color = '#fff'; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #4F6AF620, #7C5CFC20)'; e.currentTarget.style.color = '#7C5CFC'; }}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                          Voir le dossier
                         </button>
                       </td>
                     </tr>
-                    {expandedMobilite === m.id && (
-                      <tr>
-                        <td colSpan={6} style={{ padding: 0 }}>
-                          <div style={{ background: 'var(--color-bg-body)', padding: 24, borderBottom: '1px solid var(--color-border)' }}>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-                              <div>
-                                <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>Détails Mobilité</h4>
-                                <div style={{ display: 'grid', gap: 12 }}>
-                                  <div><span style={{ color: 'var(--color-text-tertiary)', fontSize: 12, display: 'block' }}>Type</span> <strong style={{ fontSize: 14 }}>{m.type_mobilite || 'N/A'}</strong></div>
-                                  <div><span style={{ color: 'var(--color-text-tertiary)', fontSize: 12, display: 'block' }}>Objectif Général</span> <p style={{ margin: 0, fontSize: 14 }}>{m.objectif_general || 'N/A'}</p></div>
-                                </div>
-                              </div>
-                              <div>
-                                <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>Documents</h4>
-                                <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 8 }}>
-                                  {m.doc_ninea_recepisse && <li><a href={`https://fdcuic-backend-production.up.railway.app/${m.doc_ninea_recepisse}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 NINEA / Récépissé</a></li>}
-                                  {m.doc_cni_passeport && <li><a href={`https://fdcuic-backend-production.up.railway.app/${m.doc_cni_passeport}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 CNI / Passeport</a></li>}
-                                  {m.doc_lettre_invitation && <li><a href={`https://fdcuic-backend-production.up.railway.app/${m.doc_lettre_invitation}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 Lettre d'invitation</a></li>}
-                                  {m.doc_cv_portfolio && <li><a href={`https://fdcuic-backend-production.up.railway.app/${m.doc_cv_portfolio}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 CV / Portfolio</a></li>}
-                                </ul>
-                              </div>
-                            </div>
-                            <div style={{ marginTop: 24 }}>
-                              <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>Activités prévues</h4>
-                              <p style={{ fontSize: 14, color: 'var(--color-text-secondary)', lineHeight: 1.6 }}>{m.activites_prevues || 'Aucune description fournie.'}</p>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
+                  </React.Fragment>
                   </React.Fragment>
                 ))}
               </tbody>
