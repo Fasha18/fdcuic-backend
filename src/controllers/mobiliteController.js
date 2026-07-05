@@ -144,12 +144,12 @@ const etape4 = async (req, res) => {
     const fichiers = req.files || {};
     const updates = { etape_courante: 4 };
 
-    if (fichiers.doc_ninea)        updates.doc_ninea        = fichiers.doc_ninea[0].filename;
-    if (fichiers.doc_recepisse)    updates.doc_recepisse    = fichiers.doc_recepisse[0].filename;
-    if (fichiers.doc_invitation)   updates.doc_invitation   = fichiers.doc_invitation[0].filename;
-    if (fichiers.doc_note_structure) updates.doc_note_structure = fichiers.doc_note_structure[0].filename;
-    if (fichiers.doc_cv_portfolio) updates.doc_cv_portfolio = fichiers.doc_cv_portfolio[0].filename;
-    if (fichiers.image_couverture) updates.image_couverture = fichiers.image_couverture[0].filename;
+    if (fichiers.doc_ninea)        updates.doc_ninea        = fichiers.doc_ninea[0].path;
+    if (fichiers.doc_recepisse)    updates.doc_recepisse    = fichiers.doc_recepisse[0].path;
+    if (fichiers.doc_invitation)   updates.doc_invitation   = fichiers.doc_invitation[0].path;
+    if (fichiers.doc_note_structure) updates.doc_note_structure = fichiers.doc_note_structure[0].path;
+    if (fichiers.doc_cv_portfolio) updates.doc_cv_portfolio = fichiers.doc_cv_portfolio[0].path;
+    if (fichiers.image_couverture) updates.image_couverture = fichiers.image_couverture[0].path;
 
     const docNinea = updates.doc_ninea || projet.doc_ninea;
     const docRecepisse = updates.doc_recepisse || projet.doc_recepisse;

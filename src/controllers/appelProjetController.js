@@ -171,27 +171,27 @@ const etape3 = async (req, res) => {
 
     // Documents communs aux 3 types
     if (fichiers.doc_ninea_recepisse)
-      updates.doc_ninea_recepisse = fichiers.doc_ninea_recepisse[0].filename;
+      updates.doc_ninea_recepisse = fichiers.doc_ninea_recepisse[0].path;
     if (fichiers.doc_cni_passeport)
-      updates.doc_cni_passeport = fichiers.doc_cni_passeport[0].filename;
+      updates.doc_cni_passeport = fichiers.doc_cni_passeport[0].path;
     if (fichiers.doc_plan_action)
-      updates.doc_plan_action = fichiers.doc_plan_action[0].filename;
+      updates.doc_plan_action = fichiers.doc_plan_action[0].path;
     if (fichiers.doc_photo_prototype)
-      updates.doc_photo_prototype = fichiers.doc_photo_prototype[0].filename;
+      updates.doc_photo_prototype = fichiers.doc_photo_prototype[0].path;
 
     // Formation + Événementiel
     if (dossier.type_projet === 'formation' ||
         dossier.type_projet === 'evenementiel') {
       if (fichiers.doc_budget)
-        updates.doc_budget = fichiers.doc_budget[0].filename;
+        updates.doc_budget = fichiers.doc_budget[0].path;
     }
 
     // Structuration uniquement
     if (dossier.type_projet === 'structuration') {
       if (fichiers.doc_analyse_financiere)
-        updates.doc_analyse_financiere = fichiers.doc_analyse_financiere[0].filename;
+        updates.doc_analyse_financiere = fichiers.doc_analyse_financiere[0].path;
       if (fichiers.doc_business_model)
-        updates.doc_business_model = fichiers.doc_business_model[0].filename;
+        updates.doc_business_model = fichiers.doc_business_model[0].path;
     }
 
     // Vérifier que les documents obligatoires sont fournis

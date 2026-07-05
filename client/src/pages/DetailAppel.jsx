@@ -153,7 +153,7 @@ export default function DetailAppel({ onLogout }) {
               {campagne.image_couverture ? (
                 <>
                   <img 
-                    src={`https://fdcuic-backend-production.up.railway.app/uploads/${campagne.image_couverture}`} 
+                    src={campagne.image_couverture.startsWith('http') ? campagne.image_couverture : `https://fdcuic-backend-production.up.railway.app/uploads/${campagne.image_couverture}`} 
                     alt="Couverture" 
                     style={{ 
                       width: '100%', 

@@ -281,7 +281,7 @@ export default function AdminDetailMobilite() {
             {docs.map((doc, i) => (
               <a
                 key={i}
-                href={`${getBaseUrl()}/uploads/${doc.fichier}`}
+                href={doc.fichier.startsWith('http') ? doc.fichier : `${getBaseUrl()}/uploads/${doc.fichier}`}
                 target="_blank"
                 rel="noreferrer"
                 style={{

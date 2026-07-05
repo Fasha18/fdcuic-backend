@@ -596,7 +596,7 @@ export default function Dashboard({ activeTab = 'apercu', onLogout }) {
                       <div style={{ height: 180, background: 'var(--color-bg-body)', position: 'relative', overflow: 'hidden' }}>
                         {campagne.image_couverture ? (
                           <>
-                            <img src={`https://fdcuic-backend-production.up.railway.app/uploads/${campagne.image_couverture}`} alt={campagne.titre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            <img src={campagne.image_couverture.startsWith('http') ? campagne.image_couverture : `https://fdcuic-backend-production.up.railway.app/uploads/${campagne.image_couverture}`} alt={campagne.titre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 60%)' }} />
                           </>
                         ) : (

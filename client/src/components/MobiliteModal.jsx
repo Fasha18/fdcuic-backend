@@ -27,7 +27,7 @@ const MobiliteModal = ({ isOpen, onClose, onSaveSuccess, programme = null }) => 
       });
     }
     setImageFile(null);
-    setImagePreview(programme?.image_couverture ? `https://fdcuic-backend-production.up.railway.app/uploads/${programme.image_couverture}` : null);
+    setImagePreview(programme?.image_couverture ? (programme.image_couverture.startsWith('http') ? programme.image_couverture : `https://fdcuic-backend-production.up.railway.app/uploads/${programme.image_couverture}`) : null);
   }, [programme, isOpen]);
 
   const handleChange = (e) => {
