@@ -205,9 +205,6 @@ const AdminDetailSoumissionnaire = () => {
                            Évaluer le dossier
                          </button>
                        </td>
-                    </tr>
-                    </tr>
-                  </React.Fragment>
                   </React.Fragment>
                 ))}
               </tbody>
@@ -261,8 +258,6 @@ const AdminDetailSoumissionnaire = () => {
                           Voir le dossier
                         </button>
                       </td>
-                    </tr>
-                  </React.Fragment>
                   </React.Fragment>
                 ))}
               </tbody>
