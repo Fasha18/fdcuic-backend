@@ -73,7 +73,7 @@ const InfoField = ({ label, value }) => {
   return (
     <div style={{ padding: '16px 20px', background: 'var(--color-bg-body)', borderRadius: 12, border: '1px solid var(--color-border-light)' }}>
       <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 8 }}>{label}</div>
-      <div style={{ fontSize: 15, color: 'var(--color-text-primary)', fontWeight: 500, lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+      <div style={{ fontSize: 15, color: 'var(--color-text-primary)', fontWeight: 500, lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
         {typeof value === 'boolean' ? (value ? 'Oui' : 'Non') : String(value)}
       </div>
     </div>
