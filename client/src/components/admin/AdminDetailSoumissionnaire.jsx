@@ -225,10 +225,10 @@ const AdminDetailSoumissionnaire = () => {
                               <div>
                                 <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>Documents</h4>
                                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 8 }}>
-                                  {a.doc_ninea_recepisse && <li><a href={`http://localhost:8000/${a.doc_ninea_recepisse}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 NINEA / Récépissé</a></li>}
-                                  {a.doc_cni_passeport && <li><a href={`http://localhost:8000/${a.doc_cni_passeport}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 CNI / Passeport</a></li>}
-                                  {a.doc_budget && <li><a href={`http://localhost:8000/${a.doc_budget}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 Budget</a></li>}
-                                  {a.doc_plan_action && <li><a href={`http://localhost:8000/${a.doc_plan_action}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 Plan d'action</a></li>}
+                                  {a.doc_ninea_recepisse && <li><a href={`https://fdcuic-backend-production.up.railway.app/${a.doc_ninea_recepisse}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 NINEA / Récépissé</a></li>}
+                                  {a.doc_cni_passeport && <li><a href={`https://fdcuic-backend-production.up.railway.app/${a.doc_cni_passeport}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 CNI / Passeport</a></li>}
+                                  {a.doc_budget && <li><a href={`https://fdcuic-backend-production.up.railway.app/${a.doc_budget}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 Budget</a></li>}
+                                  {a.doc_plan_action && <li><a href={`https://fdcuic-backend-production.up.railway.app/${a.doc_plan_action}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 Plan d'action</a></li>}
                                 </ul>
                               </div>
                             </div>
@@ -297,10 +297,10 @@ const AdminDetailSoumissionnaire = () => {
                               <div>
                                 <h4 style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>Documents</h4>
                                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'grid', gap: 8 }}>
-                                  {m.doc_ninea_recepisse && <li><a href={`http://localhost:8000/${m.doc_ninea_recepisse}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 NINEA / Récépissé</a></li>}
-                                  {m.doc_cni_passeport && <li><a href={`http://localhost:8000/${m.doc_cni_passeport}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 CNI / Passeport</a></li>}
-                                  {m.doc_lettre_invitation && <li><a href={`http://localhost:8000/${m.doc_lettre_invitation}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 Lettre d'invitation</a></li>}
-                                  {m.doc_cv_portfolio && <li><a href={`http://localhost:8000/${m.doc_cv_portfolio}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 CV / Portfolio</a></li>}
+                                  {m.doc_ninea_recepisse && <li><a href={`https://fdcuic-backend-production.up.railway.app/${m.doc_ninea_recepisse}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 NINEA / Récépissé</a></li>}
+                                  {m.doc_cni_passeport && <li><a href={`https://fdcuic-backend-production.up.railway.app/${m.doc_cni_passeport}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 CNI / Passeport</a></li>}
+                                  {m.doc_lettre_invitation && <li><a href={`https://fdcuic-backend-production.up.railway.app/${m.doc_lettre_invitation}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 Lettre d'invitation</a></li>}
+                                  {m.doc_cv_portfolio && <li><a href={`https://fdcuic-backend-production.up.railway.app/${m.doc_cv_portfolio}`} target="_blank" rel="noreferrer" style={{ color: 'var(--color-primary)', textDecoration: 'none', fontWeight: 600, fontSize: 13 }}>📄 CV / Portfolio</a></li>}
                                 </ul>
                               </div>
                             </div>
