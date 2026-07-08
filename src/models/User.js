@@ -68,6 +68,16 @@ const User = sequelize.define('User', {
       allowNull: true,
       comment: "Date d'expiration du token de réinitialisation (1 heure)",
     },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW
+    }
   },
   {
     tableName: 'user',
