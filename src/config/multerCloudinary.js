@@ -1,15 +1,17 @@
 const multer = require('multer');
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const cloudinary = require('./cloudinary');
+const path = require('path');
 
 // Storage Cloudinary pour les fichiers templates uploadés par l'admin
 const storageTemplates = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
+    const ext = path.extname(file.originalname).toLowerCase();
     return {
       folder: 'fdcuic/templates',
       resource_type: 'raw', // Pour Excel, Word, PDF
-      public_id: `template_${file.fieldname}_${Date.now()}`,
+      public_id: `template_${file.fieldname}_${Date.now()}${ext}`,
       format: undefined, // Garder le format original
     };
   },

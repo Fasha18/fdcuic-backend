@@ -14,7 +14,7 @@ const storage = new CloudinaryStorage({
     return {
       folder: 'fdcuic/appels',
       resource_type: isImage ? 'image' : 'raw',
-      public_id: `appel_${file.fieldname}_${Date.now()}`,
+      public_id: `appel_${file.fieldname}_${Date.now()}${ext}`,
       format: isImage ? ext.replace('.', '') : undefined,
     };
   },

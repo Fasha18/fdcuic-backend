@@ -13,7 +13,7 @@ const storage = new CloudinaryStorage({
     return {
       folder: 'fdcuic/mobilite',
       resource_type: isImage ? 'image' : 'raw',
-      public_id: `mobilite_${file.fieldname}_${Date.now()}`,
+      public_id: `mobilite_${file.fieldname}_${Date.now()}${ext}`,
       format: isImage ? ext.replace('.', '') : undefined,
     };
   },
