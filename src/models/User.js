@@ -57,6 +57,14 @@ const User = sequelize.define('User', {
       type: DataTypes.DATE,
       allowNull: true,
     },
+    avatar_url: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    notifications_email: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
     // ── RESET MOT DE PASSE ──────────────────────────────────
     reset_token: {
       type: DataTypes.STRING,

@@ -82,6 +82,7 @@ try {
   app.use('/api/dossiers',    require('./src/routes/appelProjet'));
   app.use('/api/admin',       require('./src/routes/admin'));
   app.use('/api/users',       require('./src/routes/user'));
+  app.use('/api/me',          require('./src/routes/me'));
   app.use('/api/secteurs',    require('./src/routes/secteur'));
   app.use('/api/admin/types-projet',  require('./src/routes/typeProjet'));
   app.use('/api/admin/personnel',     require('./src/routes/personnel'));

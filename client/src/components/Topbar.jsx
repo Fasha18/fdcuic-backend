@@ -4,7 +4,7 @@ import axios from 'axios';
 
 const Topbar = ({ title, subtitle }) => {
   const [isDark, setIsDark] = useState(false);
-  const user = JSON.parse(localStorage.getItem('user')) || null;
+  const [user, setUser] = useState(() => JSON.parse(localStorage.getItem('user')) || null);
   const navigate = useNavigate();
 
 
@@ -36,7 +36,14 @@ const Topbar = ({ title, subtitle }) => {
     };
     document.addEventListener('mousedown', handleClickOutside);
     fetchNotifications();
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    
+    const handleUserUpdated = () => setUser(JSON.parse(localStorage.getItem('user')) || null);
+    window.addEventListener('userUpdated', handleUserUpdated);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('userUpdated', handleUserUpdated);
+    };
   }, []);
 
   const fetchNotifications = async () => {
@@ -233,9 +240,13 @@ const Topbar = ({ title, subtitle }) => {
               width: '32px', height: '32px', borderRadius: '50%',
               background: 'linear-gradient(135deg, #4F6AF6, #7C5CFC)',
               color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '13px', fontWeight: 800
+              fontSize: '13px', fontWeight: 800, overflow: 'hidden'
             }}>
-              {initials}
+              {user && user.avatar_url ? (
+                <img src={user.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                initials
+              )}
             </div>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--color-text-primary)', lineHeight: 1.2 }}>

@@ -21,6 +21,7 @@ import AdminLegal from './components/admin/AdminLegal';
 import AdminDetailDossier from './components/admin/AdminDetailDossier';
 import AdminDetailSoumissionnaire from './components/admin/AdminDetailSoumissionnaire';
 import AdminDetailMobilite from './components/admin/AdminDetailMobilite';
+import ParametresCompte from './pages/ParametresCompte';
 
 import CandidatDashboardNew from './pages/CandidatDashboardNew';
 import CandidatAppels from './pages/CandidatAppels';
@@ -91,6 +92,7 @@ function App() {
                 <Route path="faqs" element={<AdminFAQs />} />
                 <Route path="legal" element={<AdminLegal />} />
                 <Route path="profil" element={<Profile onLogout={handleLogout} />} />
+                <Route path="parametres" element={<ParametresCompte />} />
                 
                 {/* Routes de détails spécifiques (sans Dashboard wrapper) */}
                 <Route path="appels/:id" element={<DetailAppel onLogout={handleLogout} />} />
@@ -107,6 +109,7 @@ function App() {
               <>
                 <Route path="/candidat" element={<CandidatDashboardNew onLogout={handleLogout} />} />
                 <Route path="/candidat/profil" element={<Profile onLogout={handleLogout} />} />
+                <Route path="/candidat/parametres" element={<ParametresCompte />} />
                 <Route path="/candidat/appels" element={<CandidatAppels onLogout={handleLogout} />} />
                 <Route path="/candidat/appels/:id" element={<CandidatDetailAppel onLogout={handleLogout} />} />
                 <Route path="/candidat/appels/:id/candidature" element={<CandidatCandidature onLogout={handleLogout} />} />
