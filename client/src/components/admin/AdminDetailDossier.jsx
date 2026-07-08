@@ -26,7 +26,7 @@ const getBaseUrl = () => 'https://fdcuic-backend-production.up.railway.app';
 // ════════════════════════════════════════════════════════════
 // STEPPER
 // ════════════════════════════════════════════════════════════
-const Stepper = ({ statut }) => {
+const Stepper = ({ statut, dossier }) => {
   const etapeActive = ETAPES.findIndex(e => e.statuts.includes(statut));
 
   return (
@@ -309,7 +309,7 @@ export default function AdminDetailDossier() {
       </div>
 
       {/* ── STEPPER ── */}
-      <Stepper statut={dossier.statut} />
+      <Stepper statut={dossier.statut} dossier={dossier} />
 
       {/* ── INFOS FORMULAIRE ── */}
       <div className="card" style={{ marginBottom: 24, padding: '24px 28px' }}>
