@@ -34,8 +34,20 @@ const Stepper = ({ statut }) => {
       {ETAPES.map((etape, idx) => {
         const isActive = idx === etapeActive;
         const isDone = etapeActive > idx;
-        const color = isDone ? '#22B07D' : isActive ? '#7C5CFC' : 'var(--color-text-tertiary)';
-        const bg = isDone ? '#22B07D20' : isActive ? '#7C5CFC20' : 'var(--color-bg-body)';
+        const isDecisionStep = idx === 2;
+        const isAccepted = isDecisionStep && statut === 'accepte';
+        const isRejected = isDecisionStep && (statut === 'rejete' || statut === 'non_conforme');
+
+        let color = isDone ? '#22B07D' : isActive ? '#7C5CFC' : 'var(--color-text-tertiary)';
+        let bg = isDone ? '#22B07D20' : isActive ? '#7C5CFC20' : 'var(--color-bg-body)';
+        let icon = isDone ? '✓' : idx + 1;
+        let label = etape.label;
+
+        if (isAccepted) {
+          color = '#22B07D'; bg = '#22B07D20'; icon = '✓'; label = 'Accepté';
+        } else if (isRejected) {
+          color = '#F03E3E'; bg = '#F03E3E20'; icon = '✗'; label = 'Rejeté';
+        }
 
         return (
           <React.Fragment key={etape.id}>
@@ -46,16 +58,33 @@ const Stepper = ({ statut }) => {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontWeight: 800, fontSize: 15, transition: 'all 0.3s',
               }}>
-                {isDone ? '✓' : idx + 1}
+                {icon}
               </div>
               <span style={{
-                fontSize: 11, fontWeight: isActive ? 700 : 500,
+                fontSize: 11, fontWeight: (isActive || isAccepted || isRejected) ? 700 : 500,
                 color, textAlign: 'center', whiteSpace: 'nowrap',
-              }}>{etape.label}</span>
+              }}>
+                {isAccepted || isRejected ? (
+                  <span style={{ padding: '4px 10px', borderRadius: 12, background: bg, color: color, display: 'inline-block' }}>
+                    {label}
+                  </span>
+                ) : label}
+              </span>
+
+              {isRejected && (dossier?.commentaire_evaluation || dossier?.commentaire_conformite) && (
+                <div style={{
+                  marginTop: 8, padding: '8px 12px', background: '#F03E3E10',
+                  border: '1px solid #F03E3E40', borderRadius: 8, color: '#F03E3E',
+                  fontSize: 12, textAlign: 'center', maxWidth: '220px',
+                  wordBreak: 'break-word', lineHeight: 1.4
+                }}>
+                  <strong>Motif :</strong><br/>{dossier.commentaire_evaluation || dossier.commentaire_conformite}
+                </div>
+              )}
             </div>
             {idx < ETAPES.length - 1 && (
               <div style={{
-                flex: 2, height: 2,
+                flex: 2, height: 2, marginTop: 20, alignSelf: 'flex-start',
                 background: isDone ? '#22B07D' : 'var(--color-border)',
                 marginBottom: 24, transition: 'background 0.3s',
               }} />

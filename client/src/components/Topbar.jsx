@@ -7,12 +7,6 @@ const Topbar = ({ title, subtitle }) => {
   const user = JSON.parse(localStorage.getItem('user')) || null;
   const navigate = useNavigate();
 
-  // Search State
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState({ users: [], projets: [] });
-  const [isSearching, setIsSearching] = useState(false);
-  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
-  const searchRef = useRef(null);
 
   // Notification State
   const [notifications, setNotifications] = useState([]);
@@ -32,9 +26,7 @@ const Topbar = ({ title, subtitle }) => {
     }
 
     const handleClickOutside = (e) => {
-      if (searchRef.current && !searchRef.current.contains(e.target)) {
-        setShowSearchDropdown(false);
-      }
+
       if (notifRef.current && !notifRef.current.contains(e.target)) {
         setShowNotifDropdown(false);
       }
@@ -85,31 +77,7 @@ const Topbar = ({ title, subtitle }) => {
     }
   };
 
-  useEffect(() => {
-    if (searchQuery.length < 2) {
-      setSearchResults({ users: [], projets: [] });
-      setShowSearchDropdown(false);
-      return;
-    }
 
-    const delayDebounceFn = setTimeout(async () => {
-      try {
-        setIsSearching(true);
-        const token = localStorage.getItem('token');
-        const res = await axios.get(`https://fdcuic-backend-production.up.railway.app/api/admin/recherche?search=${searchQuery}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setSearchResults(res.data.data);
-        setShowSearchDropdown(true);
-      } catch (err) {
-        console.error('Erreur de recherche', err);
-      } finally {
-        setIsSearching(false);
-      }
-    }, 400);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery]);
 
   const toggleTheme = () => {
     if (isDark) {
@@ -153,63 +121,6 @@ const Topbar = ({ title, subtitle }) => {
         {subtitle && <span style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>{subtitle}</span>}
       </div>
 
-      {/* CENTRE — Barre de recherche */}
-      <div style={{ flex: 1, maxWidth: '400px', margin: '0 24px', position: 'relative' }} ref={searchRef}>
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-          <svg style={{ position: 'absolute', left: '12px', color: 'var(--color-text-tertiary)' }} width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            type="text"
-            placeholder="Rechercher candidats, projets..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => { if (searchQuery.length >= 2) setShowSearchDropdown(true); }}
-            style={{
-              width: '100%', padding: '10px 16px 10px 38px', borderRadius: '12px',
-              border: '1px solid var(--color-border)', background: 'var(--color-bg-body)',
-              color: 'var(--color-text-primary)', fontSize: '14px', outline: 'none', transition: 'border-color 0.2s'
-            }}
-          />
-        </div>
-        
-        {/* Dropdown Recherche */}
-        {showSearchDropdown && (searchResults.users.length > 0 || searchResults.projets.length > 0) && (
-          <div style={{
-            position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0, background: 'var(--color-bg-card)',
-            borderRadius: '12px', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', border: '1px solid var(--color-border)',
-            zIndex: 100, maxHeight: '400px', overflowY: 'auto', padding: '8px'
-          }}>
-            {searchResults.users.length > 0 && (
-              <div style={{ marginBottom: '12px' }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', padding: '4px 8px' }}>Candidats</div>
-                {searchResults.users.map(u => (
-                  <div key={u.id} className="dropdown-item-hover" style={{ padding: '8px', cursor: 'pointer', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}
-                       onClick={() => { setShowSearchDropdown(false); navigate('/admin/soumissionnaires'); }}>
-                    <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--color-primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 'bold' }}>
-                      {u.prenom.charAt(0)}{u.nom.charAt(0)}
-                    </div>
-                    <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-text-primary)' }}>{u.prenom} {u.nom}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-            {searchResults.projets.length > 0 && (
-              <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-tertiary)', textTransform: 'uppercase', padding: '4px 8px' }}>Projets</div>
-                {searchResults.projets.map(p => (
-                  <div key={p.id} className="dropdown-item-hover" style={{ padding: '8px', cursor: 'pointer', borderRadius: '8px', display: 'flex', flexDirection: 'column' }}
-                       onClick={() => { setShowSearchDropdown(false); navigate('/admin/soumissionnaires'); }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)' }}>{p.titre}</span>
-                    <span style={{ fontSize: 11, color: 'var(--color-text-secondary)' }}>Par {p.candidat?.prenom} {p.candidat?.nom}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
 
       {/* DROITE — Actions */}
       <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
