@@ -24,6 +24,9 @@ const AdminTypesProjet = () => {
   // Confirm Delete
   const [confirmDelete, setConfirmDelete] = useState(null);
 
+  const userRole = JSON.parse(localStorage.getItem('user'))?.role;
+  const isEvaluateur = userRole === 'evaluateur';
+
   useEffect(() => {
     fetchTypes();
   }, []);
@@ -76,11 +79,18 @@ const AdminTypesProjet = () => {
       setSaving(true);
       if (selectedType) {
         await adminService.updateTypeProjet(selectedType.id, formData);
+        handleCloseModal();
+        fetchTypes();
       } else {
-        await adminService.createTypeProjet(formData);
+        // Créer le type, puis rouvrir en mode édition pour ajouter les documents
+        const result = await adminService.createTypeProjet(formData);
+        await fetchTypes();
+        // Rouvrir le modal en mode édition avec le type fraîchement créé
+        const newType = result.type;
+        setSelectedType(newType);
+        setFormData({ label: newType.label, description: newType.description || '' });
+        // Le modal reste ouvert — on ne le ferme pas
       }
-      handleCloseModal();
-      fetchTypes();
     } catch (err) {
       alert(err.response?.data?.message || "Erreur lors de l'enregistrement.");
     } finally {
@@ -132,14 +142,16 @@ const AdminTypesProjet = () => {
             Gérez les types de projets disponibles et leurs modèles de documents.
           </p>
         </div>
-        <button
-          className="btn-primary"
-          style={{ padding: '10px 20px', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}
-          onClick={() => handleOpenModal()}
-        >
-          <Plus size={18} strokeWidth={2.5} />
-          Créer un nouveau type de projet
-        </button>
+        {!isEvaluateur && (
+          <button
+            className="btn-primary"
+            style={{ padding: '10px 20px', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 8, fontSize: 14 }}
+            onClick={() => handleOpenModal()}
+          >
+            <Plus size={18} strokeWidth={2.5} />
+            Créer un nouveau type de projet
+          </button>
+        )}
       </div>
 
       {/* ── LISTE EN CARTES ── */}
@@ -175,24 +187,26 @@ const AdminTypesProjet = () => {
                 onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--color-border)'; }}
               >
                 {/* Actions Absolues */}
-                <div style={{ position: 'absolute', top: 16, right: 16, display: 'flex', gap: 8 }} onClick={e => e.stopPropagation()}>
-                  <button 
-                    onClick={() => handleOpenModal(type)}
-                    style={{ background: 'var(--color-bg-body)', border: '1px solid var(--color-border-light)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-secondary)', cursor: 'pointer', transition: 'all 0.2s' }}
-                    onMouseOver={e => { e.currentTarget.style.color = 'var(--color-primary)'; e.currentTarget.style.borderColor = 'var(--color-primary)'; }}
-                    onMouseOut={e => { e.currentTarget.style.color = 'var(--color-text-secondary)'; e.currentTarget.style.borderColor = 'var(--color-border-light)'; }}
-                  >
-                    <Edit2 size={14} />
-                  </button>
-                  <button 
-                    onClick={() => setConfirmDelete(type)}
-                    style={{ background: 'var(--color-bg-body)', border: '1px solid var(--color-border-light)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-red)', cursor: 'pointer', transition: 'all 0.2s' }}
-                    onMouseOver={e => { e.currentTarget.style.background = 'var(--color-red-light)'; e.currentTarget.style.borderColor = 'var(--color-red)'; }}
-                    onMouseOut={e => { e.currentTarget.style.background = 'var(--color-bg-body)'; e.currentTarget.style.borderColor = 'var(--color-border-light)'; }}
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
+                {!isEvaluateur && (
+                  <div style={{ position: 'absolute', top: 16, right: 16, display: 'flex', gap: 8 }} onClick={e => e.stopPropagation()}>
+                    <button 
+                      onClick={() => handleOpenModal(type)}
+                      style={{ background: 'var(--color-bg-body)', border: '1px solid var(--color-border-light)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-secondary)', cursor: 'pointer', transition: 'all 0.2s' }}
+                      onMouseOver={e => { e.currentTarget.style.color = 'var(--color-primary)'; e.currentTarget.style.borderColor = 'var(--color-primary)'; }}
+                      onMouseOut={e => { e.currentTarget.style.color = 'var(--color-text-secondary)'; e.currentTarget.style.borderColor = 'var(--color-border-light)'; }}
+                    >
+                      <Edit2 size={14} />
+                    </button>
+                    <button 
+                      onClick={() => setConfirmDelete(type.id)}
+                      style={{ background: 'var(--color-bg-body)', border: '1px solid var(--color-border-light)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-red)', cursor: 'pointer', transition: 'all 0.2s' }}
+                      onMouseOver={e => { e.currentTarget.style.background = 'var(--color-red-light)'; e.currentTarget.style.borderColor = 'var(--color-red)'; }}
+                      onMouseOut={e => { e.currentTarget.style.background = 'var(--color-bg-body)'; e.currentTarget.style.borderColor = 'var(--color-border-light)'; }}
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                )}
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
                   <div style={{ width: 48, height: 48, borderRadius: 12, background: conf.bg, fontSize: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -302,7 +316,7 @@ const AdminTypesProjet = () => {
                 disabled={saving}
                 style={{ padding: '12px 24px', borderRadius: 10, opacity: saving ? 0.7 : 1 }}
               >
-                {saving ? 'Enregistrement...' : (selectedType ? 'Enregistrer les modifications' : 'Ajouter le type de projet')}
+                {saving ? 'Enregistrement...' : (selectedType ? 'Enregistrer les modifications' : 'Créer et ajouter les documents →')}
               </button>
             </div>
           </div>

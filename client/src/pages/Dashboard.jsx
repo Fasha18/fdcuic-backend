@@ -80,6 +80,8 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 export default function Dashboard({ activeTab = 'apercu', onLogout }) {
   const navigate = useNavigate();
+  const userRole = JSON.parse(localStorage.getItem('user'))?.role;
+  const isEvaluateur = userRole === 'evaluateur';
 
   /* ── State ── */
   const [stats, setStats] = useState(null);
@@ -563,14 +565,16 @@ export default function Dashboard({ activeTab = 'apercu', onLogout }) {
                   <h2 style={{ fontSize: 24, fontWeight: 700, color: 'var(--color-text-primary)' }}>Appels à projets</h2>
                   <p style={{ color: 'var(--color-text-secondary)', marginTop: 4 }}>Gérez les appels à candidatures temporaires</p>
                 </div>
-                <button 
-                  className="btn-primary" 
-                  style={{ padding: '12px 24px', fontSize: 15, borderRadius: 'var(--radius-md)' }}
-                  onClick={() => setIsModalOpen(true)}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8 }}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                  Créer un appel à projets
-                </button>
+                {!isEvaluateur && (
+                  <button 
+                    className="btn-primary" 
+                    style={{ padding: '12px 24px', fontSize: 15, borderRadius: 'var(--radius-md)' }}
+                    onClick={() => setIsModalOpen(true)}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 8 }}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Créer un appel à projets
+                  </button>
+                )}
               </div>
 
               {errorCampagnes ? (

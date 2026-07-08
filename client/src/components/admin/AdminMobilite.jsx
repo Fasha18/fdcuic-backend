@@ -22,6 +22,9 @@ const AdminMobilite = () => {
   const [search, setSearch] = useState('');
   const [statutFilter, setStatutFilter] = useState('');
   
+  const userRole = JSON.parse(localStorage.getItem('user'))?.role;
+  const isEvaluateur = userRole === 'evaluateur';
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -235,14 +238,16 @@ const AdminMobilite = () => {
                             }} onMouseOver={e => { e.currentTarget.style.color = 'var(--color-primary)'; e.currentTarget.style.background = 'var(--color-primary-light)'; }} onMouseOut={e => { e.currentTarget.style.color = 'var(--color-text-secondary)'; e.currentTarget.style.background = 'var(--color-bg-body)'; }}>
                               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                             </button>
-                            <button title="Supprimer" onClick={(e) => handleDelete(e, c.id)} style={{ 
-                              width: 32, height: 32, borderRadius: 8, border: 'none', 
-                              background: 'var(--color-bg-body)', color: 'var(--color-text-secondary)', 
-                              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                              transition: 'all 0.2s'
-                            }} onMouseOver={e => { e.currentTarget.style.color = 'var(--color-red)'; e.currentTarget.style.background = 'var(--color-red-light)'; }} onMouseOut={e => { e.currentTarget.style.color = 'var(--color-text-secondary)'; e.currentTarget.style.background = 'var(--color-bg-body)'; }}>
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
-                            </button>
+                            {!isEvaluateur && (
+                              <button title="Supprimer" onClick={(e) => handleDelete(e, c.id)} style={{ 
+                                width: 32, height: 32, borderRadius: 8, border: 'none', 
+                                background: 'var(--color-bg-body)', color: 'var(--color-text-secondary)', 
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                                transition: 'all 0.2s'
+                              }} onMouseOver={e => { e.currentTarget.style.color = 'var(--color-red)'; e.currentTarget.style.background = 'var(--color-red-light)'; }} onMouseOut={e => { e.currentTarget.style.color = 'var(--color-text-secondary)'; e.currentTarget.style.background = 'var(--color-bg-body)'; }}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>

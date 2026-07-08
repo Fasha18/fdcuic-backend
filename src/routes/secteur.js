@@ -13,7 +13,7 @@ const { verifierToken, verifierRole } = require('../middlewares/auth');
 router.get('/public', listerSecteursPublic);
 
 // Admin
-router.get('/', verifierToken, verifierRole('admin'), listerSecteurs);
+router.get('/', verifierToken, verifierRole('admin', 'evaluateur'), listerSecteurs);
 router.post('/', verifierToken, verifierRole('admin'), creerSecteur);
 router.put('/:id', verifierToken, verifierRole('admin'), modifierSecteur);
 router.delete('/:id', verifierToken, verifierRole('admin'), supprimerSecteur);

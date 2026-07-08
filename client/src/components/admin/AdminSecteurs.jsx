@@ -18,6 +18,9 @@ const AdminSecteurs = () => {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [viewMode, setViewMode] = useState('cards'); // 'cards' | 'table'
 
+  const userRole = JSON.parse(localStorage.getItem('user'))?.role;
+  const isEvaluateur = userRole === 'evaluateur';
+
   useEffect(() => { fetchSecteurs(); }, []);
 
   const fetchSecteurs = async () => {
@@ -97,16 +100,18 @@ const AdminSecteurs = () => {
               }}>{v.icon}</button>
             ))}
           </div>
-          <button
-            className="btn-primary"
-            style={{ padding: '10px 20px', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 8 }}
-            onClick={() => { setSelectedSecteur(null); setIsModalOpen(true); }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            Ajouter un secteur
-          </button>
+          {!isEvaluateur && (
+            <button
+              className="btn-primary"
+              style={{ padding: '10px 20px', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 8 }}
+              onClick={() => { setSelectedSecteur(null); setIsModalOpen(true); }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              Ajouter un secteur
+            </button>
+          )}
         </div>
       </div>
 
@@ -211,31 +216,33 @@ const AdminSecteurs = () => {
                     <span style={{ width: 6, height: 6, borderRadius: '50%', background: secteur.actif ? 'var(--color-green)' : 'var(--color-red)', display: 'inline-block' }} />
                     {secteur.actif ? 'Actif' : 'Inactif'}
                   </span>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button
-                      onClick={() => { setSelectedSecteur(secteur); setIsModalOpen(true); }}
-                      style={{
-                        padding: '6px 12px', borderRadius: 7, border: '1px solid var(--color-border)',
-                        background: 'var(--color-bg-card)', color: 'var(--color-primary)',
-                        fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
-                      }}
-                    >
-                      Modifier
-                    </button>
-                    <button
-                      onClick={() => setConfirmDelete(secteur.id)}
-                      style={{
-                        width: 30, height: 30, borderRadius: 7, border: '1px solid var(--color-border)',
-                        background: 'var(--color-bg-card)', color: 'var(--color-red)',
-                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      }}
-                    >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
-                      </svg>
-                    </button>
-                  </div>
+                  {!isEvaluateur && (
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button
+                        onClick={() => { setSelectedSecteur(secteur); setIsModalOpen(true); }}
+                        style={{
+                          padding: '6px 12px', borderRadius: 7, border: '1px solid var(--color-border)',
+                          background: 'var(--color-bg-card)', color: 'var(--color-primary)',
+                          fontSize: 12, fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s',
+                        }}
+                      >
+                        Modifier
+                      </button>
+                      <button
+                        onClick={() => setConfirmDelete(secteur.id)}
+                        style={{
+                          width: 30, height: 30, borderRadius: 7, border: '1px solid var(--color-border)',
+                          background: 'var(--color-bg-card)', color: 'var(--color-red)',
+                          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+                        </svg>
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -300,12 +307,14 @@ const AdminSecteurs = () => {
                       </span>
                     </td>
                     <td style={{ padding: '14px 16px' }}>
-                      <div style={{ display: 'flex', gap: 6 }}>
-                        <button onClick={() => { setSelectedSecteur(s); setIsModalOpen(true); }} style={{ padding: '6px 12px', borderRadius: 7, border: '1px solid var(--color-border)', background: 'var(--color-bg-card)', color: 'var(--color-primary)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Modifier</button>
-                        <button onClick={() => setConfirmDelete(s.id)} style={{ width: 30, height: 30, borderRadius: 7, border: '1px solid var(--color-border)', background: 'var(--color-bg-card)', color: 'var(--color-red)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
-                        </button>
-                      </div>
+                      {!isEvaluateur && (
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button onClick={() => { setSelectedSecteur(s); setIsModalOpen(true); }} style={{ padding: '6px 12px', borderRadius: 7, border: '1px solid var(--color-border)', background: 'var(--color-bg-card)', color: 'var(--color-primary)', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>Modifier</button>
+                          <button onClick={() => setConfirmDelete(s.id)} style={{ width: 30, height: 30, borderRadius: 7, border: '1px solid var(--color-border)', background: 'var(--color-bg-card)', color: 'var(--color-red)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );

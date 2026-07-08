@@ -60,7 +60,6 @@ const NAV_CANDIDAT = [
 
 // Items masqués pour le rôle évaluateur
 const ITEMS_EVALUATEUR_BLOQUES = [
-  'campagnes', 'mobilite', 'types-projet', 'secteurs',
   'candidatures-admin', 'personnel', 'statistiques', 'finances', 'faqs', 'legal'
 ];
 

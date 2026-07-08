@@ -45,27 +45,27 @@ router.patch('/dossiers/:id/conformite', verifierToken, verifierRole('admin', 'e
 router.patch('/dossiers/:id/evaluation', verifierToken, verifierRole('admin', 'evaluateur'), evaluerContenu);
 
 // ── CAMPAGNES (Appels à projets admin) ──
-router.get('/appels', verifierToken, verifierRole('admin'), getCampagnes);
-router.get('/appels/:id', verifierToken, verifierRole('admin'), getCampagneById);
+router.get('/appels', verifierToken, verifierRole('admin', 'evaluateur'), getCampagnes);
+router.get('/appels/:id', verifierToken, verifierRole('admin', 'evaluateur'), getCampagneById);
 router.put('/appels/:id', verifierToken, verifierRole('admin'), modifierCampagne);
 router.delete('/appels/:id', verifierToken, verifierRole('admin'), supprimerCampagne);
 router.post('/appels/:id/image', verifierToken, verifierRole('admin'), uploadAppelProjet.single('image_couverture'), uploadImageCampagne);
-router.get('/appels/:id/candidatures', verifierToken, verifierRole('admin'), getCandidaturesAppel);
+router.get('/appels/:id/candidatures', verifierToken, verifierRole('admin', 'evaluateur'), getCandidaturesAppel);
 
 // ── PROGRAMME MOBILITÉ ──
-router.get('/mobilite/candidatures', verifierToken, verifierRole('admin'), getCandidaturesMobilite);
+router.get('/mobilite/candidatures', verifierToken, verifierRole('admin', 'evaluateur'), getCandidaturesMobilite);
 
 // ── NOUVELLES ROUTES MOBILITÉ (Tableau, Stats, Statut) ──
 const { changerStatut, getProgrammeMobiliteStats, supprimerCandidature, getMobiliteById } = require('../controllers/mobiliteController');
-router.get('/mobilite', verifierToken, verifierRole('admin'), getCandidaturesMobilite); // Réutilise getCandidaturesMobilite
-router.get('/mobilite/stats', verifierToken, verifierRole('admin'), getProgrammeMobiliteStats);
-router.get('/mobilite/:id', verifierToken, verifierRole('admin'), getMobiliteById);
+router.get('/mobilite', verifierToken, verifierRole('admin', 'evaluateur'), getCandidaturesMobilite); // Réutilise getCandidaturesMobilite
+router.get('/mobilite/stats', verifierToken, verifierRole('admin', 'evaluateur'), getProgrammeMobiliteStats);
+router.get('/mobilite/:id', verifierToken, verifierRole('admin', 'evaluateur'), getMobiliteById);
 router.put('/mobilite/:id/statut', verifierToken, verifierRole('admin'), changerStatut);
 router.delete('/mobilite/:id', verifierToken, verifierRole('admin'), supprimerCandidature);
 
 // ── TYPES DE PROJET ──
 const typeProjetController = require('../controllers/typeProjetController');
-router.get('/types-projet', verifierToken, verifierRole('admin'), typeProjetController.listerTypes);
+router.get('/types-projet', verifierToken, verifierRole('admin', 'evaluateur'), typeProjetController.listerTypes);
 router.post('/types-projet', verifierToken, verifierRole('admin'), typeProjetController.creerType);
 router.put('/types-projet/:id', verifierToken, verifierRole('admin'), typeProjetController.modifierType);
 router.delete('/types-projet/:id', verifierToken, verifierRole('admin'), typeProjetController.supprimerType);
@@ -79,7 +79,7 @@ router.post('/templates/:id/fichier', verifierToken, verifierRole('admin'), uplo
 // ── DOCUMENTS MODELES (Nouveau Système) ──
 const documentModeleController = require('../controllers/documentModeleController');
 router.post('/types-projet/:id/documents-modeles', verifierToken, verifierRole('admin'), uploadTemplate.array('documents', 10), documentModeleController.uploadDocumentModeles);
-router.get('/types-projet/:id/documents-modeles', verifierToken, verifierRole('admin'), documentModeleController.getDocumentsModelesParType);
+router.get('/types-projet/:id/documents-modeles', verifierToken, verifierRole('admin', 'evaluateur'), documentModeleController.getDocumentsModelesParType);
 router.delete('/documents-modeles/:docId', verifierToken, verifierRole('admin'), documentModeleController.supprimerDocumentModele);
 
 module.exports = router;
