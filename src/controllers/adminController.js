@@ -480,15 +480,15 @@ const getCandidatures = async (req, res) => {
 
     if (statut === 'actif') {
       whereClause.est_active = true;
-      whereClause.est_desactive = false;
-      whereClause.est_supprime = false;
+      whereClause.est_desactive = { [Op.not]: true };
+      whereClause.est_supprime = { [Op.not]: true };
     } else if (statut === 'en_attente') {
-      whereClause.est_active = false;
-      whereClause.est_supprime = false;
+      whereClause.est_active = { [Op.not]: true };
+      whereClause.est_supprime = { [Op.not]: true };
     } else if (statut === 'desactive') {
       whereClause.est_desactive = true;
     } else {
-      whereClause.est_supprime = false;
+      whereClause.est_supprime = { [Op.not]: true };
     }
 
     if (search) {
