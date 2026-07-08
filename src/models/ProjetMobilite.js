@@ -124,34 +124,35 @@ const ProjetMobilite = sequelize.define('ProjetMobilite', {
   etape_courante: {
     type: DataTypes.INTEGER,
     defaultValue: 1,
-    comment: 'Étape en cours : 1 à 5',
   },
   statut: {
-    type: DataTypes.ENUM(
-      'brouillon',  // En cours de remplissage
-      'soumis',     // Soumis — en attente d examen
-      'en_examen',  // En cours d évaluation
-      'accepte',    // Accepté
-      'rejete'      // Rejeté
-    ),
+    type: DataTypes.STRING(50),
     defaultValue: 'brouillon',
+    comment: 'brouillon | soumis | en_examen | accepte | rejete',
   },
-  commentaire: {
+  commentaire_rejet: {
     type: DataTypes.TEXT,
     allowNull: true,
-    comment: 'Commentaire de l\'évaluateur en cas de rejet',
   },
 
-  // ── CLÉ ÉTRANGÈRE ─────────────────────────────────────
+  // ── CLÉ ÉTRANGÈRE ──────────────────────────────────────
   user_id: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-
+  createdAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW
+  }
 }, {
   tableName: 'projets_mobilite',
   timestamps: true,
 });
 
 module.exports = ProjetMobilite;
-

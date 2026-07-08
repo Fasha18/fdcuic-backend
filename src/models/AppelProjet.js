@@ -178,7 +178,16 @@ doc_business_model: {
     type: DataTypes.INTEGER,
     allowNull: false,
   },
-
+  createdAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW
+  }
 }, {
   tableName: 'appels_projets',
   timestamps: true,

@@ -28,6 +28,16 @@ const TypeProjet = sequelize.define('TypeProjet', {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
   },
+  createdAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW
+  }
 }, {
   tableName: 'types_projet',
   timestamps: true,
