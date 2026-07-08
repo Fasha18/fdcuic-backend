@@ -642,10 +642,32 @@ export default function CandidatCandidature({ onLogout }) {
                             Télécharger template
                           </a>
                         )}
-                        <input type="file" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.docx,.doc"
+                        <input
+                          key={etape3Files[f.id] ? etape3Files[f.id].name : 'empty'}
+                          type="file" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.docx,.doc"
                           onChange={(e) => handleFileChange(e, f.id)} className="file-input"
                           style={{ borderColor: fieldErrors[f.id] ? 'var(--color-red)' : undefined }}
                         />
+                        {etape3Files[f.id] && (
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
+                            <div style={{ fontSize: 12, color: 'var(--color-primary)' }}>
+                              Sélectionné : {etape3Files[f.id].name}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEtape3Files(prev => {
+                                  const copy = { ...prev };
+                                  delete copy[f.id];
+                                  return copy;
+                                });
+                              }}
+                              style={{ background: 'none', border: 'none', color: 'var(--color-red)', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                            >
+                              Supprimer
+                            </button>
+                          </div>
+                        )}
                         <ErrorMsg msg={fieldErrors[f.id]} />
                       </div>
                     ))}
@@ -675,10 +697,32 @@ export default function CandidatCandidature({ onLogout }) {
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         Télécharger template Budget {typeProjet === 'evenementiel' ? 'Événementiel' : 'Formation'}
                       </a>
-                      <input type="file" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.docx,.doc"
+                      <input
+                        key={etape3Files['doc_budget'] ? etape3Files['doc_budget'].name : 'empty'}
+                        type="file" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.docx,.doc"
                         onChange={(e) => handleFileChange(e, 'doc_budget')} className="file-input"
                         style={{ borderColor: fieldErrors.doc_budget ? 'var(--color-red)' : undefined }}
                       />
+                      {etape3Files['doc_budget'] && (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
+                          <div style={{ fontSize: 12, color: 'var(--color-primary)' }}>
+                            Sélectionné : {etape3Files['doc_budget'].name}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEtape3Files(prev => {
+                                const copy = { ...prev };
+                                delete copy['doc_budget'];
+                                return copy;
+                              });
+                            }}
+                            style={{ background: 'none', border: 'none', color: 'var(--color-red)', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                          >
+                            Supprimer
+                          </button>
+                        </div>
+                      )}
                       <ErrorMsg msg={fieldErrors.doc_budget} />
                     </div>
                   </div>
@@ -707,10 +751,32 @@ export default function CandidatCandidature({ onLogout }) {
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                             Télécharger template {f.label}
                           </a>
-                          <input type="file" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.docx,.doc"
+                          <input
+                            key={etape3Files[f.id] ? etape3Files[f.id].name : 'empty'}
+                            type="file" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.docx,.doc"
                             onChange={(e) => handleFileChange(e, f.id)} className="file-input"
                             style={{ borderColor: fieldErrors[f.id] ? 'var(--color-red)' : undefined }}
                           />
+                          {etape3Files[f.id] && (
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
+                              <div style={{ fontSize: 12, color: 'var(--color-primary)' }}>
+                                Sélectionné : {etape3Files[f.id].name}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEtape3Files(prev => {
+                                    const copy = { ...prev };
+                                    delete copy[f.id];
+                                    return copy;
+                                  });
+                                }}
+                                style={{ background: 'none', border: 'none', color: 'var(--color-red)', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                              >
+                                Supprimer
+                              </button>
+                            </div>
+                          )}
                           <ErrorMsg msg={fieldErrors[f.id]} />
                         </div>
                       ))}

@@ -306,12 +306,10 @@ export default function CandidatMobiliteFormulaire({ onLogout }) {
     
     let err = validateDoc('doc_invitation'); if(err) errs.doc_invitation = err;
     err = validateDoc('doc_cv_portfolio'); if(err) errs.doc_cv_portfolio = err;
-    
-    // Optional
-    if(e4Files.doc_ninea && validateFile(e4Files.doc_ninea)) errs.doc_ninea = validateFile(e4Files.doc_ninea);
-    if(e4Files.doc_recepisse && validateFile(e4Files.doc_recepisse)) errs.doc_recepisse = validateFile(e4Files.doc_recepisse);
-    if(e4Files.doc_note_structure && validateFile(e4Files.doc_note_structure)) errs.doc_note_structure = validateFile(e4Files.doc_note_structure);
-    if(e4Files.image_couverture && validateFile(e4Files.image_couverture)) errs.image_couverture = validateFile(e4Files.image_couverture);
+    err = validateDoc('doc_ninea'); if(err) errs.doc_ninea = err;
+    err = validateDoc('doc_recepisse'); if(err) errs.doc_recepisse = err;
+    err = validateDoc('doc_note_structure'); if(err) errs.doc_note_structure = err;
+    err = validateDoc('image_couverture'); if(err) errs.image_couverture = err;
 
     const touched = {}; Object.keys(e4Files).forEach(k => touched[k]=true);
     setTouchedFields(prev => ({...prev, ...touched}));
@@ -648,74 +646,59 @@ export default function CandidatMobiliteFormulaire({ onLogout }) {
                   </SectionIcon>
                   <div>
                     <h2 className="section-title" style={{ marginBottom: 2 }}>Documents et annexes</h2>
-                    <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: 0 }}>Formats acceptés : PDF, JPG, PNG — Taille maximale : 10 Mo par fichier</p>
+                    <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', margin: 0 }}>Tous ces documents sont obligatoires. Formats acceptés : PDF, JPG, PNG — Max 10 Mo/fichier</p>
                   </div>
                 </div>
 
                 <div style={{ background: 'var(--color-bg-body)', borderRadius: 'var(--radius-md)', padding: '24px', marginBottom: 24, border: '1px solid var(--color-border-light)' }}>
                   <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 20 }}>
-                    📎 Documents obligatoires
+                    📎 Documents requis
                   </p>
 
                   <div className="form-grid-2">
-                    <div className="form-group" id="field-doc_invitation">
-                      <label>Lettre d'invitation officielle * {existingDocs.doc_invitation && <AlreadyProvidedBadge />}</label>
-                      <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="file-input"
-                        onChange={ev => handleFileChange('doc_invitation', ev.target.files[0])}
-                        style={getInputStyle('doc_invitation')} />
-                      {e4Files.doc_invitation && <div style={{fontSize:12, marginTop:4, color:'var(--color-primary)'}}>Sélectionné : {e4Files.doc_invitation.name}</div>}
-                      <ErrorMsg msg={fieldErrors.doc_invitation} />
-                    </div>
-
-                    <div className="form-group" id="field-doc_cv_portfolio">
-                      <label>CV ou Portfolio * {existingDocs.doc_cv_portfolio && <AlreadyProvidedBadge />}</label>
-                      <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="file-input"
-                        onChange={ev => handleFileChange('doc_cv_portfolio', ev.target.files[0])}
-                        style={getInputStyle('doc_cv_portfolio')} />
-                      {e4Files.doc_cv_portfolio && <div style={{fontSize:12, marginTop:4, color:'var(--color-primary)'}}>Sélectionné : {e4Files.doc_cv_portfolio.name}</div>}
-                      <ErrorMsg msg={fieldErrors.doc_cv_portfolio} />
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ background: 'var(--color-bg-body)', borderRadius: 'var(--radius-md)', padding: '24px', border: '1px solid var(--color-border-light)', marginBottom: 24 }}>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 20 }}>
-                    📂 Documents complémentaires <span style={{ fontWeight: 400, color: 'var(--color-text-tertiary)' }}>(facultatifs)</span>
-                  </p>
-
-                  <div className="form-grid-2">
-                    <div className="form-group" id="field-doc_ninea">
-                      <label>NINEA {existingDocs.doc_ninea && <AlreadyProvidedBadge />}</label>
-                      <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="file-input"
-                        onChange={ev => handleFileChange('doc_ninea', ev.target.files[0])}
-                        style={getInputStyle('doc_ninea')} />
-                      {e4Files.doc_ninea && <div style={{fontSize:12, marginTop:4, color:'var(--color-primary)'}}>Sélectionné : {e4Files.doc_ninea.name}</div>}
-                      <ErrorMsg msg={fieldErrors.doc_ninea} />
-                    </div>
-                    <div className="form-group" id="field-doc_recepisse">
-                      <label>Récépissé {existingDocs.doc_recepisse && <AlreadyProvidedBadge />}</label>
-                      <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="file-input"
-                        onChange={ev => handleFileChange('doc_recepisse', ev.target.files[0])}
-                        style={getInputStyle('doc_recepisse')} />
-                      {e4Files.doc_recepisse && <div style={{fontSize:12, marginTop:4, color:'var(--color-primary)'}}>Sélectionné : {e4Files.doc_recepisse.name}</div>}
-                      <ErrorMsg msg={fieldErrors.doc_recepisse} />
-                    </div>
-                    <div className="form-group" id="field-doc_note_structure">
-                      <label>Note structure d'accueil {existingDocs.doc_note_structure && <AlreadyProvidedBadge />}</label>
-                      <input type="file" accept=".pdf,.jpg,.jpeg,.png" className="file-input"
-                        onChange={ev => handleFileChange('doc_note_structure', ev.target.files[0])}
-                        style={getInputStyle('doc_note_structure')} />
-                      {e4Files.doc_note_structure && <div style={{fontSize:12, marginTop:4, color:'var(--color-primary)'}}>Sélectionné : {e4Files.doc_note_structure.name}</div>}
-                      <ErrorMsg msg={fieldErrors.doc_note_structure} />
-                    </div>
-                    <div className="form-group" id="field-image_couverture">
-                      <label>Image de couverture {existingDocs.image_couverture && <AlreadyProvidedBadge />}</label>
-                      <input type="file" accept=".jpg,.jpeg,.png" className="file-input"
-                        onChange={ev => handleFileChange('image_couverture', ev.target.files[0])}
-                        style={getInputStyle('image_couverture')} />
-                      {e4Files.image_couverture && <div style={{fontSize:12, marginTop:4, color:'var(--color-primary)'}}>Sélectionné : {e4Files.image_couverture.name}</div>}
-                      <ErrorMsg msg={fieldErrors.image_couverture} />
-                    </div>
+                    {[
+                      { id: 'doc_invitation', label: "Lettre d'invitation officielle *" },
+                      { id: 'doc_cv_portfolio', label: 'CV ou Portfolio *' },
+                      { id: 'doc_ninea', label: 'NINEA *' },
+                      { id: 'doc_recepisse', label: 'Récépissé *' },
+                      { id: 'doc_note_structure', label: "Note structure d'accueil *" },
+                      { id: 'image_couverture', label: 'Image de couverture *' },
+                    ].map(doc => (
+                      <div key={doc.id} className="form-group" id={`field-${doc.id}`}>
+                        <label>{doc.label} {existingDocs[doc.id] && <AlreadyProvidedBadge />}</label>
+                        <input
+                          key={e4Files[doc.id] ? e4Files[doc.id].name : 'empty'}
+                          type="file" accept=".pdf,.jpg,.jpeg,.png" className="file-input"
+                          onChange={ev => {
+                            if (ev.target.files && ev.target.files[0]) {
+                              handleFileChange(doc.id, ev.target.files[0]);
+                            }
+                          }}
+                          style={getInputStyle(doc.id)}
+                        />
+                        {e4Files[doc.id] && (
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
+                            <div style={{ fontSize: 12, color: 'var(--color-primary)' }}>
+                              Sélectionné : {e4Files[doc.id].name}
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setE4Files(prev => {
+                                  const copy = { ...prev };
+                                  delete copy[doc.id];
+                                  return copy;
+                                });
+                              }}
+                              style={{ background: 'none', border: 'none', color: 'var(--color-red)', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                            >
+                              Supprimer
+                            </button>
+                          </div>
+                        )}
+                        <ErrorMsg msg={fieldErrors[doc.id]} />
+                      </div>
+                    ))}
                   </div>
                 </div>
 
