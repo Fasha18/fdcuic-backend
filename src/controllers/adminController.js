@@ -510,9 +510,9 @@ const getCandidatures = async (req, res) => {
       attributes: [
         'id', 'nom', 'prenom', 'email', 'telephone',
         'est_active', 'est_desactive', 'est_supprime',
-        'derniere_connexion', 'createdAt'
+        'derniere_connexion'
       ],
-      order: [['createdAt', 'DESC']],
+      order: [['id', 'DESC']],
       limit: parseInt(limit),
       offset: parseInt(offset)
     });
