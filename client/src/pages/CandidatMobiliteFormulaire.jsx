@@ -736,7 +736,7 @@ export default function CandidatMobiliteFormulaire({ onLogout }) {
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 24 }}>
-                  <div style={{ background: 'var(--color-bg-body)', borderRadius: 'var(--radius-md)', padding: '16px 20px', border: '1px solid var(--color-border-light)' }}>
+                  <div style={{ background: 'var(--color-bg-body)', borderRadius: 'var(--radius-md)', padding: '16px 20px', border: '1px solid var(--color-border-light)', minWidth: 0, wordBreak: 'break-word' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                       <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-primary)' }}>Étape 1 — Infos générales</p>
                       <button type="button" onClick={() => go(1)} style={{ fontSize: 12, color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Modifier</button>
@@ -749,7 +749,7 @@ export default function CandidatMobiliteFormulaire({ onLogout }) {
                     </dl>
                   </div>
 
-                  <div style={{ background: 'var(--color-bg-body)', borderRadius: 'var(--radius-md)', padding: '16px 20px', border: '1px solid var(--color-border-light)' }}>
+                  <div style={{ background: 'var(--color-bg-body)', borderRadius: 'var(--radius-md)', padding: '16px 20px', border: '1px solid var(--color-border-light)', minWidth: 0, wordBreak: 'break-word' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                       <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-primary)' }}>Étape 2 — Contexte</p>
                       <button type="button" onClick={() => go(2)} style={{ fontSize: 12, color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Modifier</button>
@@ -759,7 +759,7 @@ export default function CandidatMobiliteFormulaire({ onLogout }) {
                     </p>
                   </div>
 
-                  <div style={{ background: 'var(--color-bg-body)', borderRadius: 'var(--radius-md)', padding: '16px 20px', border: '1px solid var(--color-border-light)' }}>
+                  <div style={{ background: 'var(--color-bg-body)', borderRadius: 'var(--radius-md)', padding: '16px 20px', border: '1px solid var(--color-border-light)', minWidth: 0, wordBreak: 'break-word' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                       <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-primary)' }}>Étape 3 — Programme</p>
                       <button type="button" onClick={() => go(3)} style={{ fontSize: 12, color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Modifier</button>
@@ -769,7 +769,7 @@ export default function CandidatMobiliteFormulaire({ onLogout }) {
                     </p>
                   </div>
 
-                  <div style={{ background: 'var(--color-bg-body)', borderRadius: 'var(--radius-md)', padding: '16px 20px', border: '1px solid var(--color-border-light)' }}>
+                  <div style={{ background: 'var(--color-bg-body)', borderRadius: 'var(--radius-md)', padding: '16px 20px', border: '1px solid var(--color-border-light)', minWidth: 0, wordBreak: 'break-word' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                       <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-primary)' }}>Étape 4 — Documents</p>
                       <button type="button" onClick={() => go(4)} style={{ fontSize: 12, color: 'var(--color-primary)', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Modifier</button>
