@@ -123,6 +123,7 @@ export default function AdminDetailMobilite() {
   // États évaluation
   const [evalAction, setEvalAction] = useState(null); // 'accepte' | 'rejete' | 'en_examen'
   const [evalLoading, setEvalLoading] = useState(false);
+  const [evalCommentaire, setEvalCommentaire] = useState('');
 
   const [toast, setToast] = useState(null);
 
@@ -148,11 +149,17 @@ export default function AdminDetailMobilite() {
   };
 
   const handleStatutChange = async (nouveauStatut) => {
+    if (nouveauStatut === 'rejete' && (!evalCommentaire || evalCommentaire.trim() === '')) {
+      showToast('Un motif de rejet est obligatoire.', 'error');
+      return;
+    }
+    
     setEvalLoading(true);
     try {
-      await adminService.changerStatutMobilite(id, nouveauStatut);
+      await adminService.changerStatutMobilite(id, nouveauStatut, evalCommentaire);
       showToast(`Dossier passé au statut : ${STATUT_CONFIG[nouveauStatut].label}`);
       setEvalAction(null);
+      setEvalCommentaire('');
       fetchDossier();
     } catch (err) {
       showToast(err.response?.data?.message || 'Erreur lors de la mise à jour.', 'error');
@@ -414,11 +421,26 @@ export default function AdminDetailMobilite() {
                 border: `1px solid ${evalAction === 'accepte' ? '#22B07D' : '#F03E3E'}40`,
               }}>
                 <div style={{ fontWeight: 700, marginBottom: 12, color: evalAction === 'accepte' ? '#22B07D' : '#F03E3E' }}>
-                  {evalAction === 'accepte' ? '🎉 Confirmer l\'acceptation de la candidature' : '🚫 Confirmer le rejet'}
+                  {evalAction === 'accepte' ? '🎉 Confirmer l\'acceptation de la candidature' : '🚫 Motif de rejet (obligatoire)'}
                 </div>
+                
+                {evalAction === 'rejete' && (
+                  <textarea
+                    value={evalCommentaire}
+                    onChange={(e) => setEvalCommentaire(e.target.value)}
+                    placeholder="Expliquez brièvement les raisons du rejet pour le candidat..."
+                    style={{
+                      width: '100%', minHeight: '100px', padding: '14px 16px', borderRadius: '10px',
+                      border: '1px solid #F03E3E40', background: 'var(--color-bg-body)',
+                      color: 'var(--color-text-primary)', fontSize: 14, resize: 'vertical',
+                      outline: 'none', fontFamily: 'inherit', marginBottom: 16
+                    }}
+                  />
+                )}
+                
                 <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
                   <button
-                    onClick={() => setEvalAction(null)}
+                    onClick={() => { setEvalAction(null); setEvalCommentaire(''); }}
                     style={{ padding: '10px 20px', borderRadius: 8, border: '1px solid var(--color-border)', background: 'transparent', color: 'var(--color-text-primary)', fontWeight: 600, cursor: 'pointer' }}
                   >
                     Annuler

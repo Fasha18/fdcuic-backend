@@ -99,9 +99,9 @@ const adminService = {
       throw error;
     }
   },
-  changerStatutMobilite: async (id, statut) => {
+  changerStatutMobilite: async (id, statut, commentaire) => {
     try {
-      const response = await api.put(`/admin/mobilite/${id}/statut`, { statut });
+      const response = await api.put(`/admin/mobilite/${id}/statut`, { statut, commentaire });
       return response.data;
     } catch (error) {
       throw error;

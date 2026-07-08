@@ -136,6 +136,11 @@ const ProjetMobilite = sequelize.define('ProjetMobilite', {
     ),
     defaultValue: 'brouillon',
   },
+  commentaire: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+    comment: 'Commentaire de l\'évaluateur en cas de rejet',
+  },
 
   // ── CLÉ ÉTRANGÈRE ─────────────────────────────────────
   user_id: {

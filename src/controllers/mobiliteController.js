@@ -248,7 +248,7 @@ const tousLesProjets = async (req, res) => {
 // ── CHANGER STATUT (Admin) ────────────────────────────────
 const changerStatut = async (req, res) => {
   try {
-    const { statut } = req.body;
+    const { statut, commentaire } = req.body;
     const projet = await ProjetMobilite.findByPk(req.params.id);
 
     if (!projet) {
@@ -261,7 +261,10 @@ const changerStatut = async (req, res) => {
     }
 
     if (projet.statut !== statut) {
-      await projet.update({ statut });
+      await projet.update({ 
+        statut,
+        ...(commentaire && { commentaire })
+      });
 
       const { envoyerNotificationStatut } = require('../services/notificationService');
       try {
