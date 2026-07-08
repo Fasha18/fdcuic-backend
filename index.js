@@ -205,7 +205,8 @@ const server = app.listen(PORT, () => {
     console.log('Connexion PostgreSQL réussie !');
     // Synchronisation spécifique pour les tables qui ont de nouvelles colonnes
     try {
-      const { TypeProjet, AppelProjet, ProjetMobilite, DocumentModele } = require('./src/models/index');
+      const { TypeProjet, AppelProjet, ProjetMobilite, DocumentModele, User } = require('./src/models/index');
+      await User.sync({ alter: true });
       await TypeProjet.sync({ alter: true });
       await AppelProjet.sync({ alter: true });
       await ProjetMobilite.sync({ alter: true });
