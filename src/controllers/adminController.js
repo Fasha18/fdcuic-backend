@@ -476,28 +476,32 @@ const getCandidatures = async (req, res) => {
   try {
     const { statut, search, page = 1, limit = 20 } = req.query;
 
-    const whereClause = { role: 'candidat' };
+    const conditions = [{ role: 'candidat' }];
 
     if (statut === 'actif') {
-      whereClause.est_active = true;
-      whereClause.est_desactive = { [Op.or]: [false, null] };
-      whereClause.est_supprime = { [Op.or]: [false, null] };
+      conditions.push({ est_active: true });
+      conditions.push({ [Op.or]: [{ est_desactive: false }, { est_desactive: { [Op.is]: null } }] });
+      conditions.push({ [Op.or]: [{ est_supprime: false }, { est_supprime: { [Op.is]: null } }] });
     } else if (statut === 'en_attente') {
-      whereClause.est_active = { [Op.or]: [false, null] };
-      whereClause.est_supprime = { [Op.or]: [false, null] };
+      conditions.push({ [Op.or]: [{ est_active: false }, { est_active: { [Op.is]: null } }] });
+      conditions.push({ [Op.or]: [{ est_supprime: false }, { est_supprime: { [Op.is]: null } }] });
     } else if (statut === 'desactive') {
-      whereClause.est_desactive = true;
+      conditions.push({ est_desactive: true });
     } else {
-      whereClause.est_supprime = { [Op.or]: [false, null] };
+      conditions.push({ [Op.or]: [{ est_supprime: false }, { est_supprime: { [Op.is]: null } }] });
     }
 
     if (search) {
-      whereClause[Op.or] = [
-        { nom: { [Op.iLike]: `%${search}%` } },
-        { prenom: { [Op.iLike]: `%${search}%` } },
-        { email: { [Op.iLike]: `%${search}%` } }
-      ];
+      conditions.push({
+        [Op.or]: [
+          { nom: { [Op.iLike]: `%${search}%` } },
+          { prenom: { [Op.iLike]: `%${search}%` } },
+          { email: { [Op.iLike]: `%${search}%` } }
+        ]
+      });
     }
+
+    const whereClause = { [Op.and]: conditions };
 
     const offset = (page - 1) * limit;
 
