@@ -67,7 +67,7 @@ function App() {
       <Routes>
         <Route 
           path="/login" 
-          element={!connecte ? <Login onLogin={handleLogin} /> : <Navigate to={userRole === 'admin' ? '/admin' : '/candidat'} replace />} 
+          element={!connecte ? <Login onLogin={handleLogin} /> : <Navigate to={['admin', 'evaluateur'].includes(userRole) ? '/admin' : '/candidat'} replace />} 
         />
 
         {connecte ? (
