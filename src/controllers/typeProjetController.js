@@ -7,17 +7,19 @@ const listerTypes = async (req, res) => {
 
     const typesAvecStats = await Promise.all(
       types.map(async (type) => {
-        const total = await AppelProjet.count({ where: { type_projet: type.code } });
-        const soumis = await AppelProjet.count({ where: { type_projet: type.code, statut: 'soumis' } });
-        const en_examen = await AppelProjet.count({ where: { type_projet: type.code, statut: 'en_examen' } });
-        const accepte = await AppelProjet.count({ where: { type_projet: type.code, statut: 'accepte' } });
-        const rejete = await AppelProjet.count({ where: { type_projet: type.code, statut: 'rejete' } });
-        const taux_acceptation = total > 0 ? Math.round((accepte / total) * 100) : 0;
-
-        return {
-          ...type.toJSON(),
-          stats: { total, soumis, en_examen, accepte, rejete, taux_acceptation },
-        };
+        let stats = { total: 0, soumis: 0, en_examen: 0, accepte: 0, rejete: 0, taux_acceptation: 0 };
+        try {
+          const total = await AppelProjet.count({ where: { type_projet: type.code } });
+          const soumis = await AppelProjet.count({ where: { type_projet: type.code, statut: 'soumis' } });
+          const en_examen = await AppelProjet.count({ where: { type_projet: type.code, statut: 'en_examen' } });
+          const accepte = await AppelProjet.count({ where: { type_projet: type.code, statut: 'accepte' } });
+          const rejete = await AppelProjet.count({ where: { type_projet: type.code, statut: 'rejete' } });
+          const taux_acceptation = total > 0 ? Math.round((accepte / total) * 100) : 0;
+          stats = { total, soumis, en_examen, accepte, rejete, taux_acceptation };
+        } catch (e) {
+          // If stats query fails (e.g., ENUM mismatch), return zeros — don't crash
+        }
+        return { ...type.toJSON(), stats };
       })
     );
 
