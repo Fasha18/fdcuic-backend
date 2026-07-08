@@ -199,17 +199,17 @@ const AdminMobilite = () => {
                         onMouseOver={(e) => e.currentTarget.style.background = 'var(--color-bg-hover)'}
                         onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
                       >
-                        <td style={{ padding: '12px 12px' }}>
+                        <td style={{ padding: '12px 12px', maxWidth: 150 }}>
                           <div style={{ fontWeight: 600, color: 'var(--color-text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.candidat ? `${c.candidat.prenom} ${c.candidat.nom}` : 'Inconnu'}</div>
                           <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.candidat?.email}</div>
                         </td>
-                        <td style={{ padding: '12px 12px', fontSize: 14, color: 'var(--color-text-secondary)', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <td style={{ padding: '12px 12px', fontSize: 14, color: 'var(--color-text-secondary)', fontWeight: 500, maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {c.nom_structure}
                         </td>
-                        <td style={{ padding: '12px 12px', fontSize: 13, color: 'var(--color-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <td style={{ padding: '12px 12px', fontSize: 13, color: 'var(--color-text-secondary)', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {c.discipline}
                         </td>
-                        <td style={{ padding: '12px 12px', fontSize: 13, color: 'var(--color-text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <td style={{ padding: '12px 12px', fontSize: 13, color: 'var(--color-text-secondary)', maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {c.pays_destination}
                         </td>
                         <td style={{ padding: '12px 12px', fontSize: 13, color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
