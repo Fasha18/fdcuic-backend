@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { 
   getDashboardStats, 
+  getActiviteRecente,
   getCampagnes, 
   getCampagneById,
   modifierCampagne, 
@@ -24,6 +25,7 @@ const uploadAppelProjet = require('../config/multerAppelProjet');
 const uploadMobilite = require('../config/multerMobilite');
 
 router.get('/stats', verifierToken, verifierRole('admin', 'evaluateur'), getDashboardStats);
+router.get('/activite-recente', verifierToken, verifierRole('admin', 'evaluateur'), getActiviteRecente);
 router.get('/recherche', verifierToken, verifierRole('admin'), rechercheCandidats);
 
 // ── CANDIDATURES GLOBALES (Tous les inscrits) ──

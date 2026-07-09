@@ -157,6 +157,26 @@ const getDashboardStats = async (req, res) => {
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       .slice(0, 8);
 
+    // ── RÉPARTITION PAR TYPE DE PROJET (tous les 4 types) ───
+    const typesProjet = ['structuration', 'formation', 'evenementiel', 'mobilite'];
+    const [appelsParType, mobiliteParType] = await Promise.all([
+      AppelProjet.findAll({
+        attributes: ['type_projet', [sequelize.fn('COUNT', sequelize.col('id')), 'total']],
+        group: ['type_projet'],
+        raw: true,
+      }),
+      ProjetMobilite.findAll({
+        attributes: [[sequelize.fn('COUNT', sequelize.col('id')), 'total']],
+        raw: true,
+      })
+    ]);
+    const parTypeMap = {};
+    typesProjet.forEach(t => { parTypeMap[t] = 0; });
+    appelsParType.forEach(r => { if (r.type_projet && parTypeMap[r.type_projet] !== undefined) parTypeMap[r.type_projet] = parseInt(r.total); });
+    // mobilite candidates count as 'mobilite' type
+    parTypeMap['mobilite'] = (parTypeMap['mobilite'] || 0) + parseInt(mobiliteParType[0]?.total || 0);
+    const parTypeProjet = Object.entries(parTypeMap).map(([type, total]) => ({ type, total }));
+
     return res.status(200).json({
       utilisateurs: {
         total: totalUsers,
@@ -187,12 +207,65 @@ const getDashboardStats = async (req, res) => {
       },
       timeline_mensuelle: timelineMensuelle,
       recentes_globales: recentesGlobales,
+      par_type_projet: parTypeProjet,
     });
 
   } catch (error) {
     return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
   }
 };
+
+// ════════════════════════════════════════════════════════════
+//  ACTIVITÉ RÉCENTE (flux chronologique)
+// ════════════════════════════════════════════════════════════
+const getActiviteRecente = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 12;
+
+    const [recentesAppels, recentesMobilite] = await Promise.all([
+      AppelProjet.findAll({
+        include: [{ model: User, as: 'candidat', attributes: ['nom', 'prenom'] }],
+        order: [['updatedAt', 'DESC']],
+        limit: limit,
+        raw: false
+      }),
+      ProjetMobilite.findAll({
+        include: [{ model: User, as: 'candidat', attributes: ['nom', 'prenom'] }],
+        order: [['updatedAt', 'DESC']],
+        limit: limit,
+        raw: false
+      })
+    ]);
+
+    const activites = [
+      ...recentesAppels.map(c => ({
+        id: `appel-${c.id}`,
+        type: 'appel',
+        action: c.statut === 'soumis' ? 'soumis' : c.statut === 'accepte' ? 'accepte' : c.statut === 'rejete' ? 'rejete' : c.statut === 'en_examen' ? 'en_examen' : 'brouillon',
+        statut: c.statut,
+        nom: c.candidat ? `${c.candidat.prenom} ${c.candidat.nom}` : 'Anonyme',
+        titre: c.titre_projet || c.titre || 'Dossier appel à projets',
+        date: c.updatedAt,
+      })),
+      ...recentesMobilite.map(c => ({
+        id: `mobilite-${c.id}`,
+        type: 'mobilite',
+        action: c.statut === 'soumis' ? 'soumis' : c.statut === 'accepte' ? 'accepte' : c.statut === 'rejete' ? 'rejete' : c.statut === 'en_examen' ? 'en_examen' : 'brouillon',
+        statut: c.statut,
+        nom: c.candidat ? `${c.candidat.prenom} ${c.candidat.nom}` : 'Anonyme',
+        titre: c.intitule_projet || c.titre_projet || 'Dossier mobilité',
+        date: c.updatedAt,
+      }))
+    ]
+      .sort((a, b) => new Date(b.date) - new Date(a.date))
+      .slice(0, limit);
+
+    res.json({ activites });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur serveur', error: error.message });
+  }
+};
+
 
 // ════════════════════════════════════════════════════════════
 //  CAMPAGNES (Appels à Projets — Admin)
@@ -797,6 +870,7 @@ const getSoumissionnaireById = async (req, res) => {
 
 module.exports = {
   getDashboardStats,
+  getActiviteRecente,
   getCampagnes, getCampagneById, modifierCampagne, supprimerCampagne, uploadImageCampagne,
   getCandidaturesAppel,
   getCandidaturesMobilite,
