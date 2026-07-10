@@ -28,7 +28,7 @@ app.get('/api/admin/force-fix', async (req, res) => {
 });
 
 // Proxy universel pour forcer l'affichage inline (désactive le forçage de téléchargement de Cloudinary)
-app.get(['/api/proxy-file', '/api/proxy-file/*'], async (req, res) => {
+app.get('/api/proxy-file/:filename?', async (req, res) => {
   try {
     const { url } = req.query;
     if (!url) return res.status(400).send('URL manquante');
