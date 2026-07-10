@@ -91,6 +91,7 @@ try {
   app.use('/api/admin/notifications', require('./src/routes/notificationAdmin'));
   app.use('/api/faqs',        require('./src/routes/faq'));
   app.use('/api/legal',       require('./src/routes/legal'));
+  app.use('/api/referentiels', require('./src/routes/referentiels'));
 
   // Routes publiques — téléchargement des documents modèles (sans authentification)
   const { telechargerDocumentModele, getDocumentsModelesParType } = require('./src/controllers/documentModeleController');
@@ -203,6 +204,18 @@ const server = app.listen(PORT, () => {
     const { sequelize, User } = require('./src/models/index');
     await sequelize.authenticate();
     console.log('Connexion PostgreSQL réussie !');
+
+    // Migration de force : changer ENUM en VARCHAR sur Railway
+    try {
+      await sequelize.query(`
+        ALTER TABLE appels_projets 
+        ALTER COLUMN secteur_activite TYPE VARCHAR(255) 
+        USING secteur_activite::VARCHAR;
+      `);
+      console.log('[LOG] Fix ENUM secteur_activite applique sur Railway.');
+    } catch (e) {
+      console.log('[LOG] Fix ENUM deja applique ou erreur:', e.message);
+    }
     // Synchronisation spécifique pour les tables qui ont de nouvelles colonnes
     try {
       const { TypeProjet, AppelProjet, ProjetMobilite, DocumentModele, User } = require('./src/models/index');
