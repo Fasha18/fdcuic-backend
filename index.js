@@ -33,16 +33,17 @@ app.get('/api/proxy-pdf', async (req, res) => {
     const { url } = req.query;
     if (!url) return res.status(400).send('URL manquante');
     
-    const axios = require('axios');
-    const response = await axios({
-      url,
-      method: 'GET',
-      responseType: 'stream'
+    const https = require('https');
+    
+    https.get(url, (pdfRes) => {
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'inline');
+      pdfRes.pipe(res);
+    }).on('error', (err) => {
+      console.error('Proxy PDF HTTPS Error:', err.message);
+      res.status(500).send('Erreur HTTPS: ' + err.message);
     });
     
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'inline');
-    response.data.pipe(res);
   } catch (error) {
     const status = error.response ? error.response.status : 'N/A';
     const msg = error.message;
