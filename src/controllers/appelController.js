@@ -1,4 +1,22 @@
 const { AppelAProjet } = require('../models');
+const { Op } = require('sequelize');
+
+// Fonction utilitaire pour clôturer automatiquement les appels dont la date_fin est dépassée
+const autoCloseAppels = async () => {
+    try {
+        await AppelAProjet.update(
+            { statut: 'fermé' },
+            {
+                where: {
+                    statut: 'ouvert',
+                    date_fin: { [Op.lt]: new Date() }
+                }
+            }
+        );
+    } catch (e) {
+        console.error('Erreur autoCloseAppels:', e);
+    }
+};
 
 // Créer un appel (Admin seulement)
 
@@ -26,6 +44,8 @@ const creerAppel = async (req, res) => {
 
 const listerAppels = async (req, res) => {
     try {
+        await autoCloseAppels(); // Clôture automatique avant la lecture
+
         const appels = await AppelAProjet.findAll({
             where: { statut: 'ouvert' },
             order: [['date_debut', 'DESC']],
@@ -41,6 +61,8 @@ const listerAppels = async (req, res) => {
 
 const listerTousAppels = async (req, res) => {
     try {
+        await autoCloseAppels(); // Clôture automatique avant la lecture
+
         const appels = await AppelAProjet.findAll({
             order: [['date_debut', 'DESC']],
         });
@@ -55,6 +77,8 @@ const listerTousAppels = async (req, res) => {
 
 const detailAppel = async (req, res) => {
     try {
+        await autoCloseAppels(); // Clôture automatique
+
         const appel = await AppelAProjet.findByPk(req.params.id);
         if (!appel) {
             return res.status(404).json({ message: 'Appel à projets introuvable.' });
