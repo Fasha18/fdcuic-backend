@@ -173,6 +173,48 @@ const etape4 = async (req, res) => {
   }
 };
 
+// ── UPLOAD DOCUMENT UNIQUE (Étape 4) ────────────────────────
+const uploadDocumentUnique = async (req, res) => {
+  try {
+    const projet = await ProjetMobilite.findOne({
+      where: { id: req.params.id, user_id: req.user.id }
+    });
+
+    if (!projet) {
+      return res.status(404).json({ message: 'Projet introuvable.' });
+    }
+
+    const { docType } = req.body;
+    const fichier = req.file;
+
+    if (!docType || !fichier) {
+      return res.status(400).json({ message: 'Type de document et fichier manquants.' });
+    }
+
+    const champsValides = [
+      'doc_ninea', 'doc_recepisse', 'doc_invitation', 
+      'doc_note_structure', 'doc_cv_portfolio', 'image_couverture'
+    ];
+
+    if (!champsValides.includes(docType)) {
+      return res.status(400).json({ message: 'Type de document invalide.' });
+    }
+
+    await projet.update({
+      [docType]: fichier.path,
+    });
+
+    return res.status(200).json({
+      message: 'Document uploadé avec succès.',
+      projet_id: projet.id,
+      docType: docType,
+      path: fichier.path
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
+  }
+};
+
 // ── ÉTAPE 5 : Récapitulatif + Soumettre ───────────────────
 const soumettre = async (req, res) => {
   try {
@@ -347,6 +389,10 @@ const getMobiliteById = async (req, res) => {
 };
 
 module.exports = {
-  etape1, etape2, etape3, etape4,
+  etape1,
+  etape2,
+  etape3,
+  etape4,
+  uploadDocumentUnique,
   soumettre, mesProjets, tousLesProjets, changerStatut, supprimerCandidature, getProgrammeMobiliteStats, getMobiliteById
 };

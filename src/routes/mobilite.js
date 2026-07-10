@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {
-  etape1, etape2, etape3, etape4,
+  etape1, etape2, etape3, etape4, uploadDocumentUnique,
   soumettre, mesProjets, tousLesProjets, changerStatut, getProgrammeMobiliteStats
 } = require('../controllers/mobiliteController');
 const { verifierToken, verifierRole } = require('../middlewares/auth');
@@ -19,7 +19,7 @@ router.put('/:id/etape2', verifierToken, etape2);
 // Étape 3 — Programme et impact
 router.put('/:id/etape3', verifierToken, etape3);
 
-// Étape 4 — Documents et annexes (upload multiple)
+// Étape 4 — Documents et annexes (upload multiple - gardé pour compatibilité)
 router.put('/:id/etape4', verifierToken, uploadMobilite.fields([
   { name: 'doc_ninea',          maxCount: 1 },
   { name: 'doc_recepisse',      maxCount: 1 },
@@ -28,6 +28,9 @@ router.put('/:id/etape4', verifierToken, uploadMobilite.fields([
   { name: 'doc_cv_portfolio',   maxCount: 1 },
   { name: 'image_couverture',   maxCount: 1 },
 ]), etape4);
+
+// Upload document unique (immédiat)
+router.post('/:id/upload-document', verifierToken, uploadMobilite.single('fichier'), uploadDocumentUnique);
 
 // Étape 5 — Récapitulatif + Soumettre
 router.put('/:id/soumettre', verifierToken, soumettre);

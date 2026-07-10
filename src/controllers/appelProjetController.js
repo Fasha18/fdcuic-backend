@@ -166,63 +166,81 @@ const etape3 = async (req, res) => {
       return res.status(404).json({ message: 'Dossier introuvable.' });
     }
 
-    const fichiers = req.files || {};
-    const updates = { etape_courante: 3 };
+    let docsSoumis = dossier.documents_soumis || [];
+    const fichiers = req.files || []; // upload.any() donne un tableau
 
-    // Documents communs aux 3 types
-    if (fichiers.doc_ninea_recepisse)
-      updates.doc_ninea_recepisse = fichiers.doc_ninea_recepisse[0].path;
-    if (fichiers.doc_cni_passeport)
-      updates.doc_cni_passeport = fichiers.doc_cni_passeport[0].path;
-    if (fichiers.doc_plan_action)
-      updates.doc_plan_action = fichiers.doc_plan_action[0].path;
-    if (fichiers.doc_photo_prototype)
-      updates.doc_photo_prototype = fichiers.doc_photo_prototype[0].path;
+    for (const file of fichiers) {
+      const existingIndex = docsSoumis.findIndex(d => d.nom_document === file.fieldname);
+      const docEntry = {
+        nom_document: file.fieldname,
+        label: file.originalname,
+        chemin_fichier: file.path
+      };
 
-    // Formation + Événementiel
-    if (dossier.type_projet === 'formation' ||
-        dossier.type_projet === 'evenementiel') {
-      if (fichiers.doc_budget)
-        updates.doc_budget = fichiers.doc_budget[0].path;
+      if (existingIndex >= 0) {
+        docsSoumis[existingIndex] = docEntry;
+      } else {
+        docsSoumis.push(docEntry);
+      }
     }
 
-    // Structuration uniquement
-    if (dossier.type_projet === 'structuration') {
-      if (fichiers.doc_analyse_financiere)
-        updates.doc_analyse_financiere = fichiers.doc_analyse_financiere[0].path;
-      if (fichiers.doc_business_model)
-        updates.doc_business_model = fichiers.doc_business_model[0].path;
-    }
-
-    // Vérifier que les documents obligatoires sont fournis
-    const docNinea = updates.doc_ninea_recepisse || dossier.doc_ninea_recepisse;
-    const docCni   = updates.doc_cni_passeport   || dossier.doc_cni_passeport;
-    const docBudget = updates.doc_budget || dossier.doc_budget;
-    const docAnalyse = updates.doc_analyse_financiere || dossier.doc_analyse_financiere;
-    const docBusiness = updates.doc_business_model || dossier.doc_business_model;
-
-    if (!docNinea || !docCni) {
-      return res.status(400).json({
-        message: 'Les documents NINEA/Récépissé et CNI/Passeport sont obligatoires.',
-      });
-    }
-
-    if ((dossier.type_projet === 'formation' || dossier.type_projet === 'evenementiel') && !docBudget) {
-      return res.status(400).json({ message: 'Le document Budget prévisionnel est obligatoire pour ce type de projet.' });
-    }
-
-    if (dossier.type_projet === 'structuration' && (!docAnalyse || !docBusiness)) {
-      return res.status(400).json({ message: 'L\'Analyse financière et le Business Model Canvas sont obligatoires pour la Structuration.' });
-    }
-
-    await dossier.update(updates);
+    await dossier.update({ 
+      etape_courante: 3,
+      documents_soumis: docsSoumis
+    });
 
     return res.status(200).json({
       message: 'Étape 3 enregistrée ! Documents uploadés.',
       dossier_id: dossier.id,
-      fichiers_recus: Object.keys(fichiers),
+      fichiers_recus: fichiers.map(f => f.fieldname),
       etape_courante: 3,
       prochaine_etape: 4,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
+  }
+};
+
+// ── UPLOAD DOCUMENT UNIQUE (Étape 3) ────────────────────────
+const uploadDocumentUnique = async (req, res) => {
+  try {
+    const dossier = await AppelProjet.findOne({
+      where: { id: req.params.id, user_id: req.user.id }
+    });
+    if (!dossier) {
+      return res.status(404).json({ message: 'Dossier introuvable.' });
+    }
+
+    const { docType } = req.body;
+    const fichier = req.file;
+
+    if (!docType || !fichier) {
+      return res.status(400).json({ message: 'Type de document et fichier manquants.' });
+    }
+
+    let docsSoumis = dossier.documents_soumis || [];
+    const existingIndex = docsSoumis.findIndex(d => d.nom_document === docType);
+    const docEntry = {
+      nom_document: docType,
+      label: fichier.originalname,
+      chemin_fichier: fichier.path
+    };
+
+    if (existingIndex >= 0) {
+      docsSoumis[existingIndex] = docEntry;
+    } else {
+      docsSoumis.push(docEntry);
+    }
+
+    await dossier.update({ 
+      documents_soumis: docsSoumis
+    });
+
+    return res.status(200).json({
+      message: 'Document uploadé avec succès.',
+      dossier_id: dossier.id,
+      docType: docType,
+      path: fichier.path
     });
   } catch (error) {
     return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
@@ -250,8 +268,6 @@ const soumettre = async (req, res) => {
       'objectifs_globaux', 'importance_territoire', 'impacts_economiques',
       'potentiel_reussite', 'localisation', 'beneficiaires',
       'plan_perennisation', 'description_produit', 'equipe',
-      'doc_ninea_recepisse', 'doc_cni_passeport',
-      'doc_plan_action', 'doc_photo_prototype',
     ];
 
     const champsManquants = champsObligatoires.filter(c => !dossier[c]);
@@ -260,6 +276,30 @@ const soumettre = async (req, res) => {
         message: 'Dossier incomplet. Veuillez remplir toutes les étapes.',
         champs_manquants: champsManquants,
       });
+    }
+
+    // Vérification dynamique des documents
+    const { TypeProjet, DocumentModele } = require('../models/index');
+    const typeProjetObj = await TypeProjet.findOne({
+      where: { code: dossier.type_projet },
+      include: [{ model: DocumentModele, as: 'documents_modeles' }]
+    });
+
+    if (typeProjetObj && typeProjetObj.documents_modeles) {
+      const docsSoumis = dossier.documents_soumis || [];
+      const manquants = [];
+      for (const modele of typeProjetObj.documents_modeles) {
+        const docTrouve = docsSoumis.find(d => d.nom_document === modele.nom_document);
+        if (!docTrouve) {
+          manquants.push(modele.nom_document);
+        }
+      }
+      if (manquants.length > 0) {
+        return res.status(400).json({
+          message: 'Dossier incomplet. Des documents obligatoires manquent.',
+          documents_manquants: manquants
+        });
+      }
     }
 
     await dossier.update({
@@ -380,7 +420,10 @@ const supprimerDossier = async (req, res) => {
 };
 
 module.exports = {
-  etape1, etape2, etape3,
+  etape1,
+  etape2,
+  etape3,
+  uploadDocumentUnique,
   soumettre, mesDossiers,
   tousDossiers, changerStatut, supprimerDossier
 };
