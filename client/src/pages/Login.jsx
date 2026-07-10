@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 
 const Login = ({ onLogin }) => {
+  const navigate = useNavigate();
   const [isRegistering, setIsRegistering] = useState(false);
   const [nom, setNom] = useState('');
   const [prenom, setPrenom] = useState('');
@@ -9,12 +11,11 @@ const Login = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [motDePasse, setMotDePasse] = useState('');
   const [confirmationMotDePasse, setConfirmationMotDePasse] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   
   const [erreur, setErreur] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const [focused, setFocused] = useState('');
-  const [fieldErrors, setFieldErrors] = useState({});
 
   const validatePhoneKey = (e) => {
     if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', '+'].includes(e.key)) {
@@ -22,24 +23,28 @@ const Login = ({ onLogin }) => {
     }
   };
 
-  const handleSubmit = async () => {
-    setLoading(true); setErreur(''); setSuccess(''); setFieldErrors({});
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true); setErreur(''); setSuccess('');
     try {
       if (isRegistering) {
-        let errors = {};
-        if (!nom) errors.nom = 'Ce champ est obligatoire';
-        if (!prenom) errors.prenom = 'Ce champ est obligatoire';
-        if (!email) errors.email = 'Ce champ est obligatoire';
-        if (!telephone) errors.telephone = 'Ce champ est obligatoire';
-        else if (!/^(\+221|00221)?[7][0|5|6|7|8][0-9]{7}$/.test(telephone)) errors.telephone = 'Numéro de téléphone sénégalais invalide';
-        
-        if (!motDePasse) errors.motDePasse = 'Ce champ est obligatoire';
-        else if (motDePasse.length < 8) errors.motDePasse = 'Le mot de passe doit contenir au moins 8 caractères.';
-        if (motDePasse !== confirmationMotDePasse) errors.confirmationMotDePasse = 'Les mots de passe ne correspondent pas.';
-
-        if (Object.keys(errors).length > 0) {
-          setFieldErrors(errors);
-          setErreur('Veuillez corriger les erreurs dans le formulaire.');
+        if (!nom || !prenom || !email || !telephone || !motDePasse) {
+          setErreur('Veuillez remplir tous les champs obligatoires.');
+          setLoading(false);
+          return;
+        }
+        if (!/^(\+221|00221)?[7][0|5|6|7|8][0-9]{7}$/.test(telephone)) {
+          setErreur('Numéro de téléphone sénégalais invalide.');
+          setLoading(false);
+          return;
+        }
+        if (motDePasse.length < 8) {
+          setErreur('Le mot de passe doit contenir au moins 8 caractères.');
+          setLoading(false);
+          return;
+        }
+        if (motDePasse !== confirmationMotDePasse) {
+          setErreur('Les mots de passe ne correspondent pas.');
           setLoading(false);
           return;
         }
@@ -49,11 +54,14 @@ const Login = ({ onLogin }) => {
         });
         setSuccess(res.data.message || 'Inscription réussie ! Veuillez vérifier votre email pour activer votre compte.');
         setIsRegistering(false);
-        // Clear fields
         setMotDePasse('');
         setConfirmationMotDePasse('');
       } else {
-        if (!email || !motDePasse) { setErreur('Veuillez remplir tous les champs.'); setLoading(false); return; }
+        if (!email || !motDePasse) { 
+          setErreur('Veuillez remplir tous les champs.'); 
+          setLoading(false); 
+          return; 
+        }
         const res = await api.post('/auth/connexion', { email, mot_de_passe: motDePasse });
         localStorage.setItem('token', res.data.token);
         localStorage.setItem('user', JSON.stringify(res.data.user));
@@ -65,531 +73,250 @@ const Login = ({ onLogin }) => {
     setLoading(false);
   };
 
+  const toggleMode = () => {
+    setIsRegistering(!isRegistering);
+    setErreur('');
+    setSuccess('');
+    setMotDePasse('');
+    setConfirmationMotDePasse('');
+  };
+
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        .login-root {
+        body, html { margin: 0; padding: 0; background: #fff; min-height: 100vh; }
+        .ag-container-full {
+          display: flex;
+          align-items: center;
+          justify-content: center;
           min-height: 100vh;
-          background: var(--color-bg-body);
-          display: flex;
-          font-family: 'DM Sans', sans-serif;
+          background: #fff;
+        }
+        .antigravity-login-wrapper {
+          position: relative;
+          width: 100%;
+          max-width: 1280px;
+          height: 100vh;
+          max-height: 820px;
           overflow: hidden;
-          position: relative;
+          border-radius: 28px;
+          background: linear-gradient(155deg, #eef3ff, #dce8ff 60%, #cfe0ff);
+          box-shadow: 0 50px 100px -34px rgba(1, 40, 120, 0.28);
         }
-
-        /* Grille de fond subtile */
-        .login-root::before {
-          content: '';
-          position: fixed;
-          inset: 0;
-          background-image:
-            linear-gradient(rgba(79, 106, 246, 0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(79, 106, 246, 0.04) 1px, transparent 1px);
-          background-size: 60px 60px;
-          pointer-events: none;
+        @media (max-width: 1300px) {
+          .antigravity-login-wrapper { border-radius: 0; max-height: 100vh; height: 100vh; }
         }
+        
+        /* Typography */
+        .ag-eyebrow { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 11px; letter-spacing: 0.18em; color: #0144BD; text-transform: uppercase; margin-bottom: 8px; }
+        .ag-card-title { font-family: 'DM Serif Display', serif; font-size: 34px; color: #0b1b3a; margin-bottom: 4px; }
+        .ag-card-subtitle { font-family: 'Manrope', sans-serif; font-size: 15px; color: #6b7182; margin-bottom: 20px; }
+        
+        /* Main Title */
+        .ag-main-title-block { position: absolute; left: 64px; bottom: 176px; width: 470px; z-index: 10; animation: fadeup 0.8s ease-out 0.12s both; }
+        .ag-sur-title { font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.22em; color: #0144BD; margin-bottom: 16px; display: block; }
+        .ag-main-title { font-family: 'DM Serif Display', serif; font-size: 74px; line-height: 0.98; letter-spacing: -1px; color: #0b1b3a; margin: 0; }
+        .ag-main-title em { color: #0144BD; font-style: italic; }
 
-        /* Lumière ambiante */
-        .glow {
-          position: fixed;
-          width: 600px; height: 600px;
-          border-radius: 50%;
-          background: radial-gradient(circle, rgba(79, 106, 246, 0.08) 0%, transparent 70%);
-          pointer-events: none;
-        }
-        .glow-1 { top: -200px; right: -100px; }
-        .glow-2 { bottom: -200px; left: -100px; background: radial-gradient(circle, rgba(21, 170, 191, 0.06) 0%, transparent 70%); }
-
-        /* Panneau gauche */
-        .left-panel {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          padding: 80px;
-          position: relative;
-        }
-
-        .left-panel::after {
-          content: '';
-          position: absolute;
-          right: 0; top: 10%; bottom: 10%;
-          width: 1px;
-          background: linear-gradient(to bottom, transparent, rgba(79, 106, 246, 0.3), transparent);
-        }
-
-        .brand-tag {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          background: rgba(79, 106, 246, 0.1);
-          border: 1px solid rgba(79, 106, 246, 0.2);
-          border-radius: 20px;
-          padding: 6px 14px;
-          margin-bottom: 48px;
-          width: fit-content;
-        }
-
-        .brand-tag-dot {
-          width: 6px; height: 6px;
-          border-radius: 50%;
-          background: var(--color-primary);
-          animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.5; transform: scale(0.8); }
-        }
-
-        .brand-tag span {
-          color: var(--color-primary);
-          font-size: 11px;
-          font-weight: 500;
-          letter-spacing: 1.5px;
-          text-transform: uppercase;
-        }
-
-        .left-title {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 72px;
-          font-weight: 300;
-          color: var(--color-text-primary);
-          line-height: 1;
-          margin-bottom: 8px;
-          letter-spacing: -1px;
-        }
-
-        .left-title em {
-          font-style: italic;
-          color: var(--color-primary);
-        }
-
-        .left-subtitle {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 20px;
-          color: var(--color-text-secondary);
-          font-weight: 300;
-          margin-bottom: 56px;
-          font-style: italic;
-        }
-
-        .stats-row {
-          display: flex;
-          gap: 48px;
-        }
-
-        .stat-item {
-          position: relative;
-        }
-
-        .stat-item::before {
-          content: '';
-          position: absolute;
-          left: -16px; top: 50%;
-          transform: translateY(-50%);
-          width: 2px; height: 24px;
-          background: var(--color-primary);
-          border-radius: 2px;
-        }
-
-        .stat-item:first-child::before { display: none; }
-
-        .stat-num {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 36px;
-          font-weight: 600;
-          color: var(--color-text-primary);
-          line-height: 1;
-        }
-
-        .stat-label {
-          font-size: 11px;
-          color: var(--color-text-secondary);
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          margin-top: 4px;
-        }
-
-        /* Panneau droit — formulaire */
-        .right-panel {
-          width: 480px;
-          flex-shrink: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 60px 48px;
+        /* Card */
+        .ag-card {
+          position: absolute; right: 72px; top: 80px;
+          width: 456px;
+          padding: 32px 42px;
+          border-radius: 26px;
+          background: rgba(255, 255, 255, 0.98);
+          border: 1px solid rgba(255, 255, 255, 0.9);
+          box-shadow: 0 40px 90px -22px rgba(1, 40, 120, 0.4);
+          z-index: 20;
+          max-height: calc(100vh - 120px);
           overflow-y: auto;
         }
         
-        .right-panel::-webkit-scrollbar {
-          width: 4px;
-        }
-        .right-panel::-webkit-scrollbar-thumb {
-          background: var(--color-border);
-          border-radius: 4px;
-        }
+        .ag-card::-webkit-scrollbar { width: 6px; }
+        .ag-card::-webkit-scrollbar-thumb { background: rgba(1, 68, 189, 0.2); border-radius: 4px; }
 
-        .form-card {
-          width: 100%;
-          animation: slideUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+        /* Form fields */
+        .ag-form-group { display: flex; flex-direction: column; margin-bottom: 12px; }
+        .ag-label { font-family: 'Manrope', sans-serif; font-weight: 600; font-size: 12px; color: #8a90a0; text-transform: uppercase; margin-bottom: 6px; }
+        .ag-input-wrap { position: relative; display: flex; align-items: center; }
+        .ag-input {
+          width: 100%; font-family: 'Manrope', sans-serif; font-size: 15px; color: #0b1b3a;
+          background: #fff; border: 1px solid #dbe3f2; border-radius: 12px;
+          padding: 12px 16px; outline: none; transition: all 0.25s ease;
         }
-
-        @keyframes slideUp {
-          from { opacity: 0; transform: translateY(24px); }
-          to   { opacity: 1; transform: translateY(0); }
+        .ag-input::placeholder { color: #a0a6b4; }
+        .ag-input:focus { border-color: #0144BD; box-shadow: 0 0 0 4px rgba(1, 68, 189, 0.14); }
+        .ag-pwd-toggle {
+          position: absolute; right: 16px; background: none; border: none;
+          font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 12px;
+          color: #a0a6b4; cursor: pointer; transition: color 0.2s;
         }
-
-        .form-header {
-          margin-bottom: 40px;
-        }
-
-        .form-header h2 {
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 38px;
-          font-weight: 400;
-          color: var(--color-text-primary);
-          margin-bottom: 8px;
-          line-height: 1.1;
-        }
-
-        .form-header p {
-          font-size: 13px;
-          color: var(--color-text-secondary);
-          font-weight: 300;
-          letter-spacing: 0.3px;
-        }
-
-        .gold-line {
-          width: 40px; height: 2px;
-          background: var(--color-primary-gradient);
-          margin: 12px 0 20px;
-          border-radius: 2px;
-        }
-
-        .field-wrap {
-          margin-bottom: 20px;
-        }
+        .ag-pwd-toggle:hover { color: #0144BD; }
         
-        .field-row {
-          display: flex;
-          gap: 16px;
-        }
-        .field-row .field-wrap {
-          flex: 1;
-        }
-
-        .field-label {
-          display: block;
-          font-size: 10px;
-          font-weight: 500;
-          color: var(--color-text-secondary);
-          text-transform: uppercase;
-          letter-spacing: 1.5px;
-          margin-bottom: 8px;
-        }
-
-        .field-input {
-          width: 100%;
-          padding: 14px 16px;
-          background: var(--color-bg-input);
-          border: 1px solid var(--color-border);
-          border-radius: 8px;
-          color: var(--color-text-primary);
-          font-size: 14px;
-          font-family: 'DM Sans', sans-serif;
-          transition: all 0.2s;
-          outline: none;
-        }
-
-        .field-input.active {
-          border-color: var(--color-border-focus);
-          background: var(--color-bg-hover);
-          box-shadow: 0 0 0 3px rgba(79, 106, 246, 0.15);
-        }
-
-        .field-input::placeholder { color: var(--color-text-tertiary); }
-
-        .error-msg {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background: rgba(239,68,68,0.08);
-          border: 1px solid rgba(239,68,68,0.2);
-          border-radius: 8px;
-          padding: 12px 14px;
-          margin-bottom: 20px;
-          color: #f87171;
-          font-size: 13px;
-        }
+        .ag-link { font-family: 'Manrope', sans-serif; font-size: 14px; color: #6b7182; text-decoration: none; transition: color 0.2s; }
+        .ag-link:hover { color: #0144BD; text-decoration: underline; }
         
-        .success-msg {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          background: rgba(34,176,125,0.08);
-          border: 1px solid rgba(34,176,125,0.2);
-          border-radius: 8px;
-          padding: 12px 14px;
-          margin-bottom: 20px;
-          color: #22B07D;
-          font-size: 13px;
+        .ag-btn {
+          width: 100%; font-family: 'Space Grotesk', 'Manrope', sans-serif; font-weight: 600; font-size: 16px;
+          color: #fff; background: linear-gradient(180deg, #2f6bff, #0144BD);
+          border: none; border-radius: 12px; padding: 14px; cursor: pointer;
+          transition: all 0.3s ease; margin-top: 4px;
+          box-shadow: 0 10px 24px -8px rgba(1, 68, 189, 0.4);
+          animation: fadeup 0.6s ease-out 0.38s both;
         }
-
-        .submit-btn {
-          width: 100%;
-          padding: 15px;
-          background: var(--color-primary-gradient);
-          color: white;
-          border: none;
-          border-radius: 8px;
-          font-size: 13px;
-          font-weight: 600;
-          font-family: 'DM Sans', sans-serif;
-          letter-spacing: 1px;
-          text-transform: uppercase;
-          cursor: pointer;
-          transition: all 0.2s;
-          margin-top: 8px;
-          position: relative;
-          overflow: hidden;
+        .ag-btn:hover:not(:disabled) {
+          background: linear-gradient(180deg, #3f78ff, #1052d6);
+          transform: translateY(-2px);
+          box-shadow: 0 18px 46px -8px rgba(1, 68, 189, 0.75);
         }
+        .ag-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; box-shadow: none; }
 
-        .submit-btn::before {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
-          opacity: 0;
-          transition: opacity 0.2s;
-        }
+        .ag-footer-text { text-align: center; margin-top: 24px; font-family: 'Manrope', sans-serif; font-size: 14px; color: #6b7182; animation: fadeup 0.6s ease-out 0.44s both; }
+        .ag-footer-text span { color: #0144BD; font-weight: 700; cursor: pointer; margin-left: 4px; }
+        .ag-footer-text span:hover { text-decoration: underline; }
 
-        .submit-btn:hover::before { opacity: 1; }
-        .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(79, 106, 246, 0.3); }
-        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        /* Animations */
+        @keyframes fadeup { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
+
+        /* Logo */
+        .ag-logo { position: absolute; top: 40px; left: 64px; height: 48px; z-index: 30; animation: fadeup 0.8s ease-out 0.05s both; }
+
+        /* Metaballs */
+        .ag-metaballs { position: absolute; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; animation: hueshift 16s ease-in-out infinite; }
+        .ag-metaballs svg { width: 100%; height: 100%; }
+        .mb-1 { animation: gooA 13s ease-in-out infinite alternate; fill: #2f6bff; }
+        .mb-2 { animation: gooB 15s ease-in-out infinite alternate; fill: #0144BD; }
+        .mb-3 { animation: gooC 17s ease-in-out infinite alternate; fill: #5b8dff; }
+        .mb-4 { animation: gooD 19s ease-in-out infinite alternate; fill: #1e63ff; }
+        .mb-5 { animation: gooE 21s ease-in-out infinite alternate; fill: #78a8ff; }
         
-        .toggle-mode {
-          text-align: center;
-          margin-top: 24px;
-          font-size: 13px;
-          color: var(--color-text-secondary);
-        }
-        .toggle-mode span {
-          color: var(--color-primary);
-          font-weight: 600;
-          cursor: pointer;
-          margin-left: 4px;
-        }
-        .toggle-mode span:hover {
-          text-decoration: underline;
-        }
+        @keyframes gooA { 0%,100%{transform:translate(0,0)} 50%{transform:translate(150px,-110px)} }
+        @keyframes gooB { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-130px,120px)} }
+        @keyframes gooC { 0%,100%{transform:translate(0,0)} 50%{transform:translate(110px,140px)} }
+        @keyframes gooD { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-120px,-90px)} }
+        @keyframes gooE { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(60px,-60px) scale(1.15)} }
+        @keyframes hueshift { 0%,100%{filter:hue-rotate(0)} 50%{filter:hue-rotate(-16deg)} }
 
-        .footer-note {
-          text-align: center;
-          font-size: 11px;
-          color: var(--color-text-tertiary);
-          margin-top: 32px;
-          letter-spacing: 0.5px;
-        }
+        /* Banner */
+        .ag-alert { padding: 12px 16px; border-radius: 8px; font-family: 'Manrope', sans-serif; font-size: 14px; font-weight: 600; margin-bottom: 24px; animation: fadeup 0.3s ease-out; }
+        .ag-alert-error { background: rgba(220, 38, 38, 0.1); color: #dc2626; border: 1px solid rgba(220, 38, 38, 0.2); }
+        .ag-alert-success { background: rgba(34, 176, 125, 0.1); color: #22b07d; border: 1px solid rgba(34, 176, 125, 0.2); }
 
-        /* Ornement décoratif */
-        .ornament {
-          position: fixed;
-          bottom: 40px; right: 40px;
-          font-family: 'Cormorant Garamond', serif;
-          font-size: 11px;
-          color: var(--color-text-tertiary);
-          letter-spacing: 3px;
-          text-transform: uppercase;
-          writing-mode: vertical-rl;
-          opacity: 0.5;
-        }
+        .row-flex { display: flex; gap: 16px; }
+        .row-flex > div { flex: 1; }
 
-        @media (max-width: 900px) {
-          .left-panel { display: none; }
-          .right-panel { width: 100%; }
+        /* Responsive */
+        @media (max-width: 1024px) {
+          .antigravity-login-wrapper { display: flex; align-items: center; justify-content: center; }
+          .ag-main-title-block { display: none; }
+          .ag-card { position: relative; right: auto; top: auto; margin: auto; width: 100%; max-width: 456px; }
+          .ag-logo { left: 50%; transform: translateX(-50%); top: 40px; animation: fadeup 0.8s ease-out 0.05s both; }
+        }
+        @media (prefers-reduced-motion) {
+          .ag-card, .mb-1, .mb-2, .mb-3, .mb-4, .mb-5, .ag-metaballs, .ag-main-title-block, .ag-logo, .ag-btn, .ag-form-group, .ag-footer-text, .ag-alert { animation: none !important; }
         }
       `}</style>
-
-      <div className="login-root">
-        <div className="glow glow-1" />
-        <div className="glow glow-2" />
-
-        {/* Panneau gauche */}
-        <div className="left-panel">
-          <div className="brand-tag">
-            <div className="brand-tag-dot" />
-            <span>Plateforme Officielle</span>
+      
+      <div className="ag-container-full">
+        <div className="antigravity-login-wrapper">
+          {/* Métaballes */}
+          <div className="ag-metaballs" aria-hidden="true">
+            <svg>
+              <defs>
+                <filter id="goo">
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="18" result="b"/>
+                  <feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 25 -11" result="g"/>
+                </filter>
+              </defs>
+              <g filter="url(#goo)">
+                <circle className="mb-1" cx="320" cy="340" r="180" />
+                <circle className="mb-2" cx="400" cy="420" r="150" />
+                <circle className="mb-3" cx="200" cy="240" r="130" />
+                <circle className="mb-4" cx="440" cy="270" r="110" />
+                <circle className="mb-5" cx="240" cy="440" r="90" />
+              </g>
+            </svg>
           </div>
 
-          <h1 className="left-title">
-            FD<em>CUIC</em>
-          </h1>
-          <p className="left-subtitle">
-            Plateforme des Opportunités & Subventions
-          </p>
+          <img src="/FDCUIC_logo.png" alt="FDCUIC Logo" className="ag-logo" />
 
-          <div className="stats-row">
-            <div className="stat-item">
-              <div className="stat-num">4</div>
-              <div className="stat-label">Types de projets</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-num">14</div>
-              <div className="stat-label">Régions couvertes</div>
-            </div>
-            <div className="stat-item">
-              <div className="stat-num">8</div>
-              <div className="stat-label">Secteurs d'activité</div>
-            </div>
+          {/* Titre Editorial */}
+          <div className="ag-main-title-block">
+            <span className="ag-sur-title">FONDS DES INDUSTRIES CRÉATIVES</span>
+            <h1 className="ag-main-title">Donnez vie à vos <em>projets.</em></h1>
           </div>
-        </div>
 
-        {/* Panneau droit */}
-        <div className="right-panel">
-          <div className="form-card">
-            <div className="form-header">
-              <h2>Espace<br />{isRegistering ? 'Inscription' : 'Connexion'}</h2>
-              <div className="gold-line" />
-              <p>{isRegistering ? 'Créez votre compte pour soumettre vos dossiers' : 'Connectez-vous pour accéder à votre espace'}</p>
-            </div>
+          {/* Formulaire Card */}
+          <div className="ag-card">
+            <div className="ag-eyebrow">Espace porteur de projet</div>
+            <h2 className="ag-card-title">{isRegistering ? 'Inscription' : 'Connexion'}</h2>
+            <p className="ag-card-subtitle">{isRegistering ? 'Créez votre compte porteur de projet.' : 'Accédez à votre tableau de bord.'}</p>
 
-            {erreur && (
-              <div className="error-msg">
-                <span>⚠</span> {erreur}
-              </div>
-            )}
-            
-            {success && (
-              <div className="success-msg">
-                <span>✓</span> {success}
-              </div>
-            )}
+            {erreur && <div className="ag-alert ag-alert-error">{erreur}</div>}
+            {success && <div className="ag-alert ag-alert-success">{success}</div>}
 
-            {isRegistering && (
-              <div className="field-row">
-                <div className="field-wrap">
-                  <label className="field-label">Nom</label>
-                  <input
-                    className={`field-input ${focused === 'nom' ? 'active' : ''}`}
-                    type="text"
-                    value={nom}
-                    onChange={e => setNom(e.target.value)}
-                    onFocus={() => setFocused('nom')}
-                    onBlur={() => setFocused('')}
-                    placeholder="Votre nom"
-                  />
-                </div>
-                <div className="field-wrap">
-                  <label className="field-label">Prénom</label>
-                  <input
-                    className={`field-input ${focused === 'prenom' ? 'active' : ''}`}
-                    type="text"
-                    value={prenom}
-                    onChange={e => setPrenom(e.target.value)}
-                    onFocus={() => setFocused('prenom')}
-                    onBlur={() => setFocused('')}
-                    placeholder="Votre prénom"
-                  />
-                </div>
-              </div>
-            )}
-
-            {isRegistering && (
-              <div className="field-wrap">
-                <label className="field-label">Téléphone</label>
-                <input
-                  className={`field-input ${focused === 'tel' ? 'active' : ''}`}
-                  type="tel"
-                  value={telephone}
-                  onChange={e => setTelephone(e.target.value)}
-                  onFocus={() => setFocused('tel')}
-                  onBlur={() => setFocused('')}
-                  onKeyDown={validatePhoneKey}
-                  placeholder="+221 XX XXX XX XX"
-                  style={{ borderColor: fieldErrors.telephone ? 'var(--color-red)' : '' }}
-                />
-                {fieldErrors.telephone && (
-                  <div style={{ color: 'var(--color-red)', fontSize: 12, marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
-                    <svg width="12" height="12">⚠️</svg> {fieldErrors.telephone}
+            <form onSubmit={handleSubmit}>
+              {isRegistering && (
+                <>
+                  <div className="row-flex" style={{ animation: 'fadeup 0.6s ease-out 0.14s both' }}>
+                    <div className="ag-form-group" style={{ animation: 'none' }}>
+                      <label className="ag-label">Prénom</label>
+                      <input type="text" className="ag-input" placeholder="Awa" value={prenom} onChange={(e) => setPrenom(e.target.value)} required />
+                    </div>
+                    <div className="ag-form-group" style={{ animation: 'none' }}>
+                      <label className="ag-label">Nom</label>
+                      <input type="text" className="ag-input" placeholder="Diop" value={nom} onChange={(e) => setNom(e.target.value)} required />
+                    </div>
                   </div>
-                )}
-              </div>
-            )}
-
-            <div className="field-wrap">
-              <label className="field-label">Adresse email</label>
-              <input
-                className={`field-input ${focused === 'email' ? 'active' : ''}`}
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                onFocus={() => setFocused('email')}
-                onBlur={() => setFocused('')}
-                onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-                placeholder="votre@email.com"
-              />
-            </div>
-
-            <div className="field-wrap">
-              <label className="field-label">Mot de passe</label>
-              <input
-                className={`field-input ${focused === 'pass' ? 'active' : ''}`}
-                type="password"
-                value={motDePasse}
-                onChange={e => setMotDePasse(e.target.value)}
-                onFocus={() => setFocused('pass')}
-                onBlur={() => setFocused('')}
-                onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-                placeholder="••••••••"
-              />
-            </div>
-            
-            {isRegistering && (
-              <div className="field-wrap">
-                <label className="field-label">Confirmer le mot de passe</label>
-                <input
-                  className={`field-input ${focused === 'conf' ? 'active' : ''}`}
-                  type="password"
-                  value={confirmationMotDePasse}
-                  onChange={e => setConfirmationMotDePasse(e.target.value)}
-                  onFocus={() => setFocused('conf')}
-                  onBlur={() => setFocused('')}
-                  onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-                  placeholder="••••••••"
-                />
-              </div>
-            )}
-
-            <button
-              className="submit-btn"
-              onClick={handleSubmit}
-              disabled={loading}
-            >
-              {loading 
-                ? 'Traitement en cours...' 
-                : isRegistering ? 'Créer mon compte' : 'Accéder au tableau de bord'}
-            </button>
-            
-            <div className="toggle-mode">
-              {isRegistering ? (
-                <>Déjà un compte ? <span onClick={() => {setIsRegistering(false); setErreur(''); setSuccess('');}}>Se connecter</span></>
-              ) : (
-                <>Pas encore de compte ? <span onClick={() => {setIsRegistering(true); setErreur(''); setSuccess('');}}>S'inscrire</span></>
+                  <div className="ag-form-group" style={{ animation: 'fadeup 0.6s ease-out 0.16s both' }}>
+                    <label className="ag-label">Téléphone</label>
+                    <input type="tel" className="ag-input" placeholder="77 000 00 00" value={telephone} onChange={(e) => setTelephone(e.target.value)} onKeyDown={validatePhoneKey} required />
+                  </div>
+                </>
               )}
-            </div>
 
-            <p className="footer-note">
-              © 2026 FDCUIC — Plateforme des cultures urbaines
-            </p>
+              <div className="ag-form-group" style={{ animation: `fadeup 0.6s ease-out ${isRegistering ? '0.18s' : '0.18s'} both` }}>
+                <label className="ag-label">Adresse email</label>
+                <div className="ag-input-wrap">
+                  <input type="email" className="ag-input" placeholder="vous@exemple.sn" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                </div>
+              </div>
+
+              <div className="ag-form-group" style={{ animation: `fadeup 0.6s ease-out ${isRegistering ? '0.20s' : '0.26s'} both` }}>
+                <label className="ag-label">Mot de passe</label>
+                <div className="ag-input-wrap">
+                  <input type={showPassword ? "text" : "password"} className="ag-input" placeholder="••••••••" value={motDePasse} onChange={(e) => setMotDePasse(e.target.value)} required />
+                  <button type="button" className="ag-pwd-toggle" onClick={() => setShowPassword(!showPassword)}>{showPassword ? 'CACHER' : 'VOIR'}</button>
+                </div>
+              </div>
+
+              {isRegistering && (
+                <div className="ag-form-group" style={{ animation: 'fadeup 0.6s ease-out 0.22s both' }}>
+                  <label className="ag-label">Confirmer le mot de passe</label>
+                  <div className="ag-input-wrap">
+                    <input type={showPassword ? "text" : "password"} className="ag-input" placeholder="••••••••" value={confirmationMotDePasse} onChange={(e) => setConfirmationMotDePasse(e.target.value)} required />
+                  </div>
+                </div>
+              )}
+
+              {!isRegistering && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '24px', animation: 'fadeup 0.6s ease-out 0.32s both' }}>
+                  <a href="#" className="ag-link" onClick={(e) => { e.preventDefault(); /* handle forgot password */ }}>Mot de passe oublié ?</a>
+                </div>
+              )}
+
+              <button type="submit" className="ag-btn" disabled={loading}>
+                {loading ? 'Veuillez patienter...' : (isRegistering ? 'Créer mon compte' : 'Accéder au tableau de bord')}
+              </button>
+
+              <div className="ag-footer-text">
+                {isRegistering ? 'Déjà un compte ?' : 'Pas encore de compte ?'}
+                <span onClick={toggleMode}>{isRegistering ? 'Se connecter' : "S'inscrire"}</span>
+              </div>
+            </form>
           </div>
         </div>
-
-        <div className="ornament">Cultures Urbaines</div>
       </div>
     </>
   );

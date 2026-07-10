@@ -69,52 +69,33 @@ export default function Profile({ onLogout }) {
     }
   };
 
-  return (
-    <div className="dashboard-layout" style={{ background: 'linear-gradient(135deg, #E8EFF9 0%, #F0F4F8 100%)', minHeight: '100vh' }}>
-      <Sidebar 
-        onLogout={onLogout} 
-        activeTab="profil" 
-        role={user.role}
-        onTabChange={(tab) => {
-          if (user.role === 'candidat') {
-            if (tab === 'apercu') navigate('/candidat');
-            if (tab === 'opportunites') navigate('/candidat/appels');
-            if (tab === 'mes-candidatures') navigate('/candidat/mes-dossiers');
-            if (tab === 'mobilite') navigate('/candidat/mobilite');
-          } else {
-            // Admin routing if needed
-            if (tab === 'apercu') navigate('/admin');
-          }
-        }} 
-      />
-      
-      <main className="dashboard-main" style={{ padding: '0' }}>
-        <Topbar title="Mon Profil" subtitle="Gérez vos informations personnelles et votre sécurité" />
+  const isAdminRoute = window.location.pathname.startsWith('/admin');
 
-        <div className="dashboard-content" style={{ padding: '32px 40px', paddingTop: 'calc(72px + 32px)', maxWidth: 1200, margin: '0 auto' }}>
-          
-          {/* BOUTON RETOUR INTELLIGENT */}
-          <button 
-            onClick={goBack}
-            className="animate-fade-in-up"
-            style={{ 
-              display: 'inline-flex', alignItems: 'center', gap: 8, 
-              background: 'rgba(255, 255, 255, 0.6)', backdropFilter: 'blur(10px)',
-              padding: '10px 20px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)',
-              color: '#4B5563', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-              marginBottom: 32, transition: 'all 0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
-            }}
-            onMouseOver={(e) => { e.currentTarget.style.transform = 'translateX(-4px)'; e.currentTarget.style.color = 'var(--color-primary)'; }}
-            onMouseOut={(e) => { e.currentTarget.style.transform = 'translateX(0)'; e.currentTarget.style.color = '#4B5563'; }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="19" y1="12" x2="5" y2="12"></line>
-              <polyline points="12 19 5 12 12 5"></polyline>
-            </svg>
-            Retour au tableau de bord
-          </button>
+  const content = (
+    <>
+      {/* BOUTON RETOUR INTELLIGENT */}
+      <button 
+        onClick={goBack}
+        className="animate-fade-in-up"
+        style={{ 
+          display: 'inline-flex', alignItems: 'center', gap: 8, 
+          background: isAdminRoute ? 'var(--color-bg-card)' : 'rgba(255, 255, 255, 0.6)', backdropFilter: 'blur(10px)',
+          padding: '10px 20px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.05)',
+          color: '#4B5563', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+          marginBottom: 32, transition: 'all 0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
+        }}
+        onMouseOver={(e) => { e.currentTarget.style.transform = 'translateX(-4px)'; e.currentTarget.style.color = 'var(--color-primary)'; }}
+        onMouseOut={(e) => { e.currentTarget.style.transform = 'translateX(0)'; e.currentTarget.style.color = '#4B5563'; }}
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        Retour au tableau de bord
+      </button>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 32, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 32, alignItems: 'start' }}>
+
             
             {/* COLONNE GAUCHE - CARTE D'IDENTITÉ UTILISATEUR */}
             <div className="animate-fade-in-up" style={{ 
@@ -260,10 +241,38 @@ export default function Profile({ onLogout }) {
                   </div>
                 </form>
               </div>
-
             </div>
           </div>
+    </>
+  );
 
+  if (isAdminRoute) {
+    return <div style={{ maxWidth: 1200, margin: '0 auto' }}>{content}</div>;
+  }
+
+  return (
+    <div className="dashboard-layout" style={{ background: 'linear-gradient(135deg, #E8EFF9 0%, #F0F4F8 100%)', minHeight: '100vh' }}>
+      <Sidebar 
+        onLogout={onLogout} 
+        activeTab="profil" 
+        role={user.role}
+        onTabChange={(tab) => {
+          if (user.role === 'candidat') {
+            if (tab === 'apercu') navigate('/candidat');
+            if (tab === 'opportunites') navigate('/candidat/appels');
+            if (tab === 'mes-candidatures') navigate('/candidat/mes-dossiers');
+            if (tab === 'mobilite') navigate('/candidat/mobilite');
+          } else {
+            if (tab === 'apercu') navigate('/admin');
+          }
+        }} 
+      />
+      
+      <main className="dashboard-main" style={{ padding: '0' }}>
+        <Topbar title="Mon Profil" subtitle="Gérez vos informations personnelles et votre sécurité" />
+
+        <div className="dashboard-content" style={{ padding: '32px 40px', paddingTop: 'calc(72px + 32px)', maxWidth: 1200, margin: '0 auto' }}>
+          {content}
         </div>
       </main>
     </div>

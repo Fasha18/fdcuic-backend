@@ -14,6 +14,8 @@ class AppelProjetDossier {
 
   // Relation
   final AppelAProjet? appel;
+  
+  final Map<String, dynamic>? rawJson;
 
   AppelProjetDossier({
     required this.id,
@@ -27,6 +29,7 @@ class AppelProjetDossier {
     required this.statut,
     this.createdAt,
     this.appel,
+    this.rawJson,
   });
 
   factory AppelProjetDossier.fromJson(Map<String, dynamic> json) {
@@ -44,6 +47,7 @@ class AppelProjetDossier {
       appel: json['appel'] != null
           ? AppelAProjet.fromJson(json['appel'])
           : null,
+      rawJson: json,
     );
   }
 }

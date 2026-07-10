@@ -33,12 +33,11 @@ class FormValidators {
     if (value == null || value.trim().isEmpty) {
       return 'Le numéro de téléphone est obligatoire.';
     }
-    // Format Sénégalais: commence par +221 ou 00221 ou 7, suivi de 7, 6, 8, 0 ou 5, etc.
-    // L'expression régulière stricte pour le Sénégal: ^(\+221|00221)?[7][05678][0-9]{7}$
-    // Mais on peut utiliser celle demandée: ^(\+221|00221)?[7][0578][0-9]{7}$
-    final regex = RegExp(r'^(\+221|00221)?[7][0578][0-9]{7}$');
-    if (!regex.hasMatch(value.trim())) {
-      return 'Numéro de téléphone invalide (Ex: 771234567 ou +221771234567).';
+    // Nettoyer les espaces pour la validation
+    final cleaned = value.replaceAll(RegExp(r'\s+'), '');
+    final regex = RegExp(r'^(\+221|00221)?[7][05678][0-9]{7}$');
+    if (!regex.hasMatch(cleaned)) {
+      return 'Numéro de téléphone invalide (Ex: 771234567).';
     }
     return null;
   }

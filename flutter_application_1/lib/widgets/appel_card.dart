@@ -121,9 +121,12 @@ class AppelCard extends StatelessWidget {
                         SizedBox(height: 6.h),
                         Row(
                           children: [
-                            Text(
-                              appel.typeProjet ?? 'Projet',
-                              style: GoogleFonts.sora(fontSize: 11.sp, fontWeight: FontWeight.w600, color: catColor),
+                            Flexible(
+                              child: Text(
+                                appel.typeProjet ?? 'Projet',
+                                style: GoogleFonts.sora(fontSize: 11.sp, fontWeight: FontWeight.w600, color: catColor),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
                             SizedBox(width: 12.w),
                             Icon(Icons.calendar_today_outlined, size: 11, color: isDark ? AppColors.darkTxtSecondary : AppColors.lightTxtSecondary),

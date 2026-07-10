@@ -41,6 +41,16 @@ const etape1 = async (req, res) => {
       });
     }
 
+    // Vérifier que le candidat n'a pas déjà un dossier pour cet appel
+    const existingDossier = await AppelProjet.findOne({
+      where: { user_id: req.user.id, appel_id }
+    });
+    if (existingDossier) {
+      return res.status(400).json({ 
+        message: 'Vous avez déjà une candidature (en cours ou soumise) pour cet appel à projets. Veuillez consulter "Mes Dossiers".' 
+      });
+    }
+
     // Créer le brouillon
     const dossier = await AppelProjet.create({
       user_id: req.user.id,
@@ -278,28 +288,40 @@ const soumettre = async (req, res) => {
       });
     }
 
-    // Vérification dynamique des documents
-    const { TypeProjet, DocumentModele } = require('../models/index');
-    const typeProjetObj = await TypeProjet.findOne({
-      where: { code: dossier.type_projet },
-      include: [{ model: DocumentModele, as: 'documents_modeles' }]
+    // Vérification statique des documents
+    const docsSoumis = dossier.documents_soumis || [];
+    const typeProjet = dossier.type_projet;
+    
+    let requiredDocs = [
+      'doc_ninea_recepisse',
+      'doc_cni_passeport',
+      'doc_plan_action',
+      'doc_photo_prototype'
+    ];
+
+    if (typeProjet === 'formation' || typeProjet === 'evenementiel') {
+      requiredDocs.push('doc_budget');
+    } else if (typeProjet === 'structuration') {
+      requiredDocs.push('doc_analyse_financiere', 'doc_business_model');
+    }
+
+    const manquants = requiredDocs.filter(reqDoc => 
+      !docsSoumis.some(d => d.nom_document === reqDoc)
+    );
+
+    console.log('[DEBUG SOUMETTRE]', {
+      dossierId: dossier.id,
+      typeProjet: typeProjet,
+      docsSoumisKeys: docsSoumis.map(d => d.nom_document),
+      requiredDocs: requiredDocs,
+      manquants: manquants
     });
 
-    if (typeProjetObj && typeProjetObj.documents_modeles) {
-      const docsSoumis = dossier.documents_soumis || [];
-      const manquants = [];
-      for (const modele of typeProjetObj.documents_modeles) {
-        const docTrouve = docsSoumis.find(d => d.nom_document === modele.nom_document);
-        if (!docTrouve) {
-          manquants.push(modele.nom_document);
-        }
-      }
-      if (manquants.length > 0) {
-        return res.status(400).json({
-          message: 'Dossier incomplet. Des documents obligatoires manquent.',
-          documents_manquants: manquants
-        });
-      }
+    if (manquants.length > 0) {
+      return res.status(400).json({
+        message: 'Dossier incomplet. Des documents obligatoires manquent.',
+        documents_manquants: manquants
+      });
     }
 
     await dossier.update({

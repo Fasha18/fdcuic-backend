@@ -14,19 +14,32 @@ exports.getProfile = async (req, res) => {
   }
 };
 
-// 2. Mettre à jour le profil (nom, prenom, telephone)
+// 2. Mettre à jour le profil (nom, prenom, telephone, identité)
 exports.updateProfile = async (req, res) => {
   try {
-    const { nom, prenom, telephone } = req.body;
+    const { nom, prenom, telephone, type_piece_identite, numero_piece_identite, date_naissance } = req.body;
     const user = await User.findByPk(req.user.id);
     if (!user) return res.status(404).json({ message: 'Utilisateur introuvable' });
 
     if (nom) user.nom = nom;
     if (prenom) user.prenom = prenom;
     if (telephone !== undefined) user.telephone = telephone;
+    if (type_piece_identite !== undefined) user.type_piece_identite = type_piece_identite;
+    if (numero_piece_identite !== undefined) user.numero_piece_identite = numero_piece_identite;
+    if (date_naissance !== undefined) user.date_naissance = date_naissance;
 
     await user.save();
-    res.json({ message: 'Profil mis à jour avec succès', user: { nom: user.nom, prenom: user.prenom, telephone: user.telephone } });
+    res.json({ 
+      message: 'Profil mis à jour avec succès', 
+      user: { 
+        nom: user.nom, 
+        prenom: user.prenom, 
+        telephone: user.telephone,
+        type_piece_identite: user.type_piece_identite,
+        numero_piece_identite: user.numero_piece_identite,
+        date_naissance: user.date_naissance
+      } 
+    });
   } catch (error) {
     res.status(500).json({ message: 'Erreur lors de la mise à jour', error: error.message });
   }

@@ -4,6 +4,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import Topbar from '../components/Topbar';
 import adminService from '../services/adminService';
 import AppelModal from '../components/AppelModal';
+import { getImageUrl } from '../utils/imageUrl';
 
 const LABEL_STATUT = {
   ouvert: 'Ouvert',
@@ -63,26 +64,16 @@ export default function DetailAppel({ onLogout }) {
 
   if (loading) {
     return (
-      <div className="dashboard-layout">
-        <div className="dashboard-main" style={{ marginLeft: 0 }}>
-          <Topbar title="Détails de l'appel" subtitle="Chargement..." />
-          <div className="dashboard-content"><div className="skeleton" style={{ height: 400, borderRadius: 'var(--radius-md)' }} /></div>
-        </div>
-      </div>
+      <div className="dashboard-content"><div className="skeleton" style={{ height: 400, borderRadius: 'var(--radius-md)' }} /></div>
     );
   }
 
   if (error || !campagne) {
     return (
-      <div className="dashboard-layout">
-        <div className="dashboard-main" style={{ marginLeft: 0 }}>
-          <Topbar title="Erreur" subtitle="Retour au tableau de bord" />
-          <div className="dashboard-content">
-            <div style={{ padding: '40px', textAlign: 'center', background: 'var(--color-bg-card)', borderRadius: 'var(--radius-md)' }}>
-              <p style={{ color: 'var(--color-red)', marginBottom: 20 }}>{error || 'Appel introuvable'}</p>
-              <button className="btn-secondary" onClick={() => navigate('/admin')}>Retour au Dashboard</button>
-            </div>
-          </div>
+      <div className="dashboard-content">
+        <div style={{ padding: '40px', textAlign: 'center', background: 'var(--color-bg-card)', borderRadius: 'var(--radius-md)' }}>
+          <p style={{ color: 'var(--color-red)', marginBottom: 20 }}>{error || 'Appel introuvable'}</p>
+          <button className="btn-secondary" onClick={() => navigate('/admin')}>Retour au Dashboard</button>
         </div>
       </div>
     );
@@ -91,16 +82,29 @@ export default function DetailAppel({ onLogout }) {
   const isOuvert = campagne.statut === 'ouvert';
 
   return (
-    <div className="dashboard-layout">
-      {/* On n'affiche pas la sidebar pour avoir un focus maximal, ou on peut simuler un layout large */}
-      <div className="dashboard-main" style={{ marginLeft: 0 }}>
-        <Topbar 
-          title="Détails de l'appel à projets" 
-          subtitle={<Link to="/admin" style={{ color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: 4 }}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> Retour au dashboard</Link>} 
-        />
-
-        <div className="dashboard-content">
-          <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+    <>
+      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+        
+        {/* BOUTON RETOUR INTELLIGENT */}
+        <button 
+          onClick={() => navigate('/admin')}
+          className="animate-fade-in-up"
+          style={{ 
+            display: 'inline-flex', alignItems: 'center', gap: 8, 
+            background: 'var(--color-bg-card)',
+            padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--color-border-light)',
+            color: 'var(--color-text-secondary)', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+            marginBottom: 24, transition: 'all 0.2s',
+          }}
+          onMouseOver={(e) => { e.currentTarget.style.color = 'var(--color-primary)'; e.currentTarget.style.borderColor = 'var(--color-primary-light)'; }}
+          onMouseOut={(e) => { e.currentTarget.style.color = 'var(--color-text-secondary)'; e.currentTarget.style.borderColor = 'var(--color-border-light)'; }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          Retour au dashboard
+        </button>
             
             {/* Header / Actions */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
@@ -153,7 +157,7 @@ export default function DetailAppel({ onLogout }) {
               {campagne.image_couverture ? (
                 <>
                   <img 
-                    src={campagne.image_couverture.startsWith('http') ? campagne.image_couverture : `https://fdcuic-backend-production.up.railway.app/uploads/${campagne.image_couverture}`} 
+                    src={getImageUrl(campagne.image_couverture)} 
                     alt="Couverture" 
                     style={{ 
                       width: '100%', 
@@ -301,8 +305,6 @@ export default function DetailAppel({ onLogout }) {
 
             </div>
           </div>
-        </div>
-      </div>
 
       <AppelModal 
         isOpen={isModalOpen} 
@@ -317,6 +319,6 @@ export default function DetailAppel({ onLogout }) {
           <span>{toast.message}</span>
         </div>
       )}
-    </div>
+    </>
   );
 }

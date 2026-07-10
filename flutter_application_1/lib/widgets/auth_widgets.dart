@@ -92,6 +92,7 @@ class FDTextField extends StatelessWidget {
   final TextInputType keyboardType;
   final TextEditingController? controller;
   final String? Function(String?)? validator;
+  final void Function(String)? onChanged;
 
   FDTextField({
     super.key,
@@ -100,6 +101,7 @@ class FDTextField extends StatelessWidget {
     this.keyboardType = TextInputType.text,
     this.controller,
     this.validator,
+    this.onChanged,
   });
 
   @override
@@ -109,6 +111,7 @@ class FDTextField extends StatelessWidget {
       keyboardType: keyboardType,
       style: FDText.body.copyWith(color: FDColors.textPrimary),
       validator: validator,
+      onChanged: onChanged,
       decoration: InputDecoration(
         hintText: hint,
         prefixIcon: Icon(icon, size: 18, color: FDColors.textHint),

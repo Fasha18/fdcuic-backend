@@ -1,18 +1,17 @@
-
-
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
-import '../core/theme.dart';
-import 'auth_widgets.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../core/app_colors.dart';
+import 'auth_widgets.dart'; // Pour FDLabel
 
-// ── DROPDOWN ──────────────────────────────────────────────
-class FDDropdown extends StatelessWidget {
+// ── DROPDOWN NATIF (DropdownButtonFormField) ──────────────
+class FDDropdown<T> extends StatelessWidget {
   final String hint;
-  final String? value;
-  final List<String> items;
-  final String Function(String) labelBuilder;
-  final ValueChanged<String?> onChanged;
-  final String? Function(String?)? validator;
+  final T? value;
+  final List<T> items;
+  final String Function(T) labelBuilder;
+  final ValueChanged<T?> onChanged;
+  final String? Function(T?)? validator;
 
   const FDDropdown({
     super.key,
@@ -26,35 +25,66 @@ class FDDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButtonFormField<String>(
-      value: value,
-      hint: Text(hint,
-          style: FDText.bodySub.copyWith(color: FDColors.textHint)),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final c = AppColors(isDark);
+
+    // IMPORTANT: DropdownButtonFormField crashes with an assertion if the value
+    // is not null AND not present in the items list. We sanitize here.
+    final safeValue = (value != null && items.contains(value)) ? value : null;
+
+    return DropdownButtonFormField<T>(
+      value: safeValue,
+      validator: validator,
+      onChanged: onChanged,
       isExpanded: true,
-      icon: Icon(Icons.keyboard_arrow_down_rounded,
-          color: FDColors.textSub),
-      style: FDText.body.copyWith(color: FDColors.textPrimary),
-      dropdownColor: FDColors.white,
+      style: GoogleFonts.sora(
+        color: c.txtPrimary,
+        fontSize: 14.sp,
+      ),
+      icon: Icon(Icons.keyboard_arrow_down_rounded, color: c.txtSecondary, size: 20),
       decoration: InputDecoration(
-        contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        hintText: hint,
+        hintStyle: GoogleFonts.sora(color: c.txtSecondary, fontSize: 14.sp),
         filled: true,
-        fillColor: FDColors.ice,
+        fillColor: c.bgCard,
+        contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(FDRadius.sm),
-          borderSide: BorderSide(color: FDColors.border, width: 0.8),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: c.borderMain, width: 1.0),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(FDRadius.sm),
-          borderSide: BorderSide(color: FDColors.border, width: 0.8),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: c.borderMain, width: 1.0),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: c.accentPurple, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.error, width: 1.0),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.error, width: 1.5),
         ),
         errorMaxLines: 2,
       ),
-      items: items.map((v) => DropdownMenuItem(
-        value: v,
-        child: Text(labelBuilder(v)),
-      )).toList(),
-      onChanged: onChanged,
-      validator: validator,
+      dropdownColor: c.bgCard,
+      borderRadius: BorderRadius.circular(12),
+      items: items.map((item) {
+        return DropdownMenuItem<T>(
+          value: item,
+          child: Text(
+            labelBuilder(item),
+            style: GoogleFonts.sora(
+              color: c.txtPrimary,
+              fontSize: 14.sp,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+        );
+      }).toList(),
     );
   }
 }
@@ -66,7 +96,7 @@ class FDTextArea extends StatelessWidget {
   final int maxLines;
   final String? Function(String?)? validator;
 
-  FDTextArea({
+  const FDTextArea({
     super.key,
     required this.controller,
     required this.hint,
@@ -76,15 +106,37 @@ class FDTextArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final c = AppColors(isDark);
+
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
-      style: FDText.body.copyWith(color: FDColors.textPrimary),
+      style: GoogleFonts.sora(color: c.txtPrimary, fontSize: 14.sp),
       validator: validator,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: FDText.bodySub.copyWith(color: FDColors.textHint),
+        hintStyle: GoogleFonts.sora(color: c.txtSecondary, fontSize: 14.sp),
         alignLabelWithHint: true,
+        filled: true,
+        fillColor: c.bgPrimary,
+        contentPadding: EdgeInsets.all(14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: c.borderMain, width: 1.0),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: c.borderMain, width: 1.0),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: c.accentPurple, width: 1.0),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: AppColors.error, width: 1.0),
+        ),
         errorMaxLines: 2,
       ),
     );
@@ -125,20 +177,23 @@ class FDInfoBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final c = AppColors(isDark);
+    
     return Container(
       padding: EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: FDColors.electricBlue.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(FDRadius.sm),
-        border: Border.all(color: FDColors.electricBlue.withValues(alpha: 0.2)),
+        color: isDark ? c.accentPurple.withValues(alpha: 0.1) : AppColors.lightBgAccent,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: isDark ? c.borderAccent : AppColors.lightBorderAccent),
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline, size: 16, color: FDColors.electricBlue),
+          Icon(Icons.info_outline, size: 16, color: c.accentPurple),
           SizedBox(width: 8.w),
           Expanded(
             child: Text(message,
-                style: FDText.bodySub.copyWith(color: FDColors.electricBlue)),
+                style: GoogleFonts.sora(color: c.accentPurple, fontSize: 13.sp, fontWeight: FontWeight.w500)),
           ),
         ],
       ),
@@ -165,34 +220,34 @@ class FDDocUploadField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final c = AppColors(isDark);
     final uploaded = fichierNom != null;
+
     return GestureDetector(
       onTap: uploaded ? null : onTap,
       child: Container(
         padding: EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: uploaded ? FDColors.mint.withValues(alpha: 0.06) : FDColors.white,
-          borderRadius: BorderRadius.circular(FDRadius.sm),
+          color: uploaded ? AppColors.successBg : c.bgCard,
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: uploaded ? FDColors.mint : FDColors.border,
-            width: uploaded ? 1 : 0.5,
+            color: uploaded ? AppColors.success : c.borderMain,
+            width: uploaded ? 1 : 1.0,
           ),
-          boxShadow: FDShadow.card,
         ),
         child: Row(
           children: [
             Container(
               width: 40.w, height: 40.h,
               decoration: BoxDecoration(
-                color: uploaded
-                    ? FDColors.mint.withValues(alpha: 0.12)
-                    : FDColors.ice,
-                borderRadius: BorderRadius.circular(FDRadius.xs),
+                color: uploaded ? AppColors.success.withValues(alpha: 0.2) : c.bgPrimary,
+                borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 uploaded ? Icons.check_circle_outline : Icons.upload_file_outlined,
                 size: 20,
-                color: uploaded ? FDColors.mint : FDColors.textSub,
+                color: uploaded ? AppColors.success : c.txtSecondary,
               ),
             ),
             SizedBox(width: 12.w),
@@ -202,12 +257,12 @@ class FDDocUploadField extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text(label, style: FDText.h3.copyWith(fontSize: 13.sp)),
+                      Flexible(child: Text(label, style: GoogleFonts.sora(fontSize: 13.sp, fontWeight: FontWeight.w600, color: c.txtPrimary))),
                       if (isRequis) ...[
                         SizedBox(width: 4.w),
                         Text('*',
-                            style: TextStyle(
-                                color: FDColors.coral,
+                            style: GoogleFonts.sora(
+                                color: AppColors.error,
                                 fontSize: 13.sp,
                                 fontWeight: FontWeight.w700)),
                       ],
@@ -216,8 +271,8 @@ class FDDocUploadField extends StatelessWidget {
                   SizedBox(height: 2.h),
                   Text(
                     uploaded ? fichierNom! : 'Appuyer pour sélectionner',
-                    style: FDText.bodySub.copyWith(
-                      color: uploaded ? FDColors.mint : FDColors.textHint,
+                    style: GoogleFonts.sora(
+                      color: uploaded ? AppColors.success : c.txtSecondary,
                       fontSize: 11.sp,
                     ),
                   ),
@@ -227,7 +282,7 @@ class FDDocUploadField extends StatelessWidget {
             if (uploaded)
               GestureDetector(
                 onTap: onSupprimer,
-                child: Icon(Icons.close, size: 16, color: FDColors.coral),
+                child: Icon(Icons.close, size: 16, color: AppColors.error),
               ),
           ],
         ),
@@ -251,33 +306,35 @@ class FDRecapSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final c = AppColors(isDark);
+
     return Container(
       padding: EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: FDColors.white,
-        borderRadius: BorderRadius.circular(FDRadius.sm),
-        border: Border.all(color: FDColors.border, width: 0.5),
-        boxShadow: FDShadow.card,
+        color: c.bgCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.borderMain, width: 1.0),
       ),
       child: Row(
         children: [
           Container(
             width: 40.w, height: 40.h,
             decoration: BoxDecoration(
-              color: complet ? FDColors.mint.withValues(alpha: 0.10) : FDColors.ice,
-              borderRadius: BorderRadius.circular(FDRadius.xs),
+              color: complet ? AppColors.successBg : c.bgPrimary,
+              borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icone,
                 size: 20,
-                color: complet ? FDColors.mint : FDColors.silver),
+                color: complet ? AppColors.success : c.txtSecondary),
           ),
           SizedBox(width: 12.w),
           Expanded(
-            child: Text(titre, style: FDText.h3.copyWith(fontSize: 13.sp)),
+            child: Text(titre, style: GoogleFonts.sora(fontSize: 13.sp, fontWeight: FontWeight.w600, color: c.txtPrimary)),
           ),
           Icon(
             complet ? Icons.check_circle : Icons.radio_button_unchecked,
-            color: complet ? FDColors.mint : FDColors.border,
+            color: complet ? AppColors.success : c.borderMain,
             size: 20,
           ),
         ],
@@ -285,4 +342,3 @@ class FDRecapSection extends StatelessWidget {
     );
   }
 }
-

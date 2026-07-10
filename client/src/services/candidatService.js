@@ -1,6 +1,20 @@
 import api from '../api/axios';
 
 const candidatService = {
+  // Référentiels publics
+  getTypesProjetPublic: async () => {
+    const res = await api.get('/admin/types-projet/public');
+    return res.data.types;
+  },
+  getSecteursPublic: async () => {
+    const res = await api.get('/secteurs/public');
+    return res.data.secteurs;
+  },
+  getDocumentsModeles: async (typeId) => {
+    const res = await api.get(`/admin/types-projet/${typeId}/documents-modeles`);
+    return res.data.documents;
+  },
+
   // Appels à projets
   getMesAppels: async () => {
     const res = await api.get('/dossiers/mes-dossiers');

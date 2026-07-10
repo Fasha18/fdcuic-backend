@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import candidatService from '../services/candidatService';
+import { getImageUrl } from '../utils/imageUrl';
 
 const STATUS_CONFIG = {
   ouvert: { label: 'Ouvert', color: 'var(--color-green)', bg: 'var(--color-green-light)', icon: '🟢' },
@@ -146,7 +147,7 @@ export default function CandidatDetailAppel({ onLogout }) {
               
               <div className="hero-image-wrapper">
                 {appel.image_couverture ? (
-                  <img src={appel.image_couverture.startsWith('http') ? appel.image_couverture : `https://fdcuic-backend-production.up.railway.app/uploads/${appel.image_couverture}`} alt={appel.titre} />
+                  <img src={getImageUrl(appel.image_couverture)} alt={appel.titre} />
                 ) : (
                   <div className="hero-image-placeholder">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>

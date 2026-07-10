@@ -81,7 +81,8 @@ router.post('/templates/:id/fichier', verifierToken, verifierRole('admin'), uplo
 // ── DOCUMENTS MODELES (Nouveau Système) ──
 const documentModeleController = require('../controllers/documentModeleController');
 router.post('/types-projet/:id/documents-modeles', verifierToken, verifierRole('admin'), uploadTemplate.array('documents', 10), documentModeleController.uploadDocumentModeles);
-router.get('/types-projet/:id/documents-modeles', verifierToken, verifierRole('admin', 'evaluateur'), documentModeleController.getDocumentsModelesParType);
+router.get('/types-projet/:id/documents-modeles', verifierToken, verifierRole('admin', 'evaluateur', 'candidat'), documentModeleController.getDocumentsModelesParType);
+router.get('/documents-modeles/:docId/telecharger', documentModeleController.telechargerDocumentModele);
 router.delete('/documents-modeles/:docId', verifierToken, verifierRole('admin'), documentModeleController.supprimerDocumentModele);
 
 module.exports = router;

@@ -29,6 +29,19 @@ const listerTypes = async (req, res) => {
   }
 };
 
+// GET public — lister les types actifs uniquement
+const listerTypesPublic = async (req, res) => {
+  try {
+    const types = await TypeProjet.findAll({ 
+      where: { actif: true },
+      order: [['code', 'ASC']] 
+    });
+    return res.status(200).json({ types });
+  } catch (error) {
+    return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
+  }
+};
+
 // POST admin — ajouter un type de projet
 const creerType = async (req, res) => {
   try {
@@ -112,6 +125,7 @@ const supprimerType = async (req, res) => {
 
 module.exports = {
   listerTypes,
+  listerTypesPublic,
   creerType,
   modifierType,
   supprimerType,

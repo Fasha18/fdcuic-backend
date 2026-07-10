@@ -1,7 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:flutter/foundation.dart';
 class ApiService {
   // L'adresse IP est redirigée directement via ADB (adb reverse)
   static const String baseUrl = 'https://fdcuic-backend-production.up.railway.app';
@@ -75,6 +76,68 @@ class ApiService {
       return [];
     }
     throw Exception('Erreur chargement secteurs');
+  }
+
+  static Future<List<dynamic>> getTypesProjetPublic() async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/api/admin/types-projet/public'),
+      headers: await _headers(auth: false),
+    );
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      if (data is Map && data.containsKey('types')) {
+        return data['types'] as List;
+      }
+      if (data is List) return data;
+      return [];
+    }
+    throw Exception('Erreur chargement types projet');
+  }
+
+  static Future<List<dynamic>> getDocumentsModeles(int typeId) async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/api/admin/types-projet/$typeId/documents-modeles'),
+      headers: await _headers(auth: true),
+    );
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      if (data is Map && data.containsKey('documents')) {
+        return data['documents'] as List;
+      }
+      if (data is List) return data;
+      return [];
+    }
+    throw Exception('Erreur chargement documents modèles');
+  }
+
+
+  // ── RÉGIONS & PAYS ────────────────────────────────────
+  static Future<List<String>> getRegions() async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/api/referentiels/regions'),
+      headers: await _headers(auth: false),
+    );
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      if (data is Map && data.containsKey('regions')) {
+        return List<String>.from(data['regions']);
+      }
+    }
+    return [];
+  }
+
+  static Future<List<String>> getPays() async {
+    final res = await http.get(
+      Uri.parse('$baseUrl/api/referentiels/pays'),
+      headers: await _headers(auth: false),
+    );
+    if (res.statusCode == 200) {
+      final data = jsonDecode(res.body);
+      if (data is Map && data.containsKey('pays')) {
+        return List<String>.from(data['pays']);
+      }
+    }
+    return [];
   }
 
   // ── PROFIL ────────────────────────────────────────────
@@ -168,7 +231,7 @@ class ApiService {
     );
     final body = jsonDecode(res.body);
     if (res.statusCode == 201) return body['dossier_id'];
-    throw Exception(body['message'] ?? 'Erreur étape 1');
+    throw Exception(body['error'] ?? body['message'] ?? 'Erreur étape 1');
   }
 
   static Future<void> etape2Appel(int id, Map<String, dynamic> data) async {
@@ -179,7 +242,7 @@ class ApiService {
     );
     if (res.statusCode != 200) {
       final body = jsonDecode(res.body);
-      throw Exception(body['message'] ?? 'Erreur étape 2');
+      throw Exception(body['error'] ?? body['message'] ?? 'Erreur étape 2');
     }
   }
 
@@ -191,14 +254,67 @@ class ApiService {
     final token = await getToken();
     request.headers['Authorization'] = 'Bearer $token';
 
+    int fichierCount = 0;
+    debugPrint('[DEBUG API] etape3Appel déclenché pour synchroniser tous les documents du dossier $id');
     for (var entry in fichiers.entries) {
       if (entry.value != null && !entry.value!.startsWith('document_')) {
-        request.files.add(await http.MultipartFile.fromPath(entry.key, entry.value!));
+        final safePath = _getSafePath(entry.value!);
+        if (File(safePath).existsSync()) {
+          debugPrint('[DEBUG API] - Ajout du fichier au payload avec la clé (fieldname) : "${entry.key}"');
+          request.files.add(await http.MultipartFile.fromPath(entry.key, safePath));
+          fichierCount++;
+        }
+      } else {
+        debugPrint('[DEBUG API] - Fichier ignoré (déjà sur serveur ou null) pour la clé : "${entry.key}"');
       }
     }
 
+    // Si aucun nouveau fichier local, on ne fait pas de requête (les docs serveur sont préservés)
+    if (fichierCount == 0) return;
+
     final res = await request.send();
     if (res.statusCode != 200) throw Exception('Erreur upload documents');
+  }
+
+  static Future<void> uploadDocumentUniqueAppel(int id, String docType, String filePath) async {
+    debugPrint('[DEBUG API] uploadDocumentUniqueAppel déclenché');
+    debugPrint('[DEBUG API] - Dossier ID : $id');
+    debugPrint('[DEBUG API] - docType envoyé (nom_document attendu par le backend) : "$docType"');
+    debugPrint('[DEBUG API] - Fichier local : $filePath');
+
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/api/dossiers/$id/upload-document'),
+    );
+    final token = await getToken();
+    request.headers['Authorization'] = 'Bearer $token';
+
+    request.fields['docType'] = docType;
+    
+    final safePath = _getSafePath(filePath);
+    if (!File(safePath).existsSync()) {
+      throw Exception('Fichier local introuvable : $safePath');
+    }
+    
+    request.files.add(await http.MultipartFile.fromPath('fichier', safePath));
+
+    final res = await request.send();
+    if (res.statusCode != 200) {
+      final respStr = await res.stream.bytesToString();
+      throw Exception('Erreur upload document: $respStr');
+    }
+  }
+
+  static String _getSafePath(String path) {
+    if (File(path).existsSync()) return path;
+    try {
+      final bytes = latin1.encode(path);
+      final decoded = utf8.decode(bytes);
+      if (File(decoded).existsSync()) {
+        return decoded;
+      }
+    } catch (_) {}
+    return path;
   }
 
   static Future<void> soumettreAppel(int id) async {
@@ -206,7 +322,17 @@ class ApiService {
       Uri.parse('$baseUrl/api/dossiers/$id/soumettre'),
       headers: await _headers(),
     );
-    if (res.statusCode != 200) throw Exception('Erreur lors de la soumission');
+    if (res.statusCode != 200) {
+      try {
+        final data = jsonDecode(res.body);
+        throw Exception(data['message'] ?? data['error'] ?? 'Erreur ${res.statusCode}');
+      } catch (e) {
+        if (e is FormatException) {
+          throw Exception('Erreur serveur ${res.statusCode} : Le serveur a retourné une réponse invalide.');
+        }
+        rethrow;
+      }
+    }
   }
 
   // ── MOBILITÉ ──────────────────────────────────────────
@@ -264,14 +390,46 @@ class ApiService {
     final token = await getToken();
     request.headers['Authorization'] = 'Bearer $token';
 
+    int fichierCount = 0;
     for (var entry in fichiers.entries) {
       if (entry.value != null && !entry.value!.startsWith('document_')) {
-        request.files.add(await http.MultipartFile.fromPath(entry.key, entry.value!));
+        final safePath = _getSafePath(entry.value!);
+        if (File(safePath).existsSync()) {
+          request.files.add(await http.MultipartFile.fromPath(entry.key, safePath));
+          fichierCount++;
+        }
       }
     }
 
+    // Si aucun nouveau fichier local, on ne fait pas de requête (les docs serveur sont préservés)
+    if (fichierCount == 0) return;
+
     final res = await request.send();
     if (res.statusCode != 200) throw Exception('Erreur upload documents');
+  }
+
+  static Future<void> uploadDocumentUniqueMobilite(int id, String docType, String filePath) async {
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/api/mobilite/$id/upload-document'),
+    );
+    final token = await getToken();
+    request.headers['Authorization'] = 'Bearer $token';
+
+    request.fields['docType'] = docType;
+    
+    final safePath = _getSafePath(filePath);
+    if (!File(safePath).existsSync()) {
+      throw Exception('Fichier local introuvable : $safePath');
+    }
+    
+    request.files.add(await http.MultipartFile.fromPath('fichier', safePath));
+
+    final res = await request.send();
+    if (res.statusCode != 200) {
+      final respStr = await res.stream.bytesToString();
+      throw Exception('Erreur upload document: $respStr');
+    }
   }
 
   static Future<void> soumettreMobilite(int id) async {
@@ -279,7 +437,17 @@ class ApiService {
       Uri.parse('$baseUrl/api/mobilite/$id/soumettre'),
       headers: await _headers(),
     );
-    if (res.statusCode != 200) throw Exception('Erreur lors de la soumission');
+    if (res.statusCode != 200) {
+      try {
+        final data = jsonDecode(res.body);
+        throw Exception(data['message'] ?? data['error'] ?? 'Erreur ${res.statusCode}');
+      } catch (e) {
+        if (e is FormatException) {
+          throw Exception('Erreur serveur ${res.statusCode} : Le serveur a retourné une réponse invalide.');
+        }
+        rethrow;
+      }
+    }
   }
 
   // ── MES DOSSIERS ──────────────────────────────────────

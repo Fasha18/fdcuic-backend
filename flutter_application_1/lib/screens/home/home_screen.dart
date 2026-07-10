@@ -16,6 +16,7 @@ import '../dossiers/mes_dossiers_screen.dart';
 import '../profil/profil_screen.dart';
 import '../appels/appel_detail_screen.dart';
 import '../../widgets/appel_card.dart';
+import '../menu/menu_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final bool hideBottomNav;
@@ -170,18 +171,34 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
           padding: EdgeInsets.fromLTRB(24, 0, 24, 12),
           child: Row(
             children: [
+              // Hamburger Menu
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const MenuScreen()));
+                },
+                child: Container(
+                  width: 42.w,
+                  height: 42.h,
+                  decoration: BoxDecoration(
+                    color: c.bgCard,
+                    borderRadius: BorderRadius.circular(13),
+                    border: Border.all(color: c.borderMain),
+                  ),
+                  child: Icon(Icons.menu_rounded, color: c.txtPrimary, size: 22),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              
+              // Logo central
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "FDCUIC",
-                    style: GoogleFonts.sora(
-                      fontSize: 19.sp,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.05,
-                      color: c.txtPrimary,
-                    ),
+                  Image.asset(
+                    'assets/images/FDCUIC_logo.png',
+                    height: 18.h,
+                    fit: BoxFit.contain,
                   ),
+                  SizedBox(height: 2.h),
                   Text(
                     "ESPACE CANDIDAT",
                     style: GoogleFonts.sora(
@@ -334,34 +351,43 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
                   padding: EdgeInsets.symmetric(horizontal: 24),
                   child: Row(
                     children: [
-                      DossierStatCard(
-                        label: "Dossiers soumis",
-                        badge: "Total",
-                        count: _totalDossiers,
-                        accentColor: isDark ? AppColors.darkAccent : AppColors.lightAccent,
-                        iconBg: isDark ? AppColors.darkBgAccent : AppColors.lightBgAccent,
-                        icon: Icons.folder_outlined,
-                        c: c,
+                      SizedBox(
+                        width: 128.w,
+                        child: DossierStatCard(
+                          label: "Soumis",
+                          badge: "Total",
+                          count: _totalDossiers,
+                          accentColor: isDark ? AppColors.darkAccent : AppColors.lightAccent,
+                          iconBg: isDark ? AppColors.darkBgAccent : AppColors.lightBgAccent,
+                          icon: Icons.folder_outlined,
+                          c: c,
+                        ),
                       ),
                       SizedBox(width: 12.w),
-                      DossierStatCard(
-                        label: "En cours",
-                        badge: "Actifs",
-                        count: _dossiersEnCours,
-                        accentColor: const Color(0xFFD97706),
-                        iconBg: isDark ? const Color(0xFF1A1206) : const Color(0xFFFEF3C7),
-                        icon: Icons.access_time_outlined,
-                        c: c,
+                      SizedBox(
+                        width: 128.w,
+                        child: DossierStatCard(
+                          label: "En cours",
+                          badge: "Actif",
+                          count: _dossiersEnCours,
+                          accentColor: const Color(0xFFD97706),
+                          iconBg: isDark ? const Color(0xFF1A1206) : const Color(0xFFFEF3C7),
+                          icon: Icons.access_time_outlined,
+                          c: c,
+                        ),
                       ),
                       SizedBox(width: 12.w),
-                      DossierStatCard(
-                        label: "Accepté",
-                        badge: "OK",
-                        count: _dossiersAcceptes,
-                        accentColor: const Color(0xFF16A34A),
-                        iconBg: isDark ? const Color(0xFF071A12) : const Color(0xFFDCFCE7),
-                        icon: Icons.check_circle_outline,
-                        c: c,
+                      SizedBox(
+                        width: 128.w,
+                        child: DossierStatCard(
+                          label: "Accepté",
+                          badge: "OK",
+                          count: _dossiersAcceptes,
+                          accentColor: const Color(0xFF16A34A),
+                          iconBg: isDark ? const Color(0xFF071A12) : const Color(0xFFDCFCE7),
+                          icon: Icons.check_circle_outline,
+                          c: c,
+                        ),
                       ),
                     ],
                   ),
@@ -402,23 +428,27 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
                   c: c,
                   isDark: isDark,
                   onTap: () {
-                    if (_programmeMobilite != null) {
-                      Navigator.push(context, MaterialPageRoute(
-                        builder: (_) => AppelDetailScreen(
-                          appel: AppelAProjet(
-                            id: _programmeMobilite!['id'],
-                            titre: _programmeMobilite!['titre'] ?? 'Programme de Mobilité',
-                            description: _programmeMobilite!['description'] ?? '',
-                            typeProjet: 'mobilite',
-                            dateDebut: _programmeMobilite!['date_ouverture'] ?? '',
-                            dateFin: _programmeMobilite!['date_cloture'] ?? '',
-                            statut: _programmeMobilite!['statut'] ?? 'ouvert',
-                            criteres: _programmeMobilite!['criteres_eligibilite'] ?? '',
-                            imageCouverture: _programmeMobilite!['image_couverture'],
-                          )
+                    final mobData = _programmeMobilite ?? {
+                      'id': 9999,
+                      'titre': 'Programme de Mobilité',
+                      'description': 'Soutien aux déplacements culturels pour les artistes et professionnels de la culture.',
+                      'statut': 'ouvert'
+                    };
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (_) => AppelDetailScreen(
+                        appel: AppelAProjet(
+                          id: mobData['id'] ?? 9999,
+                          titre: mobData['titre'] ?? 'Programme de Mobilité',
+                          description: mobData['description'] ?? '',
+                          typeProjet: 'mobilite',
+                          dateDebut: mobData['date_ouverture'] ?? '',
+                          dateFin: mobData['date_cloture'] ?? '',
+                          statut: mobData['statut'] ?? 'ouvert',
+                          criteres: mobData['criteres_eligibilite'] ?? '',
+                          imageCouverture: mobData['image_couverture'],
                         )
-                      ));
-                    }
+                      )
+                    ));
                   },
                 ),
 
@@ -509,7 +539,6 @@ class DossierStatCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 128.w,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: c.bgCard,

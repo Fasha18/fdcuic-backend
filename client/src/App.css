@@ -2038,6 +2038,9 @@
   margin-bottom: var(--space-4);
   line-height: 1.1;
   letter-spacing: -0.5px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .hero-description {
@@ -2046,6 +2049,9 @@
   line-height: 1.6;
   margin-bottom: var(--space-6);
   max-width: 600px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .hero-actions {
@@ -2199,6 +2205,9 @@
 
 .rich-text {
   font-size: 14px;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 /* Timeline */

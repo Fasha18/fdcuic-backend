@@ -19,10 +19,18 @@ const etape1 = async (req, res) => {
       return res.status(400).json({ message: 'La date d\'arrivée doit être postérieure à la date de départ.' });
     }
 
-    // Vérifier si le candidat a déjà un brouillon en cours
-    let projet = await ProjetMobilite.findOne({
-      where: { user_id: req.user.id, statut: 'brouillon' }
+    // Vérifier si le candidat a déjà une demande de mobilité (soumise, en cours, etc.)
+    let existingProjet = await ProjetMobilite.findOne({
+      where: { user_id: req.user.id }
     });
+
+    if (existingProjet && existingProjet.statut !== 'brouillon') {
+      return res.status(400).json({ 
+        message: 'Vous avez déjà une demande de mobilité (en cours ou soumise). Veuillez consulter "Mes Dossiers".' 
+      });
+    }
+
+    let projet = existingProjet;
 
     if (projet) {
       // Mettre à jour le brouillon existant

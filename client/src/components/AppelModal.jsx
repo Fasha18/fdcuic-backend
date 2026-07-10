@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import adminService from '../services/adminService';
+import { getImageUrl } from '../utils/imageUrl';
 
 const AppelModal = ({ isOpen, onClose, onSaveSuccess, appel = null }) => {
   const [formData, setFormData] = useState({
@@ -30,7 +31,7 @@ const AppelModal = ({ isOpen, onClose, onSaveSuccess, appel = null }) => {
       });
     }
     setImageFile(null);
-    setImagePreview(appel?.image_couverture ? (appel.image_couverture.startsWith('http') ? appel.image_couverture : `https://fdcuic-backend-production.up.railway.app/uploads/${appel.image_couverture}`) : null);
+    setImagePreview(appel?.image_couverture ? getImageUrl(appel.image_couverture) : null);
   }, [appel, isOpen]);
 
   const handleChange = (e) => {

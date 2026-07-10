@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { UploadCloud, Trash2, FileText, FileSpreadsheet, File as FileIcon } from 'lucide-react';
+import { UploadCloud, Trash2, FileText, FileSpreadsheet, File as FileIcon, Download, Eye } from 'lucide-react';
 import api from '../../api/axios';
+import { DocumentViewerButton } from '../DocumentViewer';
+
 
 const formatBytes = (bytes) => {
   if (bytes === 0) return '0 Octets';
@@ -21,6 +23,8 @@ export default function AdminDocumentsModeles({ typeId }) {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [documentToDelete, setDocumentToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -63,13 +67,26 @@ export default function AdminDocumentsModeles({ typeId }) {
     }
   };
 
-  const handleDelete = async (docId) => {
-    if (!window.confirm("Êtes-vous sûr de vouloir supprimer ce document ?")) return;
+  const handleDelete = (doc) => {
+    setDocumentToDelete(doc);
+  };
+
+  const confirmDelete = async () => {
+    if (!documentToDelete || deleting) return;
     try {
-      await api.delete(`/admin/documents-modeles/${docId}`);
+      setDeleting(true);
+      await api.delete(`/admin/documents-modeles/${documentToDelete.id}`);
+      setDocumentToDelete(null);
       fetchDocuments();
     } catch (err) {
       alert(err.response?.data?.message || 'Erreur lors de la suppression');
+      // On ferme quand même le modal si le document n'existe plus en base
+      if (err.response?.status === 404) {
+        setDocumentToDelete(null);
+        fetchDocuments();
+      }
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -147,21 +164,114 @@ export default function AdminDocumentsModeles({ typeId }) {
                   </div>
                 </div>
                 
-                <button 
-                  onClick={(e) => { e.stopPropagation(); handleDelete(doc.id); }}
-                  style={{
-                    width: 36, height: 36, borderRadius: 8, border: 'none', background: 'var(--color-red-light)',
-                    color: 'var(--color-red)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
-                  }}
-                  title="Supprimer ce document"
-                >
-                  <Trash2 size={18} />
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {/* Bouton Visualiser — Ouvre la visionneuse intégrée */}
+                  <DocumentViewerButton
+                    url={doc.chemin_fichier}
+                    nom={doc.nom_document}
+                    style={{
+                      width: 36, height: 36, borderRadius: 8,
+                      background: 'var(--color-primary-light)', color: 'var(--color-primary)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <Eye size={16} />
+                  </DocumentViewerButton>
+                  {/* Bouton Télécharger */}
+                  <a
+                    href={doc.chemin_fichier}
+                    download={doc.nom_fichier_original || doc.nom_document}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      width: 36, height: 36, borderRadius: 8, border: 'none',
+                      background: 'rgba(52,199,89,0.12)', color: '#34C759',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer', textDecoration: 'none', transition: 'all 0.2s'
+                    }}
+                    title="Télécharger"
+                  >
+                    <Download size={16} />
+                  </a>
+                  {/* Bouton Supprimer */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleDelete(doc); }}
+                    style={{
+                      width: 36, height: 36, borderRadius: 8, border: 'none',
+                      background: 'var(--color-red-light)', color: 'var(--color-red)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      cursor: 'pointer', transition: 'all 0.2s'
+                    }}
+                    title="Supprimer ce document"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* MODAL DE CONFIRMATION DE SUPPRESSION */}
+      {documentToDelete && (
+        <div style={{
+          position: 'fixed', inset: 0,
+          background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 99999
+        }}>
+          <div style={{
+            background: 'var(--color-bg-card)', padding: '32px', borderRadius: '16px',
+            width: '90%', maxWidth: '400px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
+          }}>
+            <div style={{
+              width: 56, height: 56, borderRadius: 28, background: 'var(--color-red-light)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px'
+            }}>
+              <Trash2 size={28} color="var(--color-red)" />
+            </div>
+            
+            <h3 style={{ textAlign: 'center', fontSize: 18, fontWeight: 800, color: 'var(--color-text-primary)', marginBottom: 12 }}>
+              Supprimer le document
+            </h3>
+            <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', fontSize: 14, marginBottom: 24, lineHeight: 1.5 }}>
+              Êtes-vous sûr de vouloir supprimer définitivement le document <br/>
+              <strong style={{ color: 'var(--color-text-primary)' }}>{documentToDelete.nom_document}</strong> ?<br/>
+              <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)', display: 'block', marginTop: 8 }}>
+                Cette action est irréversible.
+              </span>
+            </p>
+
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button 
+                onClick={() => setDocumentToDelete(null)}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '10px',
+                  background: 'var(--color-bg-body)', color: 'var(--color-text-secondary)',
+                  border: '1px solid var(--color-border)', fontWeight: 600, cursor: 'pointer'
+                }}
+              >
+                Annuler
+              </button>
+              <button 
+                onClick={confirmDelete}
+                disabled={deleting}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '10px',
+                  background: deleting ? 'var(--color-bg-body)' : 'var(--color-red)',
+                  color: deleting ? 'var(--color-text-secondary)' : 'white',
+                  border: 'none', fontWeight: 600, 
+                  cursor: deleting ? 'not-allowed' : 'pointer',
+                  boxShadow: deleting ? 'none' : '0 4px 12px rgba(240, 62, 62, 0.3)'
+                }}
+              >
+                {deleting ? 'Suppression...' : 'Oui, supprimer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

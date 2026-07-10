@@ -3,10 +3,14 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme.dart';
 import '../../../../widgets/step_progress_bar.dart';
 import '../../../../services/api_service.dart';
+import '../../../../core/app_colors.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'etape1_infos.dart';
 import 'etape2_details.dart';
 import 'etape3_documents.dart';
 import 'etape4_recapitulatif.dart';
+import 'etape4_recapitulatif.dart';
+import '../../../../models/appel_projet_dossier.dart';
 
 /// Conteneur principal du formulaire Appel à Projet (4 étapes).
 class AppelFormScreen extends StatefulWidget {
@@ -19,9 +23,10 @@ class AppelFormScreen extends StatefulWidget {
 class _AppelFormScreenState extends State<AppelFormScreen> {
   static const int _totalSteps = 4;
 
-  final PageController _pageController = PageController();
+  late PageController _pageController;
   int _currentStep = 1;
   bool _isSubmitting = false;
+  int? _dossierId;
 
   // Données du formulaire partagées entre les étapes
   final Map<String, dynamic> formData = {
@@ -70,7 +75,47 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is int) {
       _appelId = args;
+    } else if (args is AppelProjetDossier) {
+      _appelId = args.appel?.id;
+      _dossierId = args.id;
+      _currentStep = args.etapeCourante == 0 ? 1 : args.etapeCourante;
+      if (args.rawJson != null) {
+        final json = args.rawJson!;
+        formData['prenom_nom_porteur'] = json['prenom_nom_porteur'] ?? '';
+        formData['nom_structure'] = json['nom_structure'] ?? '';
+        formData['type_projet'] = json['type_projet'];
+        formData['secteur_activite'] = json['secteur_activite'];
+        formData['region'] = json['region'];
+        formData['activite_entreprise'] = json['activite_entreprise'] ?? '';
+        formData['nature_projet'] = json['nature_projet'] ?? '';
+        
+        formData['phase_ideation'] = json['phase_ideation'] == true;
+        formData['phase_execution'] = json['phase_execution'] == true;
+        formData['objectifs_globaux'] = json['objectifs_globaux'] ?? '';
+        formData['importance_territoire'] = json['importance_territoire'] ?? '';
+        formData['impacts_economiques'] = json['impacts_economiques'] ?? '';
+        formData['potentiel_reussite'] = json['potentiel_reussite'] ?? '';
+        formData['localisation'] = json['localisation'] ?? '';
+        formData['beneficiaires'] = json['beneficiaires'] ?? '';
+        formData['plan_perennisation'] = json['plan_perennisation'] ?? '';
+        formData['description_produit'] = json['description_produit'] ?? '';
+        
+        if (json['equipe'] is List) {
+          formData['equipe'] = List<Map<String, dynamic>>.from(json['equipe']);
+        }
+        
+        if (json['documents_soumis'] is List) {
+          final docs = <String, String?>{};
+          for (var doc in json['documents_soumis']) {
+            if (doc is Map) {
+              docs[doc['nom_document']] = doc['chemin_fichier'] ?? doc['label'];
+            }
+          }
+          formData['documents'] = docs;
+        }
+      }
     }
+    _pageController = PageController(initialPage: _currentStep - 1);
   }
 
   @override
@@ -91,6 +136,26 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
       for (var k in req) {
         if (formData[k] == null || formData[k].toString().trim().isEmpty) isValid = false;
       }
+      if (formData['phase_ideation'] != true && formData['phase_execution'] != true) {
+        isValid = false;
+      }
+      final equipe = formData['equipe'] as List?;
+      if (equipe == null || equipe.isEmpty) {
+        isValid = false;
+      } else {
+        for (var member in equipe) {
+          if (member is Map) {
+            final prenom = member['prenom']?.toString().trim() ?? '';
+            final nom = member['nom']?.toString().trim() ?? '';
+            final poste = member['poste']?.toString().trim() ?? '';
+            final telephone = member['telephone']?.toString().trim() ?? '';
+            if (prenom.isEmpty || nom.isEmpty || poste.isEmpty || telephone.isEmpty) {
+              isValid = false;
+              break;
+            }
+          }
+        }
+      }
     } else if (_currentStep == 3) {
       final docs = formData['documents'] as Map<String, String?>;
       if (docs['doc_ninea_recepisse'] == null || docs['doc_cni_passeport'] == null) {
@@ -101,7 +166,7 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
     if (!isValid) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text('Veuillez remplir tous les champs de cette étape pour continuer.'),
-        backgroundColor: FDColors.coral,
+        backgroundColor: AppColors.error,
         duration: Duration(seconds: 2),
       ));
     }
@@ -133,6 +198,78 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
   void _nextStep() => _goToStep(_currentStep + 1);
   void _prevStep() => _goToStep(_currentStep - 1);
 
+  Future<int> _syncDraft() async {
+    int dId;
+
+    if (_dossierId != null) {
+      dId = _dossierId!;
+    } else {
+      // Créer le brouillon (étape 1) 
+      try {
+        dId = await ApiService.etape1Appel({
+          'appel_id': _appelId,
+          'prenom_nom_porteur': formData['prenom_nom_porteur'],
+          'nom_structure': formData['nom_structure'],
+          'type_projet': formData['type_projet'],
+          'secteur_activite': formData['secteur_activite'],
+          'region': formData['region'],
+          'activite_entreprise': formData['activite_entreprise'],
+          'nature_projet': formData['nature_projet'],
+        });
+        setState(() {
+          _dossierId = dId;
+        });
+      } catch (e) {
+        throw Exception('Échec Etape 1: $e');
+      }
+    }
+
+    // Sync étape 2 si valide
+    if (_formKeys[1].currentState?.validate() ?? false) {
+      _formKeys[1].currentState?.save();
+      
+      final sanitizedEquipe = (formData['equipe'] as List).map((m) {
+        final member = Map<String, dynamic>.from(m);
+        if (member['telephone'] != null) {
+          member['telephone'] = member['telephone'].toString().replaceAll(RegExp(r'\s+'), '');
+        }
+        return member;
+      }).toList();
+
+      try {
+        await ApiService.etape2Appel(dId, {
+          'phase_ideation': formData['phase_ideation'],
+          'phase_execution': formData['phase_execution'],
+          'objectifs_globaux': formData['objectifs_globaux'],
+          'importance_territoire': formData['importance_territoire'],
+          'impacts_economiques': formData['impacts_economiques'],
+          'potentiel_reussite': formData['potentiel_reussite'],
+          'localisation': formData['localisation'],
+          'beneficiaires': formData['beneficiaires'],
+          'plan_perennisation': formData['plan_perennisation'],
+          'description_produit': formData['description_produit'],
+          'equipe': sanitizedEquipe,
+        });
+      } catch (e) {
+        throw Exception('Échec Etape 2: $e');
+      }
+    }
+
+    // Sync étape 3 (Documents) si on a passé l'étape 3
+    if (_currentStep > 3 || (_currentStep == 3 && _formKeys[2].currentState != null)) {
+      final docs = formData['documents'] as Map<String, String?>?;
+      if (docs != null && docs.isNotEmpty) {
+        try {
+          await ApiService.etape3Appel(dId, docs);
+        } catch (e) {
+          throw Exception('Échec Upload Documents (Etape 3): $e');
+        }
+      }
+    }
+    
+    return dId;
+  }
+
   Future<void> _submitDossier() async {
     // Valider la dernière étape
     final formKey = _formKeys[_currentStep - 1];
@@ -144,41 +281,11 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      // 1. Créer le dossier (Etape 1)
-      final dossierId = await ApiService.etape1Appel({
-        'appel_id': _appelId,
-        'prenom_nom_porteur': formData['prenom_nom_porteur'],
-        'nom_structure': formData['nom_structure'],
-        'type_projet': formData['type_projet'],
-        'secteur_activite': formData['secteur_activite'],
-        'region': formData['region'],
-        'activite_entreprise': formData['activite_entreprise'],
-        'nature_projet': formData['nature_projet'],
-      });
+      // Synchroniser le brouillon complet
+      final dId = await _syncDraft();
 
-      // 2. Mettre à jour (Etape 2)
-      await ApiService.etape2Appel(dossierId, {
-        'phase_ideation': formData['phase_ideation'],
-        'phase_execution': formData['phase_execution'],
-        'objectifs_globaux': formData['objectifs_globaux'],
-        'importance_territoire': formData['importance_territoire'],
-        'impacts_economiques': formData['impacts_economiques'],
-        'potentiel_reussite': formData['potentiel_reussite'],
-        'localisation': formData['localisation'],
-        'beneficiaires': formData['beneficiaires'],
-        'plan_perennisation': formData['plan_perennisation'],
-        'description_produit': formData['description_produit'],
-        'equipe': formData['equipe'],
-      });
-
-      // 3. Uploader les documents (Etape 3)
-      if (formData['documents'] != null) {
-        final docs = Map<String, String?>.from(formData['documents']);
-        await ApiService.etape3Appel(dossierId, docs);
-      }
-
-      // 4. Soumettre le dossier
-      await ApiService.soumettreAppel(dossierId);
+      // 4. Soumettre le dossier final
+      await ApiService.soumettreAppel(dId);
 
       if (!mounted) return;
 
@@ -215,7 +322,7 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
           actions: [
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).popUntil((route) => route.isFirst);
+                Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
               },
               child: Text('OK'),
             ),
@@ -237,8 +344,11 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final c = AppColors(isDark);
+
     return Scaffold(
-      backgroundColor: FDColors.skyBg,
+      backgroundColor: c.bgPrimary,
       body: Column(
         children: [
           // ── HEADER ────────────────────────────────────────
@@ -261,6 +371,8 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
                 Etape3Documents(
                   formKey: _formKeys[2],
                   formData: formData,
+                  typeProjetCode: formData['type_projet'],
+                  onSyncDraft: _syncDraft,
                 ),
                 Etape4Recapitulatif(
                   formKey: _formKeys[3],
@@ -279,8 +391,11 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
   }
 
   Widget _buildHeader() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final c = AppColors(isDark);
+
     return Container(
-      decoration: BoxDecoration(gradient: FDGradients.header),
+      color: c.bgHeader,
       child: SafeArea(
         bottom: false,
         child: Padding(
@@ -296,12 +411,13 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
                     child: Container(
                       padding: EdgeInsets.all(6),
                       decoration: BoxDecoration(
-                        color: FDColors.white.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(FDRadius.sm),
+                        color: c.bgCard,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: c.borderMain),
                       ),
                       child: Icon(
                         Icons.arrow_back_ios_new_rounded,
-                        color: FDColors.white,
+                        color: c.txtPrimary,
                         size: 18,
                       ),
                     ),
@@ -310,8 +426,8 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
                   Expanded(
                     child: Text(
                       'Appel à Projet',
-                      style: TextStyle(
-                        color: FDColors.white,
+                      style: GoogleFonts.sora(
+                        color: c.txtPrimary,
                         fontSize: 20.sp,
                         fontWeight: FontWeight.w800,
                       ),
@@ -322,13 +438,14 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
                     padding: EdgeInsets.symmetric(
                         horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: FDColors.white.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(FDRadius.pill),
+                      color: c.accentPurple.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: c.accentPurple.withValues(alpha: 0.3)),
                     ),
                     child: Text(
                       '$_currentStep / $_totalSteps',
-                      style: TextStyle(
-                        color: FDColors.white,
+                      style: GoogleFonts.sora(
+                        color: c.accentPurple,
                         fontSize: 11.sp,
                         fontWeight: FontWeight.w700,
                       ),
@@ -343,6 +460,9 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
                 currentStep: _currentStep,
                 totalSteps: _totalSteps,
                 labels: _stepLabels,
+                activeColor: c.accentPurple,
+                inactiveColor: c.txtSecondary,
+                completedColor: AppColors.success,
               ),
             ],
           ),
@@ -352,6 +472,9 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
   }
 
   Widget _buildBottomBar() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final c = AppColors(isDark);
+    
     return Container(
       padding: EdgeInsets.fromLTRB(
         16,
@@ -360,8 +483,8 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
         12 + MediaQuery.of(context).padding.bottom,
       ),
       decoration: BoxDecoration(
-        color: FDColors.white,
-        boxShadow: FDShadow.nav,
+        color: c.bgPrimary,
+        border: Border(top: BorderSide(color: c.borderMain)),
       ),
       child: Row(
         children: [
@@ -371,12 +494,12 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
               child: OutlinedButton.icon(
                 onPressed: _isSubmitting ? null : _prevStep,
                 icon: Icon(Icons.arrow_back_rounded, size: 18),
-                label: Text('Précédent'),
+                label: Text('Précédent', style: GoogleFonts.sora()),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: FDColors.royal,
-                  side: const BorderSide(color: FDColors.royal, width: 1.5),
+                  foregroundColor: c.txtPrimary,
+                  side: BorderSide(color: c.borderMain, width: 1.5),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(FDRadius.sm),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   padding: EdgeInsets.symmetric(vertical: 14),
                 ),
@@ -391,10 +514,8 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                gradient: _isSubmitting ? null : FDGradients.ctaButton,
-                color: _isSubmitting ? FDColors.ice : null,
-                borderRadius: BorderRadius.circular(FDRadius.sm),
-                boxShadow: _isSubmitting ? null : FDShadow.ctaButton,
+                color: _isSubmitting ? c.bgCard : c.accentPurple,
+                borderRadius: BorderRadius.circular(12),
               ),
               child: ElevatedButton.icon(
                 onPressed: _isSubmitting
@@ -405,7 +526,7 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
                         width: 18.w,
                         height: 18.h,
                         child: CircularProgressIndicator(
-                            color: FDColors.white, strokeWidth: 2),
+                            color: Colors.white, strokeWidth: 2),
                       )
                     : Icon(
                         _currentStep == _totalSteps
@@ -417,14 +538,15 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
                   _isSubmitting
                       ? 'Envoi...'
                       : (_currentStep == _totalSteps ? 'Soumettre' : 'Suivant'),
+                  style: GoogleFonts.sora(),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.transparent,
                   shadowColor: Colors.transparent,
-                  foregroundColor: _isSubmitting ? FDColors.textSub : FDColors.white,
+                  foregroundColor: _isSubmitting ? c.txtSecondary : Colors.white,
                   padding: EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(FDRadius.sm),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),

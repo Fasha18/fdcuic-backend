@@ -1,6 +1,7 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/theme.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/app_colors.dart';
 import '../../../../widgets/auth_widgets.dart';
 import '../../../../widgets/form_widgets.dart';
 import '../../../../utils/form_validators.dart';
@@ -60,8 +61,24 @@ class _Etape2DetailsState extends State<Etape2Details> {
   }
 
   @override
+  void dispose() {
+    _objectifsCtrl.dispose();
+    _importanceCtrl.dispose();
+    _impactsCtrl.dispose();
+    _potentielCtrl.dispose();
+    _localisationCtrl.dispose();
+    _beneficiairesCtrl.dispose();
+    _perennisationCtrl.dispose();
+    _descriptionCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final c = AppColors(isDark);
     final equipe = widget.formData['equipe'] as List;
+
     return Form(
       key: widget.formKey,
       child: SingleChildScrollView(
@@ -69,20 +86,26 @@ class _Etape2DetailsState extends State<Etape2Details> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            FDLabel('Phase du projet'),
+            FDLabel('Phase du projet *'),
             SizedBox(height: 10.h),
             Row(
               children: [
                 _ToggleOption(
                   label: 'Idéation',
                   selected: widget.formData['phase_ideation'] == true,
-                  onTap: () => setState(() => widget.formData['phase_ideation'] = !widget.formData['phase_ideation']),
+                  onTap: () => setState(() {
+                    widget.formData['phase_ideation'] = true;
+                    widget.formData['phase_execution'] = false;
+                  }),
                 ),
                 SizedBox(width: 10.w),
                 _ToggleOption(
                   label: 'Exécution',
                   selected: widget.formData['phase_execution'] == true,
-                  onTap: () => setState(() => widget.formData['phase_execution'] = !widget.formData['phase_execution']),
+                  onTap: () => setState(() {
+                    widget.formData['phase_execution'] = true;
+                    widget.formData['phase_ideation'] = false;
+                  }),
                 ),
               ],
             ),
@@ -102,43 +125,59 @@ class _Etape2DetailsState extends State<Etape2Details> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                FDLabel('Équipe (max 3 membres)'),
+                FDLabel('Membres de l\'équipe (1 à 3 membres) *'),
                 if (equipe.length < 3)
                   GestureDetector(
                     onTap: _ajouterMembre,
                     child: Container(
-                      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: FDColors.ice,
-                        borderRadius: BorderRadius.circular(FDRadius.xs),
-                        border: Border.all(color: FDColors.border),
+                        color: c.accentPurple.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: c.accentPurple.withValues(alpha: 0.2)),
                       ),
                       child: Row(
                         children: [
-                          Icon(Icons.add, size: 14, color: FDColors.royal),
-                          SizedBox(width: 4.w),
-                          Text('Ajouter', style: TextStyle(fontSize: 12.sp, color: FDColors.royal, fontWeight: FontWeight.w600)),
+                          Icon(Icons.add_circle_outline_rounded, size: 14, color: c.accentPurple),
+                          SizedBox(width: 6.w),
+                          Text(
+                            'Ajouter',
+                            style: GoogleFonts.sora(
+                              fontSize: 11.sp,
+                              color: c.accentPurple,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ],
                       ),
                     ),
                   ),
               ],
             ),
-            SizedBox(height: 10.h),
+            SizedBox(height: 12.h),
 
             if (equipe.isEmpty)
               Container(
-                padding: EdgeInsets.all(14),
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: FDColors.ice,
-                  borderRadius: BorderRadius.circular(FDRadius.sm),
-                  border: Border.all(color: FDColors.border, width: 0.5),
+                  color: AppColors.errorBg,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.error.withValues(alpha: 0.2)),
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.info_outline, size: 16, color: FDColors.textSub),
+                    const Icon(Icons.warning_amber_rounded, size: 16, color: AppColors.error),
                     SizedBox(width: 8.w),
-                    Expanded(child: Text("Ajoutez au moins 1 membre d'équipe.", style: FDText.bodySub)),
+                    Expanded(
+                      child: Text(
+                        "Ajoutez au moins 1 membre d'équipe (requis).",
+                        style: GoogleFonts.sora(
+                          color: AppColors.error,
+                          fontSize: 12.sp,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -165,24 +204,42 @@ class _ToggleOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-        decoration: BoxDecoration(
-          color: selected ? FDColors.royal.withValues(alpha: 0.10) : FDColors.ice,
-          borderRadius: BorderRadius.circular(FDRadius.sm),
-          border: Border.all(
-            color: selected ? FDColors.royal : FDColors.border,
-            width: selected ? 1.5 : 0.5,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final c = AppColors(isDark);
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.symmetric(vertical: 14.h),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: selected ? c.accentPurple.withValues(alpha: 0.08) : c.bgCard,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: selected ? c.accentPurple : c.borderMain,
+              width: selected ? 2.0 : 1.0,
+            ),
           ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 13.sp,
-            fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
-            color: selected ? FDColors.royal : FDColors.textSub,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                selected ? Icons.radio_button_checked_rounded : Icons.radio_button_off_rounded,
+                color: selected ? c.accentPurple : c.txtSecondary,
+                size: 18,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                label,
+                style: GoogleFonts.sora(
+                  fontSize: 13.sp,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  color: selected ? c.accentPurple : c.txtPrimary,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -210,10 +267,10 @@ class _MembreCardState extends State<_MembreCard> {
   @override
   void initState() {
     super.initState();
-    _prenomCtrl = TextEditingController(text: widget.membre['prenom']);
-    _nomCtrl = TextEditingController(text: widget.membre['nom']);
-    _posteCtrl = TextEditingController(text: widget.membre['poste']);
-    _telCtrl = TextEditingController(text: widget.membre['telephone']);
+    _prenomCtrl = TextEditingController(text: widget.membre['prenom'] ?? '');
+    _nomCtrl = TextEditingController(text: widget.membre['nom'] ?? '');
+    _posteCtrl = TextEditingController(text: widget.membre['poste'] ?? '');
+    _telCtrl = TextEditingController(text: widget.membre['telephone'] ?? '');
 
     _prenomCtrl.addListener(() => widget.membre['prenom'] = _prenomCtrl.text);
     _nomCtrl.addListener(() => widget.membre['nom'] = _nomCtrl.text);
@@ -222,64 +279,147 @@ class _MembreCardState extends State<_MembreCard> {
   }
 
   @override
+  void dispose() {
+    _prenomCtrl.dispose();
+    _nomCtrl.dispose();
+    _posteCtrl.dispose();
+    _telCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final c = AppColors(isDark);
+
     return Container(
-      margin: EdgeInsets.only(bottom: 12),
-      padding: EdgeInsets.all(14),
+      margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
-        color: FDColors.white,
-        borderRadius: BorderRadius.circular(FDRadius.sm),
-        border: Border.all(color: FDColors.border, width: 0.5),
-        boxShadow: FDShadow.card,
+        color: c.bgCard,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: c.borderMain, width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('Membre ', style: FDText.h3.copyWith(fontSize: 13.sp)),
-              GestureDetector(
-                onTap: widget.onSupprimer,
-                child: Icon(Icons.close, size: 16, color: FDColors.coral),
+          // Header of the card
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: c.bgPrimary,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(15),
+                topRight: Radius.circular(15),
               ),
-            ],
-          ),
-          SizedBox(height: 12.h),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              border: Border(bottom: BorderSide(color: c.borderMain)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
                   children: [
-                    FDLabel('Prénom'),
-                    SizedBox(height: 4.h),
-                    FDTextField(controller: _prenomCtrl, hint: 'Prénom', icon: Icons.person_outline_rounded, validator: FormValidators.text),
+                    Icon(Icons.person_rounded, size: 16, color: c.accentPurple),
+                    SizedBox(width: 8.w),
+                    Text(
+                      'Membre ${widget.index + 1}',
+                      style: GoogleFonts.sora(
+                        fontSize: 13.sp,
+                        fontWeight: FontWeight.w700,
+                        color: c.txtPrimary,
+                      ),
+                    ),
                   ],
                 ),
-              ),
-              SizedBox(width: 10.w),
-              Expanded(
-                child: Column(
+                GestureDetector(
+                  onTap: widget.onSupprimer,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: AppColors.error.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.close_rounded,
+                      size: 16,
+                      color: AppColors.error,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Form body of the card
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    FDLabel('Nom'),
-                    SizedBox(height: 4.h),
-                    FDTextField(controller: _nomCtrl, hint: 'Nom', icon: Icons.person_outline_rounded, validator: FormValidators.text),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          FDLabel('Prénom'),
+                          SizedBox(height: 6.h),
+                          FDTextField(
+                            controller: _prenomCtrl,
+                            hint: 'Prénom',
+                            icon: Icons.person_outline_rounded,
+                            validator: FormValidators.text,
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          FDLabel('Nom'),
+                          SizedBox(height: 6.h),
+                          FDTextField(
+                            controller: _nomCtrl,
+                            hint: 'Nom',
+                            icon: Icons.person_outline_rounded,
+                            validator: FormValidators.text,
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-              ),
-            ],
+                SizedBox(height: 12.h),
+                FDLabel('Poste'),
+                SizedBox(height: 6.h),
+                FDTextField(
+                  controller: _posteCtrl,
+                  hint: 'Ex: Directeur artistique',
+                  icon: Icons.work_outline_rounded,
+                  validator: FormValidators.text,
+                ),
+                SizedBox(height: 12.h),
+                FDLabel('Téléphone'),
+                SizedBox(height: 6.h),
+                FDTextField(
+                  controller: _telCtrl,
+                  hint: '+221 77 000 00 00',
+                  icon: Icons.phone_outlined,
+                  keyboardType: TextInputType.phone,
+                  validator: FormValidators.phone,
+                ),
+              ],
+            ),
           ),
-          SizedBox(height: 10.h),
-          FDLabel('Poste'),
-          SizedBox(height: 4.h),
-          FDTextField(controller: _posteCtrl, hint: 'Ex: Directeur artistique', icon: Icons.work_outline_rounded, validator: FormValidators.text),
-          SizedBox(height: 10.h),
-          FDLabel('Téléphone'),
-          SizedBox(height: 4.h),
-          FDTextField(controller: _telCtrl, hint: '+221 77 000 00 00', icon: Icons.phone_outlined, keyboardType: TextInputType.phone, validator: FormValidators.phone),
         ],
       ),
     );

@@ -1,6 +1,7 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
-import '../../core/theme.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../core/app_colors.dart';
 import '../../models/appel_a_projet.dart';
 
 class AppelDetailScreen extends StatelessWidget {
@@ -9,13 +10,16 @@ class AppelDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final c = AppColors(isDark);
+
     return Scaffold(
-      backgroundColor: FDColors.skyBg,
+      backgroundColor: c.bgPrimary,
       body: Column(
         children: [
           // ── HEADER avec retour ─────────────────────────
           Container(
-            decoration: BoxDecoration(gradient: FDGradients.header),
+            color: c.bgHeader,
             child: SafeArea(
               bottom: false,
               child: Padding(
@@ -25,14 +29,15 @@ class AppelDetailScreen extends StatelessWidget {
                     IconButton(
                       onPressed: () => Navigator.pop(context),
                       icon: Icon(Icons.arrow_back_ios_new_rounded,
-                          color: FDColors.white, size: 18),
+                          color: c.txtPrimary, size: 18),
                     ),
                     Expanded(
                       child: Text(
                         appel.typeProjet ?? 'Appel à projets',
-                        style: TextStyle(
-                          color: FDColors.white.withValues(alpha: 0.7),
+                        style: GoogleFonts.sora(
+                          color: c.txtSecondary,
                           fontSize: 13.sp,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
@@ -41,18 +46,19 @@ class AppelDetailScreen extends StatelessWidget {
                           horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: appel.estOuvert
-                            ? FDColors.mint.withValues(alpha: 0.2)
-                            : FDColors.silver.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(FDRadius.xs),
+                            ? AppColors.successBg
+                            : c.bgCard,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: appel.estOuvert ? AppColors.success : c.borderMain),
                       ),
                       child: Text(
                         appel.estOuvert ? '● Ouvert' : '● Fermé',
-                        style: TextStyle(
+                        style: GoogleFonts.sora(
                           fontSize: 11.sp,
                           fontWeight: FontWeight.w700,
                           color: appel.estOuvert
-                              ? FDColors.mint
-                              : FDColors.silver,
+                              ? AppColors.success
+                              : c.txtSecondary,
                         ),
                       ),
                     ),
@@ -66,55 +72,54 @@ class AppelDetailScreen extends StatelessWidget {
           Expanded(
             child: SingleChildScrollView(
               padding: EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(appel.titre, style: FDText.h1),
-                  SizedBox(height: 16.h),
+              child: Container(
+                padding: EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: c.bgCard,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: c.borderMain),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(appel.titre, style: GoogleFonts.sora(fontSize: 22.sp, fontWeight: FontWeight.w700, color: c.txtPrimary)),
+                    SizedBox(height: 16.h),
 
-                  // Dates
-                  _InfoRow(
-                    icon: Icons.date_range_outlined,
-                    label: 'Période',
-                    value:
-                        '${_fmt(appel.dateDebut)} → ${_fmt(appel.dateFin)}',
-                  ),
-                  SizedBox(height: 10.h),
-                  _InfoRow(
-                    icon: Icons.category_outlined,
-                    label: 'Type',
-                    value: appel.typeProjet ?? '—',
-                  ),
-                  Divider(height: 28.h),
+                    // Dates
+                    _InfoRow(
+                      icon: Icons.date_range_outlined,
+                      label: 'Période',
+                      value: '${_fmt(appel.dateDebut)} → ${_fmt(appel.dateFin)}',
+                    ),
+                    SizedBox(height: 10.h),
+                    _InfoRow(
+                      icon: Icons.category_outlined,
+                      label: 'Type',
+                      value: appel.typeProjet ?? '—',
+                    ),
+                    Divider(height: 28.h, color: c.borderMain),
 
-                  // Description
-                  Text('Description', style: FDText.h3),
-                  SizedBox(height: 8.h),
-                  Text(appel.description, style: FDText.body),
-
-                  if (appel.criteres != null) ...[
-                    Divider(height: 28.h),
-                    Text('Critères d\'éligibilité', style: FDText.h3),
+                    // Description
+                    Text('Description', style: GoogleFonts.sora(fontSize: 16.sp, fontWeight: FontWeight.w600, color: c.txtPrimary)),
                     SizedBox(height: 8.h),
-                    Text(appel.criteres!, style: FDText.body),
-                  ],
+                    Text(appel.description, style: GoogleFonts.sora(fontSize: 14.sp, color: c.txtSecondary, height: 1.5)),
 
-                  SizedBox(height: 32.h),
+                    if (appel.criteres != null) ...[
+                      Divider(height: 28.h, color: c.borderMain),
+                      Text('Critères d\'éligibilité', style: GoogleFonts.sora(fontSize: 16.sp, fontWeight: FontWeight.w600, color: c.txtPrimary)),
+                      SizedBox(height: 8.h),
+                      Text(appel.criteres!, style: GoogleFonts.sora(fontSize: 14.sp, color: c.txtSecondary, height: 1.5)),
+                    ],
 
-                  // Bouton postuler
-                  if (appel.estOuvert)
-                    SizedBox(
-                      width: double.infinity,
-                      height: 54.h,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: FDGradients.ctaButton,
-                          borderRadius: BorderRadius.circular(FDRadius.sm),
-                          boxShadow: FDShadow.ctaButton,
-                        ),
+                    SizedBox(height: 32.h),
+
+                    // Bouton postuler
+                    if (appel.estOuvert)
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54.h,
                         child: ElevatedButton(
                           onPressed: () {
-                            // → Navigation vers formulaire appel projet
                             Navigator.pushNamed(
                               context,
                               '/formulaire-appel',
@@ -122,43 +127,42 @@ class AppelDetailScreen extends StatelessWidget {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.transparent,
-                            shadowColor: Colors.transparent,
+                            backgroundColor: c.accentPurple,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(FDRadius.sm),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                           child: Text(
                             'Postuler à cet appel →',
-                            style: TextStyle(
-                              color: FDColors.white,
+                            style: GoogleFonts.sora(
+                              color: Colors.white,
                               fontSize: 15.sp,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
-                      ),
-                    )
-                  else
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: FDColors.ice,
-                        borderRadius: BorderRadius.circular(FDRadius.sm),
-                        border: Border.all(color: FDColors.border),
-                      ),
-                      child: Text(
-                        'Cet appel à projets est clôturé.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: FDColors.textSub,
-                          fontSize: 13.sp,
-                          fontWeight: FontWeight.w500,
+                      )
+                    else
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: c.bgPrimary,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: c.borderMain),
+                        ),
+                        child: Text(
+                          'Cet appel à projets est clôturé.',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.sora(
+                            color: c.txtSecondary,
+                            fontSize: 13.sp,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -187,14 +191,17 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final c = AppColors(isDark);
+
     return Row(
       children: [
-        Icon(icon, size: 16, color: FDColors.textSub),
+        Icon(icon, size: 16, color: c.txtSecondary),
         SizedBox(width: 8.w),
         Text('$label : ',
-            style: FDText.bodySub.copyWith(fontWeight: FontWeight.w600)),
+            style: GoogleFonts.sora(fontSize: 13.sp, fontWeight: FontWeight.w600, color: c.txtPrimary)),
         Expanded(
-          child: Text(value, style: FDText.bodySub),
+          child: Text(value, style: GoogleFonts.sora(fontSize: 13.sp, color: c.txtSecondary)),
         ),
       ],
     );

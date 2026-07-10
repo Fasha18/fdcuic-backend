@@ -1,13 +1,13 @@
-/* ── CandidatAppels.jsx ───────────────────────────────────── */
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import candidatService from '../services/candidatService';
+import { getImageUrl } from '../utils/imageUrl';
 
 const formatDate = (d) => {
   if (!d) return '—';
-  return new Date(d).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+  return new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 };
 
 const getAppelStatus = (appel) => {
@@ -40,7 +40,23 @@ export default function CandidatAppels({ onLogout }) {
       setLoading(true);
       try {
         const res = await candidatService.getTousAppels();
-        setAppels(res.appels || []);
+        const allAppels = res.appels || [];
+        
+        const withStatus = allAppels.map(a => ({ ...a, computedStatus: getAppelStatus(a) }));
+        
+        const ouverts = withStatus.filter(a => a.computedStatus === 'ouvert')
+          .sort((a, b) => new Date(b.date_debut) - new Date(a.date_debut));
+        const appelOuvert = ouverts.length > 0 ? ouverts[0] : null;
+        
+        const clotures = withStatus.filter(a => a.computedStatus === 'cloture')
+          .sort((a, b) => new Date(b.date_fin) - new Date(a.date_fin));
+        const appelCloture = clotures.length > 0 ? clotures[0] : null;
+        
+        const selectedAppels = [];
+        if (appelOuvert) selectedAppels.push(appelOuvert);
+        if (appelCloture) selectedAppels.push(appelCloture);
+        
+        setAppels(selectedAppels);
       } catch (err) {
         console.error('Erreur chargement appels:', err);
       }
@@ -100,238 +116,246 @@ export default function CandidatAppels({ onLogout }) {
         if (tab === 'mobilite') navigate('/candidat/mobilite');
       }} onLogout={onLogout} role="candidat" />
 
-      <main className="dashboard-main">
+      <main className="dashboard-main" style={{ background: '#F5F7FB' }}>
         <Topbar
           title="Appels à Projets"
-          subtitle="Explorez toutes les opportunités disponibles"
+          subtitle="Découvrez les appels à projets urbains et culturels"
           searchTerm={search}
           onSearchChange={setSearch}
         />
 
-        <div className="dashboard-content">
+        <div className="dashboard-content" style={{ padding: '24px 32px', maxWidth: 1200, margin: '0 auto' }}>
           <style>{`
-            .appels-stats-grid {
-              display: grid;
-              grid-template-columns: repeat(3, 1fr);
-              gap: 24px;
-              margin-bottom: 32px;
-            }
-            .appels-stat-card {
-              background: var(--color-bg-card);
-              border-radius: var(--radius-lg);
-              padding: 24px;
-              border: 1px solid var(--color-border);
-              box-shadow: var(--shadow-sm);
+            /* STATS CARDS */
+            .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; }
+            .stat-card-accent {
+              background: white;
+              border-radius: 12px;
+              padding: 20px 24px;
+              position: relative;
+              overflow: hidden;
+              box-shadow: 0 4px 16px rgba(0,0,0,0.02);
               display: flex;
               flex-direction: column;
-              align-items: flex-start;
-              justify-content: center;
-              transition: var(--transition-base);
+              border: 1px solid #eef1f7;
             }
-            .appels-stat-card:hover {
-              transform: translateY(-2px);
-              box-shadow: var(--shadow-md);
-            }
-            .appels-stat-card.primary {
-              background: var(--color-primary-light);
-              border-color: var(--color-primary);
-              color: var(--color-primary-dark);
-            }
-            .appels-stat-value {
-              font-size: 32px;
-              font-weight: 800;
-              line-height: 1.2;
-              margin-bottom: 8px;
-            }
-            .appels-stat-label {
-              font-size: 14px;
-              font-weight: 600;
-              text-transform: uppercase;
-              letter-spacing: 0.5px;
-              opacity: 0.8;
-            }
-            
-            .appels-filter-tabs {
-              display: flex;
-              gap: 12px;
-              margin-bottom: 32px;
-              flex-wrap: wrap;
-            }
+            .stat-accent-line { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+            .stat-value { font-size: 28px; font-weight: 500; color: #0b1b3a; line-height: 1; margin-bottom: 4px; }
+            .stat-label { font-size: 12px; color: #6b7182; font-weight: 500; }
+
+            /* FILTER TABS */
+            .appels-filter-tabs { display: flex; gap: 8px; margin-bottom: 32px; flex-wrap: wrap; }
             .appels-tab {
               padding: 8px 16px;
               border-radius: 20px;
-              font-size: 14px;
+              font-size: 13px;
               font-weight: 600;
-              border: 1px solid var(--color-border);
-              background: var(--color-bg-card);
-              color: var(--color-text-secondary);
+              border: 1px solid #eef1f7;
+              background: white;
+              color: #6b7182;
               cursor: pointer;
-              transition: var(--transition-base);
+              transition: all 0.2s;
             }
-            .appels-tab:hover {
-              background: var(--color-bg-hover);
-            }
+            .appels-tab:hover { background: #f8fafc; }
             .appels-tab.active {
-              background: var(--color-primary);
+              background: #0144BD;
               color: white;
-              border-color: var(--color-primary);
-              box-shadow: 0 4px 12px rgba(79, 106, 246, 0.2);
+              border-color: #0144BD;
+              box-shadow: 0 4px 12px rgba(1, 68, 189, 0.2);
             }
 
+            /* PROJECT CARDS - AFFICHE DE RUE FORMAT */
             .appels-grid {
               display: grid;
-              grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-              gap: 24px;
+              grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+              gap: 32px 24px;
+              padding: 10px 0;
             }
             .appel-card {
-              background: var(--color-bg-card);
-              border-radius: var(--radius-lg);
-              padding: 24px;
-              border: 1px solid var(--color-border);
-              box-shadow: var(--shadow-sm);
+              position: relative;
+              background: linear-gradient(160deg, #cfe0ff, #a9c4f5);
+              border-radius: 2px 2px 0 10px;
+              box-shadow: 0 12px 24px rgba(0,0,0,0.1);
               display: flex;
               flex-direction: column;
-              transition: var(--transition-base);
+              transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+              cursor: pointer;
+              margin-top: 10px; /* space for tape */
+            }
+            .appel-card.odd { transform: rotate(-2deg); }
+            .appel-card.even { transform: rotate(1.5deg); }
+            .appel-card:hover {
+              transform: translateY(-8px) rotate(0deg);
+              box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+              z-index: 10;
+            }
+            .appel-card.closed { filter: grayscale(0.3); opacity: 0.95; }
+
+            /* TAPE (Scotch) */
+            .tape {
+              position: absolute;
+              top: -8px;
+              width: 36px;
+              height: 18px;
+              background: rgba(255, 200, 70, 0.75);
+              backdrop-filter: blur(2px);
+              z-index: 2;
+              box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            }
+            .tape.left { left: 10px; transform: rotate(-15deg); }
+            .tape.right { right: 10px; transform: rotate(12deg); }
+
+            /* IMAGE AREA */
+            .appel-card-banner {
+              height: 140px;
               position: relative;
+              background-color: #0B1B3A;
+              border-radius: 2px 2px 0 0;
               overflow: hidden;
             }
-            .appel-card:hover {
-              transform: translateY(-4px);
-              box-shadow: var(--shadow-md);
-              border-color: var(--color-border-focus);
-            }
-            .appel-card.ouvert {
-              border: 2px solid var(--color-primary);
-              box-shadow: 0 8px 32px rgba(79, 106, 246, 0.15);
-              transform: translateY(-2px);
-            }
-            .appel-card.ouvert:hover {
-              transform: translateY(-6px);
-              box-shadow: 0 16px 48px rgba(79, 106, 246, 0.25);
-            }
-            .appel-card-header {
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-              margin-bottom: 16px;
-            }
-            .appel-card-icon {
-              width: 40px;
-              height: 40px;
-              border-radius: 10px;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              background: var(--color-bg-hover);
-              color: var(--color-text-primary);
-            }
-            .appel-card-icon.green { background: var(--color-green-light); color: var(--color-green); }
-            .appel-card-icon.orange { background: var(--color-orange-light); color: var(--color-orange); }
-            .appel-card-icon.grey { background: var(--color-border-light); color: var(--color-text-secondary); }
-
-            .appel-card-img {
-              width: calc(100% + 48px);
-              margin: -24px -24px 20px -24px;
-              height: 160px;
+            .appel-card-banner img {
+              width: 100%;
+              height: 100%;
               object-fit: cover;
               display: block;
-              border-radius: var(--radius-lg) var(--radius-lg) 0 0;
             }
-            .appel-card-no-img {
-              width: calc(100% + 48px);
-              margin: -24px -24px 20px -24px;
-              height: 120px;
-              border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-size: 36px;
-              position: relative;
-              overflow: hidden;
-            }
-            .appel-card-no-img::after {
-              content: '';
+            .appel-banner-fallback {
               position: absolute;
               inset: 0;
-              background: repeating-linear-gradient(
-                45deg,
-                transparent,
-                transparent 10px,
-                rgba(255,255,255,0.05) 10px,
-                rgba(255,255,255,0.05) 20px
-              );
+              background: #0B1B3A;
+              overflow: hidden;
             }
-            
-            .appels-status-badge {
-              font-size: 12px;
-              font-weight: 700;
-              padding: 4px 10px;
-              border-radius: 12px;
+            /* Colorful overlapping circles */
+            .fallback-circle { position: absolute; border-radius: 50%; }
+            .fc-1 { width: 140px; height: 140px; background: #0144BD; top: -40px; left: -20px; opacity: 0.8; }
+            .fc-2 { width: 180px; height: 180px; background: #7C5CFC; bottom: -60px; right: 10px; opacity: 0.6; }
+            .fc-3 { width: 90px; height: 90px; background: #FFB020; top: 20px; left: 40%; opacity: 0.9; }
+            .fc-4 { width: 100px; height: 100px; background: #1baf7a; bottom: -20px; left: -10px; opacity: 0.5; }
+            .fallback-veil {
+              position: absolute;
+              inset: 0;
+              background: rgba(11,7,20,0.28);
+            }
+
+            /* INFO PANEL */
+            .appel-card-body {
+              padding: 1.5rem 1.4rem 1.7rem;
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+            }
+            .appel-card-sur {
+              font-size: 10px;
               text-transform: uppercase;
-              letter-spacing: 0.5px;
-            }
-            .appels-status-badge.open { background: var(--color-green-light); color: var(--color-green); }
-            .appels-status-badge.upcoming { background: var(--color-orange-light); color: var(--color-orange); }
-            .appels-status-badge.closed { background: var(--color-red-light); color: var(--color-red); }
-            
-            .appel-card-title {
-              font-size: 18px;
+              letter-spacing: 1.5px;
+              color: #0144BD;
+              margin-bottom: 6px;
               font-weight: 700;
-              color: var(--color-text-primary);
-              margin-bottom: 8px;
-              line-height: 1.4;
+            }
+            .appel-card-title {
+              font-size: 24px;
+              font-weight: 700;
+              color: #0b1b3a;
+              margin-bottom: 12px;
+              line-height: 1.05;
             }
             .appel-card-desc {
-              font-size: 14px;
-              color: var(--color-text-secondary);
+              font-size: 12px;
+              color: #3d4459;
               line-height: 1.5;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
               margin-bottom: 24px;
               flex: 1;
             }
-            .appel-card-footer {
+
+            /* FOOTER BANNER */
+            .appel-card-footer-banner {
+              margin-top: auto;
+              background: #0144BD;
+              border-radius: 10px;
+              padding: 12px 14px;
               display: flex;
               justify-content: space-between;
               align-items: center;
-              padding-top: 16px;
-              border-top: 1px solid var(--color-border-light);
             }
-            .appel-card-date {
+            .appel-card-footer-banner.closed {
+              background: #4a5164;
+            }
+            .footer-col-left {
               display: flex;
-              align-items: center;
-              gap: 6px;
-              font-size: 13px;
-              font-weight: 500;
-              color: var(--color-text-secondary);
+              flex-direction: column;
             }
-            .appel-days-badge {
-              font-size: 12px;
+            .footer-col-right {
+              display: flex;
+              flex-direction: column;
+              align-items: flex-end;
+              text-align: right;
+            }
+            .footer-label {
+              font-size: 9px;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+              color: #cfe0ff;
+              margin-bottom: 2px;
               font-weight: 600;
-              color: var(--color-primary);
-              background: var(--color-primary-light);
-              padding: 4px 10px;
-              border-radius: 12px;
+            }
+            .appel-card-footer-banner.closed .footer-label {
+              color: #b9c2d9;
+            }
+            .footer-val {
+              font-size: 15px;
+              color: white;
+              font-weight: 700;
+            }
+            .footer-val.highlight {
+              font-size: 26px;
+              color: #FFB020;
+              line-height: 1;
+              margin-bottom: 2px;
+            }
+            .footer-val.closed-text {
+              font-size: 16px;
+              color: #ff8787;
+              letter-spacing: 1px;
+            }
+
+            .empty-state { text-align: center; padding: 60px 0; background: white; border-radius: 14px; border: 1px solid #eef1f7; }
+            .empty-state h3 { font-size: 16px; font-weight: 600; color: #0b1b3a; margin-bottom: 8px; }
+            .empty-state p { font-size: 13px; color: #8a90a0; }
+
+            /* Mobile responsiveness for rotation */
+            @media (max-width: 768px) {
+              .appel-card.odd, .appel-card.even { transform: rotate(0deg); }
+              .appel-card:hover { transform: translateY(-4px) rotate(0deg); }
             }
           `}</style>
+          
           <div className="content-grid" style={{ paddingBottom: 60 }}>
 
-            {/* STATS */}
-            <div className="appels-stats-grid animate-fade-in-up">
-              <div className="appels-stat-card primary">
-                <div className="appels-stat-value">{stats.ouverts}</div>
-                <div className="appels-stat-label">Appels Ouverts</div>
+            {/* 1. STATS CARDS */}
+            <div className="stats-grid animate-fade-in-up">
+              <div className="stat-card-accent">
+                <div className="stat-accent-line" style={{ background: '#0144BD' }}></div>
+                <div className="stat-value">{stats.ouverts}</div>
+                <div className="stat-label">Appels Ouverts</div>
               </div>
-              <div className="appels-stat-card">
-                <div className="appels-stat-value">{stats.aVenir}</div>
-                <div className="appels-stat-label">À venir</div>
+              <div className="stat-card-accent">
+                <div className="stat-accent-line" style={{ background: '#FFB020' }}></div>
+                <div className="stat-value">{stats.aVenir}</div>
+                <div className="stat-label">À venir</div>
               </div>
-              <div className="appels-stat-card">
-                <div className="appels-stat-value">{stats.clotures}</div>
-                <div className="appels-stat-label">Clôturés</div>
+              <div className="stat-card-accent">
+                <div className="stat-accent-line" style={{ background: '#8a90a0' }}></div>
+                <div className="stat-value">{stats.clotures}</div>
+                <div className="stat-label">Clôturés</div>
               </div>
             </div>
 
-            {/* TABS */}
-            <div className="appels-filter-tabs">
+            {/* 2. FILTER TABS */}
+            <div className="appels-filter-tabs animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
               {[
                 { id: 'tous', label: 'Tous' },
                 { id: 'ouvert', label: 'Ouverts' },
@@ -348,89 +372,96 @@ export default function CandidatAppels({ onLogout }) {
               ))}
             </div>
 
-            {/* GRID */}
+            {/* 3. PROJECT CARDS - AFFICHE DE RUE */}
             {filtered.length === 0 ? (
-              <div className="card" style={{ textAlign: 'center', padding: 60 }}>
-                <div className="empty-icon">🔍</div>
+              <div className="empty-state animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#8a90a0" strokeWidth="1.5" style={{ margin: '0 auto 16px auto', opacity: 0.5 }}>
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
                 <h3>Aucun appel trouvé</h3>
-                <p style={{ color: 'var(--color-text-secondary)' }}>Essayez de modifier vos filtres ou votre recherche.</p>
+                <p>Essayez de modifier vos filtres ou votre recherche.</p>
               </div>
             ) : (
               <div className="appels-grid">
                 {filtered.map((appel, idx) => {
                   const isOuvert = appel.computedStatus === 'ouvert';
                   const isAVenir = appel.computedStatus === 'a_venir';
+                  const isCloture = appel.computedStatus === 'cloture';
                   const days = daysRemaining(appel.date_fin);
+                  
+                  // Rotate classes
+                  const rotationClass = idx % 2 === 0 ? 'even' : 'odd';
+                  const closedClass = isCloture ? 'closed' : '';
 
                   return (
                     <div
                       key={appel.id}
-                      className={`card appel-card animate-fade-in-up ${isOuvert ? 'ouvert' : ''}`}
-                      style={{ cursor: 'pointer', animationDelay: `${0.05 * (idx % 8)}s`, padding: 24 }}
+                      className={`appel-card animate-fade-in-up ${rotationClass} ${closedClass}`}
+                      style={{ animationDelay: `${0.05 * (idx % 8)}s` }}
                       onClick={() => navigate(`/candidat/appels/${appel.id}`)}
                     >
-                      {/* IMAGE ou PLACEHOLDER */}
-                      {appel.image_couverture ? (
-                        <img
-                          className="appel-card-img"
-                          src={appel.image_couverture.startsWith('http') ? appel.image_couverture : `https://fdcuic-backend-production.up.railway.app/uploads/${appel.image_couverture}`}
-                          alt={appel.titre}
-                          onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
-                        />
-                      ) : null}
-                      {/* Fallback visuel coloré */}
-                      <div
-                        className="appel-card-no-img"
-                        style={{
-                          display: appel.image_couverture ? 'none' : 'flex',
-                          background: isOuvert
-                            ? 'linear-gradient(135deg, #4F6AF6 0%, #3B5BDB 100%)'
-                            : isAVenir
-                            ? 'linear-gradient(135deg, #F59F00 0%, #E08C00 100%)'
-                            : 'linear-gradient(135deg, #868e96 0%, #495057 100%)',
-                        }}
-                      >
-                        <span style={{ position: 'relative', zIndex: 1 }}>
-                          {isOuvert ? '📋' : isAVenir ? '🕐' : '🔒'}
-                        </span>
+                      {/* SCOTCH TAPE */}
+                      <div className="tape left"></div>
+                      <div className="tape right"></div>
+
+                      {/* BANNER / IMAGE AREA */}
+                      <div className="appel-card-banner">
+                        {appel.image_couverture ? (
+                          <img 
+                            src={getImageUrl(appel.image_couverture)} 
+                            alt={appel.titre} 
+                            onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }}
+                          />
+                        ) : null}
+                        
+                        {/* FALLBACK: COLORFUL CIRCLES */}
+                        <div className="appel-banner-fallback" style={{ display: appel.image_couverture ? 'none' : 'block' }}>
+                          <div className="fallback-circle fc-1"></div>
+                          <div className="fallback-circle fc-2"></div>
+                          <div className="fallback-circle fc-3"></div>
+                          <div className="fallback-circle fc-4"></div>
+                          <div className="fallback-veil"></div>
+                        </div>
                       </div>
 
-                      <div className="appel-card-header">
-                        <div className={`appel-card-icon ${isOuvert ? 'green' : isAVenir ? 'orange' : 'grey'}`}>
-                          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                            <polyline points="14 2 14 8 20 8"/>
-                            <line x1="16" y1="13" x2="8" y2="13"/>
-                            <line x1="16" y1="17" x2="8" y2="17"/>
-                          </svg>
+                      {/* INFO PANEL */}
+                      <div className="appel-card-body">
+                        <div className="appel-card-sur">
+                          APPEL À PROJETS
                         </div>
-                        <span className={`appels-status-badge ${isOuvert ? 'open' : isAVenir ? 'upcoming' : 'closed'}`}>
-                          {isOuvert ? 'Ouvert' : isAVenir ? 'À venir' : 'Clôturé'}
-                        </span>
-                      </div>
-
-                      <h3 className="appel-card-title">{appel.titre}</h3>
-                      <p className="appel-card-desc">
-                        {appel.description
-                          ? (appel.description.length > 100 ? appel.description.substring(0, 100) + '...' : appel.description)
-                          : 'Aucune description fournie.'}
-                      </p>
-
-                      <div className="appel-card-footer">
-                        <div className="appel-card-date">
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                          Clôture : {formatDate(appel.date_fin)}
+                        <h3 className="appel-card-title">{appel.titre}</h3>
+                        <div className="appel-card-desc">
+                          {appel.description || 'Aucune description détaillée fournie pour le moment.'}
                         </div>
-                        {isOuvert && days > 0 && (
-                          <div className="appel-days-badge">{days}j restants</div>
-                        )}
+                        
+                        <div className={`appel-card-footer-banner ${isCloture ? 'closed' : ''}`}>
+                          <div className="footer-col-left">
+                            <span className="footer-label">CLÔTURE</span>
+                            <span className="footer-val">{formatDate(appel.date_fin)}</span>
+                          </div>
+                          <div className="footer-col-right">
+                            {isCloture ? (
+                              <span className="footer-val closed-text">CLÔTURÉ</span>
+                            ) : isAVenir ? (
+                              <>
+                                <span className="footer-val highlight" style={{ color: '#cfe0ff', fontSize: 16 }}>À VENIR</span>
+                                <span className="footer-label">PROCHAINEMENT</span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="footer-val highlight">{Math.max(0, days)}</span>
+                                <span className="footer-label">JOURS RESTANTS</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   );
                 })}
               </div>
             )}
-
           </div>
         </div>
       </main>

@@ -2,15 +2,20 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../../core/theme.dart';
+import '../../../../services/api_service.dart';
 
 class Etape3Documents extends StatefulWidget {
   final GlobalKey<FormState> formKey;
   final Map<String, dynamic> formData;
+  final String? typeProjetCode;
+  final Future<int> Function() onSyncDraft;
 
   const Etape3Documents({
     super.key,
     required this.formKey,
     required this.formData,
+    this.typeProjetCode,
+    required this.onSyncDraft,
   });
 
   @override
@@ -19,9 +24,10 @@ class Etape3Documents extends StatefulWidget {
 
 class _Etape3DocumentsState extends State<Etape3Documents> {
   final Map<String, String?> _fichiers = {};
+  final Set<String> _uploadingKeys = {};
 
   List<Map<String, String>> get _docsRequis {
-    final typeProjet = widget.formData['type_projet'];
+    final typeProjet = widget.typeProjetCode ?? widget.formData['type_projet'];
     final communs = [
       {'key': 'doc_ninea_recepisse', 'label': 'NINEA / Récépissé', 'requis': 'true'},
       {'key': 'doc_cni_passeport',   'label': 'CNI / Passeport',   'requis': 'true'},
@@ -33,12 +39,21 @@ class _Etape3DocumentsState extends State<Etape3Documents> {
         {'key': 'doc_analyse_financiere', 'label': 'Analyse financière', 'requis': 'true'},
         {'key': 'doc_business_model',     'label': 'Business Model Canvas', 'requis': 'true'},
       ]);
-    }
-    if (typeProjet == 'formation' || typeProjet == 'evenementiel') {
+    } else if (typeProjet == 'formation' || typeProjet == 'evenementiel') {
       communs.add({'key': 'doc_budget', 'label': 'Budget prévisionnel', 'requis': 'true'});
     }
     return communs;
   }
+
+  bool validate() {
+    for (final doc in _docsRequis) {
+      if (doc['requis'] == 'true' && _fichiers[doc['key']!] == null) {
+        return false;
+      }
+    }
+    return true;
+  }
+
 
   @override
   void initState() {
@@ -53,31 +68,81 @@ class _Etape3DocumentsState extends State<Etape3Documents> {
   }
 
   Future<void> _pickFile(String key) async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
-    );
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+      );
 
-    if (result != null && result.files.single.path != null) {
-      final sizeInBytes = result.files.single.size;
-      // 10 MB max
-      if (sizeInBytes > 10 * 1024 * 1024) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('La taille du fichier ne doit pas dépasser 10 Mo.'),
-              backgroundColor: FDColors.coral,
-            ),
-          );
+      if (result != null && result.files.single.path != null) {
+        final sizeInBytes = result.files.single.size;
+        // 10 MB max
+        if (sizeInBytes > 10 * 1024 * 1024) {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('La taille du fichier ne doit pas dépasser 10 Mo.'),
+                backgroundColor: FDColors.coral,
+              ),
+            );
+          }
+          return;
         }
-        return;
-      }
 
-      setState(() {
-        _fichiers[key] = result.files.single.name;
-      });
-      final docs = widget.formData['documents'] as Map<String, String?>;
-      docs[key] = result.files.single.path;
+        final filePath = result.files.single.path!;
+
+        setState(() {
+          _uploadingKeys.add(key);
+        });
+
+        try {
+          final dId = await widget.onSyncDraft();
+          await ApiService.uploadDocumentUniqueAppel(dId, key, filePath);
+
+          setState(() {
+            _fichiers[key] = result.files.single.name;
+          });
+          final docs = widget.formData['documents'] as Map<String, String?>;
+          docs[key] = filePath;
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("${result.files.single.name} envoyé !"),
+                backgroundColor: FDColors.mint,
+                duration: Duration(seconds: 2),
+              ),
+            );
+          }
+        } catch (uploadError) {
+          debugPrint("Erreur upload API: $uploadError");
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text("Échec: ${uploadError.toString().replaceAll('Exception: ', '').split('\\n').first}"),
+                backgroundColor: FDColors.coral,
+                duration: Duration(seconds: 4),
+              ),
+            );
+          }
+        } finally {
+          if (mounted) {
+            setState(() {
+              _uploadingKeys.remove(key);
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Erreur sélection fichier: $e");
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Échec de la sélection du fichier: $e"),
+            backgroundColor: FDColors.coral,
+          ),
+        );
+      }
     }
   }
 
@@ -93,50 +158,89 @@ class _Etape3DocumentsState extends State<Etape3Documents> {
   Widget build(BuildContext context) {
     return Form(
       key: widget.formKey,
-      child: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(20, 24, 20, 32),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Info
-            Container(
-              padding: EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: FDColors.electricBlue.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(FDRadius.sm),
-                border: Border.all(
-                    color: FDColors.electricBlue.withValues(alpha: 0.2)),
-              ),
-              child: Row(
-                children: [
-                  Icon(Icons.info_outline,
-                      size: 16, color: FDColors.electricBlue),
-                  SizedBox(width: 8.w),
-                  Expanded(
-                    child: Text(
-                      'Formats acceptés : PDF, JPG, PNG. Taille max : 10 Mo.',
-                      style: FDText.bodySub
-                          .copyWith(color: FDColors.electricBlue),
+      child: FormField<bool>(
+        validator: (value) {
+          if (!validate()) {
+            return 'Veuillez uploader tous les documents obligatoires.';
+          }
+          return null;
+        },
+        builder: (field) {
+          return SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(20, 24, 20, 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (field.hasError)
+                  Container(
+                    padding: EdgeInsets.all(12),
+                    margin: EdgeInsets.only(bottom: 16),
+                    decoration: BoxDecoration(
+                      color: FDColors.coral.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(FDRadius.sm),
+                      border: Border.all(color: FDColors.coral.withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.error_outline, size: 16, color: FDColors.coral),
+                        SizedBox(width: 8.w),
+                        Expanded(
+                          child: Text(
+                            field.errorText!,
+                            style: FDText.bodySub.copyWith(color: FDColors.coral),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
-            SizedBox(height: 20.h),
+                // Info
+                Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: FDColors.electricBlue.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(FDRadius.sm),
+                    border: Border.all(
+                        color: FDColors.electricBlue.withValues(alpha: 0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.info_outline,
+                          size: 16, color: FDColors.electricBlue),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Text(
+                          'Formats acceptés : PDF, JPG, PNG. Taille max : 10 Mo.',
+                          style: FDText.bodySub
+                              .copyWith(color: FDColors.electricBlue),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 20.h),
 
-            // Liste des documents
-            ..._docsRequis.map((doc) => Padding(
-              padding: EdgeInsets.only(bottom: 14),
-              child: _DocUploadField(
-                label: doc['label']!,
-                isRequis: doc['requis'] == 'true',
-                fichierNom: _fichiers[doc['key']],
-                onTap: () => _pickFile(doc['key']!),
-                onSupprimer: () => _removeFile(doc['key']!),
-              ),
-            )),
-          ],
-        ),
+                // Liste des documents
+                ..._docsRequis.map((doc) => Padding(
+                  padding: EdgeInsets.only(bottom: 14),
+                  child: _DocUploadField(
+                    label: doc['label']!,
+                    isRequis: doc['requis'] == 'true',
+                    fichierNom: _fichiers[doc['key']],
+                    isUploading: _uploadingKeys.contains(doc['key']),
+                    onTap: () {
+                      _pickFile(doc['key']!);
+                      field.didChange(true);
+                    },
+                    onSupprimer: () {
+                      _removeFile(doc['key']!);
+                      field.didChange(true);
+                    },
+                  ),
+                )),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -147,6 +251,7 @@ class _DocUploadField extends StatelessWidget {
   final String label;
   final bool isRequis;
   final String? fichierNom;
+  final bool isUploading;
   final VoidCallback onTap;
   final VoidCallback onSupprimer;
 
@@ -154,6 +259,7 @@ class _DocUploadField extends StatelessWidget {
     required this.label,
     required this.isRequis,
     required this.fichierNom,
+    required this.isUploading,
     required this.onTap,
     required this.onSupprimer,
   });
@@ -179,20 +285,22 @@ class _DocUploadField extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 40.w, height: 40.h,
+              width: 40, height: 40,
               decoration: BoxDecoration(
                 color: uploaded
                     ? FDColors.mint.withValues(alpha: 0.12)
                     : FDColors.ice,
                 borderRadius: BorderRadius.circular(FDRadius.xs),
               ),
-              child: Icon(
-                uploaded
-                    ? Icons.check_circle_outline
-                    : Icons.upload_file_outlined,
-                size: 20,
-                color: uploaded ? FDColors.mint : FDColors.textSub,
-              ),
+              child: isUploading 
+                  ? Padding(padding: EdgeInsets.all(10), child: CircularProgressIndicator(strokeWidth: 2))
+                  : Icon(
+                      uploaded
+                          ? Icons.check_circle_outline
+                          : Icons.upload_file_outlined,
+                      size: 20,
+                      color: uploaded ? FDColors.mint : FDColors.textSub,
+                    ),
             ),
             SizedBox(width: 12.w),
             Expanded(

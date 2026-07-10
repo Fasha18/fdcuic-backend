@@ -41,6 +41,7 @@ dependencies:
   google_fonts: ^6.1.0
   provider: ^6.1.2
   flutter_screenutil: ^5.9.3
+  url_launcher: ^6.3.2
 
 dependency_overrides:
   flutter_plugin_android_lifecycle: 2.0.20

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import adminService from '../services/adminService';
+import { getImageUrl } from '../utils/imageUrl';
 
 const MobiliteModal = ({ isOpen, onClose, onSaveSuccess, programme = null }) => {
   const [formData, setFormData] = useState({
@@ -27,7 +28,7 @@ const MobiliteModal = ({ isOpen, onClose, onSaveSuccess, programme = null }) => 
       });
     }
     setImageFile(null);
-    setImagePreview(programme?.image_couverture ? (programme.image_couverture.startsWith('http') ? programme.image_couverture : `https://fdcuic-backend-production.up.railway.app/uploads/${programme.image_couverture}`) : null);
+    setImagePreview(programme?.image_couverture ? getImageUrl(programme.image_couverture) : null);
   }, [programme, isOpen]);
 
   const handleChange = (e) => {

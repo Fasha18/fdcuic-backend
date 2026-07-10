@@ -10,6 +10,7 @@ class ProjetMobilite {
   final int etapeCourante;
   final String statut;
   final String? createdAt;
+  final Map<String, dynamic>? rawJson;
 
   ProjetMobilite({
     required this.id,
@@ -23,6 +24,7 @@ class ProjetMobilite {
     required this.etapeCourante,
     required this.statut,
     this.createdAt,
+    this.rawJson,
   });
 
   factory ProjetMobilite.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,7 @@ class ProjetMobilite {
       etapeCourante:    json['etape_courante'] ?? 1,
       statut:           json['statut'] ?? 'brouillon',
       createdAt:        json['createdAt'],
+      rawJson:          json,
     );
   }
 }

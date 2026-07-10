@@ -19,6 +19,18 @@ const User = sequelize.define('User', {
       type: DataTypes.STRING(20),
       allowNull: true,
     },
+    type_piece_identite: {
+      type: DataTypes.ENUM('CNI', 'Passeport'),
+      allowNull: true,
+    },
+    numero_piece_identite: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    date_naissance: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+    },
     email: {
         type: DataTypes.STRING(150),
         allowNull: false,

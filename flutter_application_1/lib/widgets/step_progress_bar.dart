@@ -53,14 +53,14 @@ class StepProgressBar extends StatelessWidget {
     if (isCompleted) {
       bgColor = completedColor;
       borderColor = completedColor;
-      child = Icon(Icons.check_rounded, size: 14, color: FDColors.white);
+      child = Icon(Icons.check_rounded, size: 14, color: Colors.white);
     } else if (isActive) {
       bgColor = activeColor;
       borderColor = activeColor;
       child = Text(
         '$step',
         style: TextStyle(
-          color: FDColors.white,
+          color: Colors.white,
           fontSize: 11.sp,
           fontWeight: FontWeight.w800,
         ),
@@ -118,8 +118,8 @@ class StepProgressBar extends StatelessWidget {
                 fontWeight:
                     isActive ? FontWeight.w700 : FontWeight.w400,
                 color: isActive || isCompleted
-                    ? FDColors.white
-                    : FDColors.white.withValues(alpha: 0.5),
+                    ? activeColor
+                    : inactiveColor,
               ),
             ),
           ),

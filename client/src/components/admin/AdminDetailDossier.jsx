@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import adminService from '../../services/adminService';
+import { DocumentViewerButton } from '../DocumentViewer';
+
 
 // ════════════════════════════════════════════════════════════
 // CONSTANTES
@@ -221,15 +223,24 @@ export default function AdminDetailDossier() {
   const peutEvaluerConformite = ['soumis', 'en_examen_conformite'].includes(dossier.statut);
   const peutEvaluerContenu = dossier.statut === 'en_evaluation_contenu';
 
-  const docs = [
-    { label: 'NINEA / Récépissé', fichier: dossier.doc_ninea_recepisse },
-    { label: 'CNI / Passeport', fichier: dossier.doc_cni_passeport },
-    { label: 'Budget prévisionnel', fichier: dossier.doc_budget },
-    { label: "Plan d'action", fichier: dossier.doc_plan_action },
-    { label: 'Photo / Prototype', fichier: dossier.doc_photo_prototype },
-    { label: 'Analyse financière', fichier: dossier.doc_analyse_financiere },
-    { label: 'Business Model Canvas', fichier: dossier.doc_business_model },
-  ].filter(d => d.fichier);
+  let docs = [];
+  if (dossier.documents_soumis && Array.isArray(dossier.documents_soumis)) {
+    docs = dossier.documents_soumis.map(d => ({
+      label: d.nom_document,
+      fichier: d.chemin_fichier
+    }));
+  } else {
+    // Fallback pour anciens dossiers
+    docs = [
+      { label: 'NINEA / Récépissé', fichier: dossier.doc_ninea_recepisse },
+      { label: 'CNI / Passeport', fichier: dossier.doc_cni_passeport },
+      { label: 'Budget prévisionnel', fichier: dossier.doc_budget },
+      { label: "Plan d'action", fichier: dossier.doc_plan_action },
+      { label: 'Photo / Prototype', fichier: dossier.doc_photo_prototype },
+      { label: 'Analyse financière', fichier: dossier.doc_analyse_financiere },
+      { label: 'Business Model Canvas', fichier: dossier.doc_business_model },
+    ].filter(d => d.fichier);
+  }
 
   return (
     <div className="content-grid animate-fade-in-up">
@@ -362,32 +373,30 @@ export default function AdminDetailDossier() {
         {docs.length === 0 ? (
           <p style={{ color: 'var(--color-text-tertiary)', fontSize: 14 }}>Aucun document joint à ce dossier.</p>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
-            {docs.map((doc, i) => (
-              <a
-                key={i}
-                href={doc.fichier.startsWith('http') ? doc.fichier : `${getBaseUrl()}/uploads/${doc.fichier}`}
-                target="_blank"
-                rel="noreferrer"
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '12px 16px', borderRadius: 10,
-                  background: 'var(--color-primary-light)', color: 'var(--color-primary)',
-                  textDecoration: 'none', fontWeight: 600, fontSize: 13,
-                  border: '1px solid var(--color-primary)30', transition: 'all 0.2s',
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = 'var(--color-primary)'}
-                onMouseLeave={e => {
-                  e.currentTarget.style.background = 'var(--color-primary-light)';
-                  e.currentTarget.style.color = 'var(--color-primary)';
-                }}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
-                </svg>
-                {doc.label}
-              </a>
-            ))}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+            {docs.map((doc, i) => {
+              const fileUrl = doc.fichier.startsWith('http') ? doc.fichier : `${getBaseUrl()}/uploads/${doc.fichier}`;
+              return (
+                <DocumentViewerButton
+                  key={i}
+                  url={fileUrl}
+                  nom={doc.label}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '12px 16px', borderRadius: 10,
+                    background: 'var(--color-primary-light)', color: 'var(--color-primary)',
+                    textDecoration: 'none', fontWeight: 600, fontSize: 13,
+                    border: '1px solid rgba(124,92,252,0.3)', transition: 'all 0.2s',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                  {doc.label}
+                </DocumentViewerButton>
+              );
+            })}
           </div>
         )}
 
@@ -399,21 +408,21 @@ export default function AdminDetailDossier() {
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
               {documentsModeles.map((dm, i) => (
-                <a
+                <DocumentViewerButton
                   key={i}
-                  href={dm.url_fichier || '#'}
-                  target="_blank"
-                  rel="noreferrer"
+                  url={dm.url_fichier || dm.chemin_fichier}
+                  nom={dm.nom_document}
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: 8,
                     padding: '8px 14px', borderRadius: 8,
                     background: 'var(--color-bg-body)', color: 'var(--color-text-secondary)',
-                    textDecoration: 'none', fontSize: 12, fontWeight: 600,
+                    fontSize: 12, fontWeight: 600,
                     border: '1px solid var(--color-border)',
+                    cursor: 'pointer',
                   }}
                 >
                   📄 {dm.nom_document}
-                </a>
+                </DocumentViewerButton>
               ))}
             </div>
           </div>

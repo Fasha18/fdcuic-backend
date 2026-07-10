@@ -327,7 +327,10 @@ export default function AdminDetailMobilite() {
                   textDecoration: 'none', fontWeight: 600, fontSize: 13,
                   border: '1px solid var(--color-primary)30', transition: 'all 0.2s',
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = 'var(--color-primary)'}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = 'var(--color-primary)';
+                  e.currentTarget.style.color = '#fff';
+                }}
                 onMouseLeave={e => {
                   e.currentTarget.style.background = 'var(--color-primary-light)';
                   e.currentTarget.style.color = 'var(--color-primary)';

@@ -112,20 +112,29 @@ export default function CandidaturesList({ onLogout, type }) {
   ];
 
   return (
-    <div className="dashboard-layout">
-      <div className="dashboard-main" style={{ marginLeft: 0 }}>
-        <Topbar 
-          title={type === 'appel' ? "Candidatures à l'appel à projets" : "Demandes de mobilité"} 
-          subtitle={
-            <Link to={type === 'appel' ? `/admin/appels/${id}` : `/admin/mobilite`} style={{ color: 'var(--color-primary)', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg> 
-              Retour {type === 'appel' ? "aux détails de l'appel" : "au programme"}
-            </Link>
-          } 
-        />
-
-        <div className="dashboard-content">
-          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        
+        {/* BOUTON RETOUR INTELLIGENT */}
+        <button 
+          onClick={() => navigate(type === 'appel' ? `/admin/appels/${id}` : `/admin/mobilite`)}
+          className="animate-fade-in-up"
+          style={{ 
+            display: 'inline-flex', alignItems: 'center', gap: 8, 
+            background: 'var(--color-bg-card)',
+            padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--color-border-light)',
+            color: 'var(--color-text-secondary)', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+            marginBottom: 24, transition: 'all 0.2s',
+          }}
+          onMouseOver={(e) => { e.currentTarget.style.color = 'var(--color-primary)'; e.currentTarget.style.borderColor = 'var(--color-primary-light)'; }}
+          onMouseOut={(e) => { e.currentTarget.style.color = 'var(--color-text-secondary)'; e.currentTarget.style.borderColor = 'var(--color-border-light)'; }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+          Retour {type === 'appel' ? "aux détails de l'appel" : "au programme"}
+        </button>
             
             <div className="card animate-fade-in-up" style={{ padding: '24px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
@@ -199,8 +208,6 @@ export default function CandidaturesList({ onLogout, type }) {
 
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+    </>
   );
 }

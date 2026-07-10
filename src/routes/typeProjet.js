@@ -2,12 +2,16 @@ const express = require('express');
 const router = express.Router();
 const {
   listerTypes,
+  listerTypesPublic,
   creerType,
   modifierType,
   supprimerType,
 } = require('../controllers/typeProjetController');
 const { listerParType } = require('../controllers/documentTemplateController');
 const { verifierToken, verifierRole } = require('../middlewares/auth');
+
+// Public
+router.get('/public', listerTypesPublic);
 
 // Admin uniquement
 router.get('/', verifierToken, verifierRole('admin'), listerTypes);

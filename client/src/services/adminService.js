@@ -10,6 +10,15 @@ const adminService = {
       throw error;
     }
   },
+
+  getActiviteRecente: async (limit = 12) => {
+    try {
+      const response = await api.get(`/admin/activite-recente?limit=${limit}`);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  },
   
   // ── GESTION DES CAMPAGNES (Appels à Projets Admin) ──
   getCampagnes: async () => {

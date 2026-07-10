@@ -5,17 +5,6 @@ import Sidebar from '../components/Sidebar';
 import Topbar from '../components/Topbar';
 import candidatService from '../services/candidatService';
 
-const SECTEURS = [
-  { id: 'claque', label: 'Claque' },
-  { id: 'danse_urbaine', label: 'Danse Urbaine' },
-  { id: 'conception', label: 'Conception' },
-  { id: 'sport_de_rue', label: 'Sport de Rue' },
-  { id: 'art_vivant', label: 'Art Vivant' },
-  { id: 'mode', label: 'Mode' },
-  { id: 'hiphop', label: 'Hip-Hop' },
-  { id: 'graffiti', label: 'Graffiti' }
-];
-
 const REGIONS = [
   'Dakar', 'Thiès', 'Diourbel', 'Fatick', 'Kaolack', 'Kaffrine', 
   'Saint-Louis', 'Louga', 'Matam', 'Tambacounda', 'Kédougou', 
@@ -30,7 +19,11 @@ export default function CandidatCandidature({ onLogout }) {
   const [loading, setLoading] = useState(true);
   const [etape, setEtape] = useState(1);
   const [dossierId, setDossierId] = useState(null);
-  const [typeProjet, setTypeProjet] = useState('structuration');
+  
+  const [typesProjetList, setTypesProjetList] = useState([]);
+  const [secteursList, setSecteursList] = useState([]);
+  const [documentsRequis, setDocumentsRequis] = useState([]);
+  const [typeProjet, setTypeProjet] = useState('');
   
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -39,8 +32,8 @@ export default function CandidatCandidature({ onLogout }) {
   const [touchedFields, setTouchedFields] = useState({});
 
   const [etape1Data, setEtape1Data] = useState({
-    prenom_nom_porteur: '', nom_structure: '', type_projet: 'structuration',
-    secteur_activite: 'claque', region: 'Dakar', activite_entreprise: '', nature_projet: ''
+    prenom_nom_porteur: '', nom_structure: '', type_projet: '',
+    secteur_activite: '', region: 'Dakar', activite_entreprise: '', nature_projet: ''
   });
 
   const [etape2Data, setEtape2Data] = useState({
@@ -50,25 +43,27 @@ export default function CandidatCandidature({ onLogout }) {
     equipe: [{ poste: '', prenom: '', nom: '', telephone: '' }]
   });
 
-  const [etape3Files, setEtape3Files] = useState({
-    doc_ninea_recepisse: null, doc_cni_passeport: null, doc_budget: null,
-    doc_plan_action: null, doc_photo_prototype: null,
-    doc_analyse_financiere: null, doc_business_model: null
-  });
-  
+  const [etape3Files, setEtape3Files] = useState({});
   const [existingDocs, setExistingDocs] = useState({});
 
   useEffect(() => {
     const fetchAppelAndDraft = async () => {
       try {
-        const resAppel = await candidatService.getDetailAppel(id);
-        setAppel(resAppel.appel);
+        const [resAppel, types, secteurs, resDossiers] = await Promise.all([
+          candidatService.getDetailAppel(id),
+          candidatService.getTypesProjetPublic(),
+          candidatService.getSecteursPublic(),
+          candidatService.getMesAppels()
+        ]);
         
-        let typeProj = resAppel.appel.type_projet || 'structuration';
+        setAppel(resAppel.appel);
+        setTypesProjetList(types);
+        setSecteursList(secteurs);
+        
+        let typeProj = resAppel.appel.type_projet || (types.length > 0 ? types[0].code : '');
         setTypeProjet(typeProj);
         setEtape1Data(prev => ({ ...prev, type_projet: typeProj }));
 
-        const resDossiers = await candidatService.getMesAppels();
         if (resDossiers && resDossiers.dossiers) {
           const draft = resDossiers.dossiers.find(d => String(d.appel_id) === String(id));
           if (draft) {
@@ -79,7 +74,7 @@ export default function CandidatCandidature({ onLogout }) {
               prenom_nom_porteur: draft.prenom_nom_porteur || '',
               nom_structure: draft.nom_structure || '',
               type_projet: draft.type_projet || typeProj,
-              secteur_activite: draft.secteur_activite || 'claque',
+              secteur_activite: draft.secteur_activite || '',
               region: draft.region || 'Dakar',
               activite_entreprise: draft.activite_entreprise || '',
               nature_projet: draft.nature_projet || ''
@@ -103,15 +98,11 @@ export default function CandidatCandidature({ onLogout }) {
               equipe: (draft.equipe && draft.equipe.length > 0) ? draft.equipe : [{ poste: '', prenom: '', nom: '', telephone: '' }]
             });
 
-            setExistingDocs({
-              doc_ninea_recepisse: !!draft.doc_ninea_recepisse,
-              doc_cni_passeport: !!draft.doc_cni_passeport,
-              doc_plan_action: !!draft.doc_plan_action,
-              doc_photo_prototype: !!draft.doc_photo_prototype,
-              doc_budget: !!draft.doc_budget,
-              doc_analyse_financiere: !!draft.doc_analyse_financiere,
-              doc_business_model: !!draft.doc_business_model
-            });
+            if (draft.documents_soumis) {
+              const exDocs = {};
+              draft.documents_soumis.forEach(d => { exDocs[d.nom_document] = true; });
+              setExistingDocs(exDocs);
+            }
           }
         }
       } catch (err) {
@@ -122,6 +113,24 @@ export default function CandidatCandidature({ onLogout }) {
     };
     fetchAppelAndDraft();
   }, [id]);
+
+  useEffect(() => {
+    if (typeProjet) {
+      const communs = [
+        { nom_document: 'doc_ninea_recepisse', label: 'NINEA / Récépissé', obligatoire: true },
+        { nom_document: 'doc_cni_passeport', label: 'CNI / Passeport', obligatoire: true },
+        { nom_document: 'doc_plan_action', label: 'Plan d\'action', obligatoire: true },
+        { nom_document: 'doc_photo_prototype', label: 'Photo / Prototype', obligatoire: true },
+      ];
+      if (typeProjet === 'formation' || typeProjet === 'evenementiel') {
+        communs.push({ nom_document: 'doc_budget', label: 'Budget prévisionnel', obligatoire: true });
+      } else if (typeProjet === 'structuration') {
+        communs.push({ nom_document: 'doc_analyse_financiere', label: 'Analyse financière', obligatoire: true });
+        communs.push({ nom_document: 'doc_business_model', label: 'Business Model', obligatoire: true });
+      }
+      setDocumentsRequis(communs);
+    }
+  }, [typeProjet]);
 
   // VALIDATIONS ──────────────────────────────────────────
   const validateText = (val, min = 2, max = 100) => {
@@ -138,8 +147,8 @@ export default function CandidatCandidature({ onLogout }) {
   };
   const validateFile = (file) => {
     if (!file) return 'Ce champ est obligatoire';
-    const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
-    if (!validTypes.includes(file.type)) return 'Format non accepté. PDF, JPG, PNG uniquement';
+    const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'];
+    if (!validTypes.includes(file.type) && !file.name.match(/\.(pdf|jpg|jpeg|png|docx|doc|xlsx|xls)$/i)) return 'Format non accepté. PDF, JPG, PNG, DOC, XLS uniquement';
     if (file.size > 10 * 1024 * 1024) return 'Fichier trop volumineux (max 10 Mo)';
     return null;
   };
@@ -181,7 +190,6 @@ export default function CandidatCandidature({ onLogout }) {
     err = validateTextarea(e1.activite_entreprise); if(err) errs.activite_entreprise = err;
     err = validateTextarea(e1.nature_projet); if(err) errs.nature_projet = err;
 
-    // mark all as touched
     const touched = {}; Object.keys(e1).forEach(k => touched[k]=true); setTouchedFields(prev => ({...prev, ...touched}));
     setFieldErrors(errs);
 
@@ -264,20 +272,13 @@ export default function CandidatCandidature({ onLogout }) {
     };
     let err;
 
-    err = validateDoc('doc_ninea_recepisse'); if(err) errs.doc_ninea_recepisse = err;
-    err = validateDoc('doc_cni_passeport'); if(err) errs.doc_cni_passeport = err;
-    err = validateDoc('doc_plan_action'); if(err) errs.doc_plan_action = err;
-    err = validateDoc('doc_photo_prototype'); if(err) errs.doc_photo_prototype = err;
-
-    if (typeProjet === 'formation' || typeProjet === 'evenementiel') {
-      err = validateDoc('doc_budget'); if(err) errs.doc_budget = err;
-    }
-    if (typeProjet === 'structuration') {
-      err = validateDoc('doc_analyse_financiere'); if(err) errs.doc_analyse_financiere = err;
-      err = validateDoc('doc_business_model'); if(err) errs.doc_business_model = err;
-    }
+    documentsRequis.forEach(doc => {
+      err = validateDoc(doc.nom_document); 
+      if(err) errs[doc.nom_document] = err;
+    });
 
     const touched = {}; Object.keys(etape3Files).forEach(k => touched[k]=true);
+    documentsRequis.forEach(d => touched[d.nom_document]=true);
     setTouchedFields(prev => ({...prev, ...touched}));
     setFieldErrors(errs);
 
@@ -316,13 +317,11 @@ export default function CandidatCandidature({ onLogout }) {
     if (e.target.files && e.target.files[0]) {
       setEtape3Files({ ...etape3Files, [field]: e.target.files[0] });
       setTouchedFields(prev => ({ ...prev, [field]: true }));
-      // Validation temps réel
       const err = validateFile(e.target.files[0]);
       setFieldErrors(prev => ({ ...prev, [field]: err }));
     }
   };
 
-  // Render Helpers
   const getInputStyle = (field) => {
     if (fieldErrors[field]) return { borderColor: 'var(--color-red)' };
     if (touchedFields[field] && !fieldErrors[field]) return { borderColor: 'var(--color-green)' };
@@ -354,6 +353,9 @@ export default function CandidatCandidature({ onLogout }) {
         if (tab === 'opportunites') navigate('/candidat/appels');
         if (tab === 'mes-candidatures') navigate('/candidat/mes-dossiers');
         if (tab === 'mobilite') navigate('/candidat/mobilite');
+        if (tab === 'ressources') navigate('/candidat/ressources');
+        if (tab === 'parametres') navigate('/candidat/parametres');
+        if (tab === 'profil') navigate('/candidat/profil');
       }} onLogout={onLogout} role="candidat" />
 
       <main className="dashboard-main">
@@ -417,7 +419,7 @@ export default function CandidatCandidature({ onLogout }) {
                       style={getInputStyle('secteur_activite')}
                     >
                       <option value="">Sélectionnez...</option>
-                      {SECTEURS.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                      {secteursList.map(s => <option key={s.id} value={s.nom}>{s.nom}</option>)}
                     </select>
                     <ErrorMsg msg={fieldErrors.secteur_activite} />
                   </div>
@@ -441,14 +443,15 @@ export default function CandidatCandidature({ onLogout }) {
                     <label>Type de projet *</label>
                     <select
                       value={etape1Data.type_projet}
-                      onChange={(e) => setEtape1Data({...etape1Data, type_projet: e.target.value})}
+                      onChange={(e) => {
+                         setEtape1Data({...etape1Data, type_projet: e.target.value});
+                         setTypeProjet(e.target.value);
+                      }}
                       onBlur={() => handleBlur('type_projet')}
                       style={getInputStyle('type_projet')}
                     >
                       <option value="">Sélectionnez...</option>
-                      <option value="structuration">Structuration</option>
-                      <option value="formation">Formation</option>
-                      <option value="evenementiel">Événementiel</option>
+                      {typesProjetList.map(t => <option key={t.id} value={t.code}>{t.label}</option>)}
                     </select>
                     <ErrorMsg msg={fieldErrors.type_projet} />
                   </div>
@@ -609,56 +612,46 @@ export default function CandidatCandidature({ onLogout }) {
               <form onSubmit={handleEtape3Submit} className="card animate-fade-in-up" style={{ padding: 32 }}>
                 <div className="section-header"><h2 className="section-title">Étape 3 : Documents à fournir</h2></div>
                 
-                {/* Info box */}
                 <div style={{ background: 'var(--color-primary-light)', border: '1px solid var(--color-primary)', borderRadius: 10, padding: '12px 16px', marginBottom: 24, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="2" style={{ flexShrink: 0, marginTop: 2 }}><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                   <div>
-                    <p style={{ margin: 0, fontSize: 13, color: 'var(--color-primary)', fontWeight: 600 }}>Téléchargez les templates, remplissez-les hors ligne puis uploadez-les ici.</p>
+                    <p style={{ margin: 0, fontSize: 13, color: 'var(--color-primary)', fontWeight: 600 }}>Téléchargez les modèles requis depuis "Documents importants", remplissez-les et uploadez-les ici.</p>
                     <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--color-text-secondary)' }}>Formats acceptés : PDF, JPG, PNG, Excel (.xlsx), Word (.docx). Taille max : 10 Mo par fichier.</p>
                   </div>
                 </div>
 
-                {/* Documents communs */}
-                <div style={{ marginBottom: 24 }}>
-                  <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>Documents d'identité</h3>
+                {documentsRequis.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '40px', background: '#F5F7FB', borderRadius: 12 }}>
+                    Aucun document n'est requis pour ce type de projet.
+                  </div>
+                ) : (
                   <div className="form-grid-2">
-                    {[
-                      { id: 'doc_ninea_recepisse', label: 'NINEA ou Récépissé', desc: 'Justificatif d\'enregistrement de votre structure' },
-                      { id: 'doc_cni_passeport', label: 'CNI ou Passeport', desc: 'Pièce d\'identité du porteur de projet' },
-                      { id: 'doc_plan_action', label: "Plan d'action", desc: 'Téléchargez le template, remplissez-le, puis uploadez-le', templateLink: `/api/templates/download/plan_action_${typeProjet}` },
-                      { id: 'doc_photo_prototype', label: 'Photo ou prototype', desc: 'Photo de votre équipe, prototype ou réalisation' },
-                    ].map(f => (
-                      <div key={f.id} id={`field-${f.id}`} style={{ background: 'var(--color-bg-body)', borderRadius: 10, padding: 16, border: `1px solid ${fieldErrors[f.id] ? 'var(--color-red)' : existingDocs[f.id] ? 'var(--color-green)' : 'var(--color-border-light)'}` }}>
+                    {documentsRequis.map(doc => (
+                      <div key={doc.nom_document} id={`field-${doc.nom_document}`} style={{ background: 'var(--color-bg-body)', borderRadius: 10, padding: 16, border: `1px solid ${fieldErrors[doc.nom_document] ? 'var(--color-red)' : existingDocs[doc.nom_document] ? 'var(--color-green)' : 'var(--color-border-light)'}` }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
                           <div>
-                            <label style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', display: 'block', marginBottom: 2 }}>{f.label} *</label>
-                            <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>{f.desc}</p>
+                            <label style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', display: 'block', marginBottom: 2 }}>{doc.label} *</label>
+                            <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>Document obligatoire</p>
                           </div>
-                          {existingDocs[f.id] && <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 6px', borderRadius: 4, background: 'var(--color-green-light)', color: 'var(--color-green)', flexShrink: 0 }}>✓ Fourni</span>}
+                          {existingDocs[doc.nom_document] && <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 6px', borderRadius: 4, background: 'var(--color-green-light)', color: 'var(--color-green)', flexShrink: 0 }}>✓ Fourni</span>}
                         </div>
-                        {f.templateLink && (
-                          <a href={f.templateLink} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: 'var(--color-primary)', textDecoration: 'none', marginBottom: 8, padding: '4px 8px', background: 'var(--color-primary-light)', borderRadius: 6 }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                            Télécharger template
-                          </a>
-                        )}
                         <input
-                          key={etape3Files[f.id] ? etape3Files[f.id].name : 'empty'}
+                          key={etape3Files[doc.nom_document] ? etape3Files[doc.nom_document].name : `empty-${doc.nom_document}`}
                           type="file" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.docx,.doc"
-                          onChange={(e) => handleFileChange(e, f.id)} className="file-input"
-                          style={{ borderColor: fieldErrors[f.id] ? 'var(--color-red)' : undefined }}
+                          onChange={(e) => handleFileChange(e, doc.nom_document)} className="file-input"
+                          style={{ borderColor: fieldErrors[doc.nom_document] ? 'var(--color-red)' : undefined }}
                         />
-                        {etape3Files[f.id] && (
+                        {etape3Files[doc.nom_document] && (
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
                             <div style={{ fontSize: 12, color: 'var(--color-primary)' }}>
-                              Sélectionné : {etape3Files[f.id].name}
+                              Sélectionné : {etape3Files[doc.nom_document].name}
                             </div>
                             <button
                               type="button"
                               onClick={() => {
                                 setEtape3Files(prev => {
                                   const copy = { ...prev };
-                                  delete copy[f.id];
+                                  delete copy[doc.nom_document];
                                   return copy;
                                 });
                               }}
@@ -668,119 +661,9 @@ export default function CandidatCandidature({ onLogout }) {
                             </button>
                           </div>
                         )}
-                        <ErrorMsg msg={fieldErrors[f.id]} />
+                        <ErrorMsg msg={fieldErrors[doc.nom_document]} />
                       </div>
                     ))}
-                  </div>
-                </div>
-
-                {/* Documents spécifiques au type */}
-                {(typeProjet === 'formation' || typeProjet === 'evenementiel') && (
-                  <div style={{ marginBottom: 24 }}>
-                    <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>Documents spécifiques — {typeProjet === 'formation' ? 'Formation' : 'Événementiel'}</h3>
-                    <div id="field-doc_budget" style={{ background: 'var(--color-bg-body)', borderRadius: 10, padding: 16, border: `1px solid ${fieldErrors.doc_budget ? 'var(--color-red)' : existingDocs.doc_budget ? 'var(--color-green)' : 'var(--color-primary)'}` }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                        <div>
-                          <label style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', display: 'block', marginBottom: 2 }}>Budget prévisionnel *</label>
-                          <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>Détaillez votre budget par sections en FCFA. Téléchargez le template, remplissez-le et uploadez-le.</p>
-                        </div>
-                        <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                          <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 6px', borderRadius: 4, background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}>OBLIGATOIRE</span>
-                          {existingDocs.doc_budget && <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 6px', borderRadius: 4, background: 'var(--color-green-light)', color: 'var(--color-green)' }}>✓ Fourni</span>}
-                        </div>
-                      </div>
-                      <a
-                        href={`/api/templates/download/${typeProjet === 'formation' ? 'budget_previsionnel' : 'budget_previsionnel_evenementiel'}`}
-                        target="_blank" rel="noreferrer"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: 'var(--color-primary)', textDecoration: 'none', marginBottom: 10, padding: '5px 10px', background: 'var(--color-primary-light)', borderRadius: 6 }}
-                      >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                        Télécharger template Budget {typeProjet === 'evenementiel' ? 'Événementiel' : 'Formation'}
-                      </a>
-                      <input
-                        key={etape3Files['doc_budget'] ? etape3Files['doc_budget'].name : 'empty'}
-                        type="file" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.docx,.doc"
-                        onChange={(e) => handleFileChange(e, 'doc_budget')} className="file-input"
-                        style={{ borderColor: fieldErrors.doc_budget ? 'var(--color-red)' : undefined }}
-                      />
-                      {etape3Files['doc_budget'] && (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
-                          <div style={{ fontSize: 12, color: 'var(--color-primary)' }}>
-                            Sélectionné : {etape3Files['doc_budget'].name}
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setEtape3Files(prev => {
-                                const copy = { ...prev };
-                                delete copy['doc_budget'];
-                                return copy;
-                              });
-                            }}
-                            style={{ background: 'none', border: 'none', color: 'var(--color-red)', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: 0 }}
-                          >
-                            Supprimer
-                          </button>
-                        </div>
-                      )}
-                      <ErrorMsg msg={fieldErrors.doc_budget} />
-                    </div>
-                  </div>
-                )}
-
-                {typeProjet === 'structuration' && (
-                  <div style={{ marginBottom: 24 }}>
-                    <h3 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 12 }}>Documents spécifiques — Structuration</h3>
-                    <div className="form-grid-2">
-                      {[
-                        { id: 'doc_analyse_financiere', label: 'Analyse financière', desc: 'Bilan 2024, prévisions 2025-2026, et analyse SWOT.', templateNom: 'analyse_financiere' },
-                        { id: 'doc_business_model', label: 'Business Model Canvas', desc: 'Présentez votre modèle économique en 9 blocs.', templateNom: 'business_model' },
-                      ].map(f => (
-                        <div key={f.id} id={`field-${f.id}`} style={{ background: 'var(--color-bg-body)', borderRadius: 10, padding: 16, border: `1px solid ${fieldErrors[f.id] ? 'var(--color-red)' : existingDocs[f.id] ? 'var(--color-green)' : 'var(--color-primary)'}` }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-                            <div>
-                              <label style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)', display: 'block', marginBottom: 2 }}>{f.label} *</label>
-                              <p style={{ fontSize: 11, color: 'var(--color-text-tertiary)', margin: 0 }}>{f.desc}</p>
-                            </div>
-                            <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                              <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 6px', borderRadius: 4, background: 'var(--color-primary-light)', color: 'var(--color-primary)' }}>OBLIGATOIRE</span>
-                              {existingDocs[f.id] && <span style={{ fontSize: 10, fontWeight: 700, padding: '3px 6px', borderRadius: 4, background: 'var(--color-green-light)', color: 'var(--color-green)' }}>✓ Fourni</span>}
-                            </div>
-                          </div>
-                          <a href={`/api/templates/download/${f.templateNom}`} target="_blank" rel="noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 600, color: 'var(--color-primary)', textDecoration: 'none', marginBottom: 10, padding: '5px 10px', background: 'var(--color-primary-light)', borderRadius: 6 }}>
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                            Télécharger template {f.label}
-                          </a>
-                          <input
-                            key={etape3Files[f.id] ? etape3Files[f.id].name : 'empty'}
-                            type="file" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.docx,.doc"
-                            onChange={(e) => handleFileChange(e, f.id)} className="file-input"
-                            style={{ borderColor: fieldErrors[f.id] ? 'var(--color-red)' : undefined }}
-                          />
-                          {etape3Files[f.id] && (
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
-                              <div style={{ fontSize: 12, color: 'var(--color-primary)' }}>
-                                Sélectionné : {etape3Files[f.id].name}
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setEtape3Files(prev => {
-                                    const copy = { ...prev };
-                                    delete copy[f.id];
-                                    return copy;
-                                  });
-                                }}
-                                style={{ background: 'none', border: 'none', color: 'var(--color-red)', fontSize: 12, fontWeight: 600, cursor: 'pointer', padding: 0 }}
-                              >
-                                Supprimer
-                              </button>
-                            </div>
-                          )}
-                          <ErrorMsg msg={fieldErrors[f.id]} />
-                        </div>
-                      ))}
-                    </div>
                   </div>
                 )}
 
@@ -807,7 +690,7 @@ export default function CandidatCandidature({ onLogout }) {
                   <p><strong>Appel :</strong> {appel.titre}</p>
                   <p><strong>Porteur :</strong> {etape1Data.prenom_nom_porteur}</p>
                   <p><strong>Structure :</strong> {etape1Data.nom_structure}</p>
-                  <p><strong>Type de projet :</strong> <span style={{textTransform:'capitalize'}}>{typeProjet}</span></p>
+                  <p><strong>Type de projet :</strong> <span style={{textTransform:'capitalize'}}>{typesProjetList.find(t=>t.code===typeProjet)?.label || typeProjet}</span></p>
                   
                   <div className="alert alert-info" style={{ marginTop: 16 }}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>

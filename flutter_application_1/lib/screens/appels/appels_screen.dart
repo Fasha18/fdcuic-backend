@@ -247,6 +247,19 @@ class _AppelsTabState extends State<_AppelsTab> {
           ),
         ),
 
+        // ── TEXTE INTRODUCTIF ────────────────────────────
+        Padding(
+          padding: EdgeInsets.fromLTRB(24, 4, 24, 12),
+          child: Text(
+            "Découvrez les opportunités actuellement disponibles et déposez votre candidature.",
+            style: GoogleFonts.sora(
+              fontSize: 13.sp,
+              color: widget.isDark ? AppColors.darkTxtSecondary : AppColors.lightTxtSecondary,
+              height: 1.5,
+            ),
+          ),
+        ),
+
         // ── LISTE ────────────────────────────────────────
         Expanded(
           child: _filtres.isEmpty

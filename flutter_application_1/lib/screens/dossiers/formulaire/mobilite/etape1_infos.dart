@@ -1,9 +1,28 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../../widgets/auth_widgets.dart';
 import '../../../../widgets/form_widgets.dart';
 import '../../../../utils/form_validators.dart';
-import '../../../../core/theme.dart';
+import '../../../../services/api_service.dart';
+import '../../../../core/app_colors.dart';
+
+// Même liste statique de régions pour le Sénégal que sur le web
+const _kRegionsMob = [
+  'Dakar', 'Thiès', 'Diourbel', 'Fatick', 'Kaolack', 'Kaffrine',
+  'Saint-Louis', 'Louga', 'Matam', 'Tambacounda', 'Kédougou',
+  'Kolda', 'Ziguinchor', 'Sédhiou'
+];
+
+// Même liste statique de pays que sur le web
+const _kCountriesMob = [
+  "Sénégal", "France", "Belgique", "Suisse", "Canada", "Maroc", "Côte d'Ivoire", "Mali", "Guinée", "Mauritanie",
+  "Algérie", "Tunisie", "Cameroun", "Gabon", "Togo", "Bénin", "Burkina Faso", "Niger", "Tchad", "Congo",
+  "RDC", "Madagascar", "États-Unis", "Royaume-Uni", "Allemagne", "Espagne", "Italie", "Portugal", "Pays-Bas",
+  "Suède", "Norvège", "Danemark", "Finlande", "Japon", "Chine", "Corée du Sud", "Inde", "Brésil", "Argentine",
+  "Mexique", "Colombie", "Chili", "Pérou", "Australie", "Nouvelle-Zélande", "Afrique du Sud", "Égypte", "Nigéria",
+  "Kenya", "Ghana", "Somalie", "Éthiopie", "Rwanda", "Ouganda", "Zambie", "Zimbabwe", "Angola", "Mozambique"
+];
 
 class Etape1InfosMob extends StatefulWidget {
   final GlobalKey<FormState> formKey;
@@ -15,41 +34,71 @@ class Etape1InfosMob extends StatefulWidget {
 
 class _Etape1InfosMobState extends State<Etape1InfosMob> {
   late final TextEditingController _structureCtrl;
-  late final TextEditingController _paysCtrl;
+  late final TextEditingController _disciplineCtrl;
   late final TextEditingController _regionCtrl;
 
-  final _disciplines = ['danse_urbaine','hiphop','graffiti','mode','claque','sport_de_rue','art_vivant','conception'];
-
-  String _lblDisc(String d) {
-    const map = {'danse_urbaine':'Danse urbaine','sport_de_rue':'Sport de rue','art_vivant':'Art vivant'};
-    return map[d] ?? d[0].toUpperCase() + d.substring(1);
-  }
+  List<String> _paysDyn = _kCountriesMob;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _structureCtrl = TextEditingController(text: widget.formData['nom_structure'] ?? '');
-    _paysCtrl = TextEditingController(text: widget.formData['pays_destination'] ?? '');
+    _disciplineCtrl = TextEditingController(text: widget.formData['discipline'] ?? '');
     _regionCtrl = TextEditingController(text: widget.formData['region_destination'] ?? '');
 
     _structureCtrl.addListener(() => widget.formData['nom_structure'] = _structureCtrl.text);
-    _paysCtrl.addListener(() => widget.formData['pays_destination'] = _paysCtrl.text);
+    _disciplineCtrl.addListener(() => widget.formData['discipline'] = _disciplineCtrl.text);
     _regionCtrl.addListener(() => widget.formData['region_destination'] = _regionCtrl.text);
+
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    // GET /api/referentiels/pays
+    try {
+      final resPays = await ApiService.getPays();
+      if (resPays.isNotEmpty && mounted) {
+        setState(() => _paysDyn = resPays);
+      }
+    } catch (e) {
+      debugPrint('Erreur pays: $e');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   Future<void> _pickDate(String key) async {
+    final now = DateTime.now();
+    DateTime firstDate = DateTime(now.year - 1);
+    DateTime initialDate = now;
+
+    // Si on choisit la date d'arrivée, elle doit être postérieure à la date de départ
+    if (key == 'date_arrivee' && widget.formData['date_depart'] != null) {
+      try {
+        final depart = DateTime.parse(widget.formData['date_depart']);
+        firstDate = depart.add(const Duration(days: 1));
+        initialDate = firstDate;
+      } catch (_) {}
+    } else if (key == 'date_depart') {
+      firstDate = now;
+      initialDate = now;
+    }
+
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
+      initialDate: initialDate,
+      firstDate: firstDate,
       lastDate: DateTime(2030),
       builder: (context, child) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final c = AppColors(isDark);
         return Theme(
           data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.light(
-              primary: FDColors.violet,
-              onPrimary: FDColors.white,
-              onSurface: FDColors.textPrimary,
+            colorScheme: ColorScheme.light(
+              primary: c.accentPurple,
+              onPrimary: Colors.white,
+              onSurface: c.txtPrimary,
             ),
           ),
           child: child!,
@@ -58,13 +107,37 @@ class _Etape1InfosMobState extends State<Etape1InfosMob> {
     );
     if (picked != null) {
       setState(() {
-        widget.formData[key] = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+        final formattedDate = "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+        widget.formData[key] = formattedDate;
+
+        // Si la date de départ change et est postérieure ou égale à la date d'arrivée actuelle, réinitialiser la date d'arrivée
+        if (key == 'date_depart') {
+          final arriveeStr = widget.formData['date_arrivee'];
+          if (arriveeStr != null) {
+            try {
+              final arrivee = DateTime.parse(arriveeStr);
+              if (picked.isAfter(arrivee) || picked.isAtSameMomentAs(arrivee)) {
+                widget.formData['date_arrivee'] = null;
+              }
+            } catch (_) {}
+          }
+        }
       });
     }
   }
 
   @override
+  void dispose() {
+    _structureCtrl.dispose();
+    _disciplineCtrl.dispose();
+    _regionCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final paysSelectionne = widget.formData['pays_destination'];
+
     return Form(
       key: widget.formKey,
       child: SingleChildScrollView(
@@ -72,25 +145,23 @@ class _Etape1InfosMobState extends State<Etape1InfosMob> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            FDLabel('Nom de la structure / Artiste'),
+            FDLabel('Nom de la structure ou de l\'artiste *'),
             SizedBox(height: 6.h),
             FDTextField(
-              controller: _structureCtrl, 
-              hint: 'Ex: Collectif Dakar Urban', 
+              controller: _structureCtrl,
+              hint: 'Ex: Association Dakar Créatif',
               icon: Icons.business_outlined,
               validator: FormValidators.text,
             ),
             SizedBox(height: 16.h),
 
-            FDLabel('Discipline'),
+            FDLabel('Discipline artistique ou culturelle *'),
             SizedBox(height: 6.h),
-            FDDropdown(
-              hint: 'Sélectionner la discipline',
-              value: widget.formData['discipline'],
-              items: _disciplines,
-              labelBuilder: _lblDisc,
-              onChanged: (v) => setState(() => widget.formData['discipline'] = v),
-              validator: FormValidators.requiredField,
+            FDTextField(
+              controller: _disciplineCtrl,
+              hint: 'Ex: Danse contemporaine, Musique...',
+              icon: Icons.theater_comedy_outlined,
+              validator: FormValidators.text,
             ),
             SizedBox(height: 16.h),
 
@@ -100,11 +171,11 @@ class _Etape1InfosMobState extends State<Etape1InfosMob> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      FDLabel('Date de départ'),
+                      FDLabel('Date de départ prévue *'),
                       SizedBox(height: 6.h),
-                      _DateField(
+                      _MobDateField(
                         valeur: widget.formData['date_depart'],
-                        hint: 'YYYY-MM-DD',
+                        hint: 'Sélectionner',
                         onTap: () => _pickDate('date_depart'),
                       ),
                     ],
@@ -115,11 +186,11 @@ class _Etape1InfosMobState extends State<Etape1InfosMob> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      FDLabel("Date d'arrivée"),
+                      FDLabel("Date d'arrivée prévue *"),
                       SizedBox(height: 6.h),
-                      _DateField(
+                      _MobDateField(
                         valeur: widget.formData['date_arrivee'],
-                        hint: 'YYYY-MM-DD',
+                        hint: 'Sélectionner',
                         onTap: () => _pickDate('date_arrivee'),
                       ),
                     ],
@@ -129,24 +200,46 @@ class _Etape1InfosMobState extends State<Etape1InfosMob> {
             ),
             SizedBox(height: 16.h),
 
-            FDLabel('Pays de destination'),
+            FDLabel('Pays de destination *'),
             SizedBox(height: 6.h),
-            FDTextField(
-              controller: _paysCtrl, 
-              hint: 'Ex: France', 
-              icon: Icons.public_outlined,
-              validator: FormValidators.text,
-            ),
+            if (_isLoading)
+              _MobLoadingField()
+            else
+              FDDropdown<String>(
+                hint: 'Rechercher un pays...',
+                value: paysSelectionne,
+                items: _paysDyn,
+                labelBuilder: (p) => p,
+                onChanged: (v) => setState(() {
+                  widget.formData['pays_destination'] = v;
+                  widget.formData['region_destination'] = null;
+                  _regionCtrl.text = '';
+                }),
+                validator: FormValidators.requiredField,
+              ),
             SizedBox(height: 16.h),
 
-            FDLabel('Région de destination'),
+            FDLabel('Région / Ville de destination *'),
             SizedBox(height: 6.h),
-            FDTextField(
-              controller: _regionCtrl, 
-              hint: 'Ex: Île-de-France', 
-              icon: Icons.map_outlined,
-              validator: FormValidators.text,
-            ),
+            if (paysSelectionne == 'Sénégal')
+              FDDropdown<String>(
+                hint: 'Sélectionner une région...',
+                value: widget.formData['region_destination'],
+                items: _kRegionsMob,
+                labelBuilder: (r) => r,
+                onChanged: (v) => setState(() {
+                  widget.formData['region_destination'] = v;
+                  if (v != null) _regionCtrl.text = v;
+                }),
+                validator: FormValidators.requiredField,
+              )
+            else
+              FDTextField(
+                controller: _regionCtrl,
+                hint: paysSelectionne != null ? 'Saisir la ville ou région...' : 'Sélectionnez d\'abord un pays',
+                icon: Icons.map_outlined,
+                validator: FormValidators.text,
+              ),
           ],
         ),
       ),
@@ -154,8 +247,31 @@ class _Etape1InfosMobState extends State<Etape1InfosMob> {
   }
 }
 
-class _DateField extends FormField<String> {
-  _DateField({
+class _MobLoadingField extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final c = AppColors(isDark);
+    return Container(
+      height: 52.h,
+      decoration: BoxDecoration(
+        color: c.bgCard,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: c.borderMain),
+      ),
+      child: Center(
+        child: SizedBox(
+          height: 18.h,
+          width: 18.w,
+          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.lightAccent),
+        ),
+      ),
+    );
+  }
+}
+
+class _MobDateField extends FormField<String> {
+  _MobDateField({
     required String? valeur,
     required String hint,
     required VoidCallback onTap,
@@ -163,53 +279,58 @@ class _DateField extends FormField<String> {
           initialValue: valeur,
           validator: FormValidators.requiredField,
           builder: (FormFieldState<String> state) {
-            // Mise à jour de l'état du FormField quand la valeur change
             if (valeur != state.value) {
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 state.didChange(valeur);
               });
             }
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GestureDetector(
-                  onTap: onTap,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: FDColors.ice,
-                      borderRadius: BorderRadius.circular(FDRadius.sm),
-                      border: Border.all(
-                        color: state.hasError ? FDColors.coral : FDColors.border, 
-                        width: state.hasError ? 1.0 : 0.8
+            return Builder(builder: (context) {
+              final isDark = Theme.of(context).brightness == Brightness.dark;
+              final c = AppColors(isDark);
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTap: onTap,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                      decoration: BoxDecoration(
+                        color: c.bgCard,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: state.hasError ? AppColors.error : c.borderMain,
+                          width: 1.0,
+                        ),
                       ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.calendar_today_outlined, size: 18, color: FDColors.textHint),
-                        SizedBox(width: 12.w),
-                        Expanded(
-                          child: Text(
-                            valeur ?? hint,
-                            style: FDText.body.copyWith(
-                              color: valeur == null ? FDColors.textHint : FDColors.textPrimary,
+                      child: Row(
+                        children: [
+                          Icon(Icons.calendar_today_outlined, size: 18, color: c.txtSecondary),
+                          SizedBox(width: 12.w),
+                          Expanded(
+                            child: Text(
+                              valeur ?? hint,
+                              style: GoogleFonts.sora(
+                                fontSize: 14.sp,
+                                color: valeur == null ? c.txtSecondary : c.txtPrimary,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
-                if (state.hasError)
-                  Padding(
-                    padding: EdgeInsets.only(top: 6, left: 14),
-                    child: Text(
-                      state.errorText!,
-                      style: TextStyle(color: FDColors.coral, fontSize: 12.sp),
+                  if (state.hasError)
+                    Padding(
+                      padding: EdgeInsets.only(top: 6, left: 14),
+                      child: Text(
+                        state.errorText!,
+                        style: GoogleFonts.sora(color: AppColors.error, fontSize: 12.sp),
+                      ),
                     ),
-                  ),
-              ],
-            );
+                ],
+              );
+            });
           },
         );
 }

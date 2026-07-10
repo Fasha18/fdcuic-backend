@@ -5,6 +5,7 @@ import '../../core/app_colors.dart';
 import '../../models/appel_projet_dossier.dart';
 import '../../models/projet_mobilite.dart';
 import '../../services/api_service.dart';
+import 'dossier_detail_screen.dart';
 
 class MesDossiersScreen extends StatefulWidget {
   const MesDossiersScreen({super.key});
@@ -18,6 +19,14 @@ class _MesDossiersScreenState extends State<MesDossiersScreen> {
   List<AppelProjetDossier> _dossiers = [];
   List<ProjetMobilite> _projets = [];
   bool _isLoading = true;
+
+  List<AppelProjetDossier> get _filteredDossiers => _dossiers.where((d) => d.statut != 'brouillon').toList();
+  List<ProjetMobilite> get _filteredProjets => _projets.where((p) => p.statut != 'brouillon').toList();
+  List<dynamic> get _brouillons {
+    final b1 = _dossiers.where((d) => d.statut == 'brouillon').toList();
+    final b2 = _projets.where((p) => p.statut == 'brouillon').toList();
+    return [...b1, ...b2];
+  }
 
   @override
   void initState() {
@@ -56,7 +65,10 @@ class _MesDossiersScreenState extends State<MesDossiersScreen> {
       );
     }
 
-    final count = _currentTab == 'Appels' ? _dossiers.length : _projets.length;
+    int count = 0;
+    if (_currentTab == 'Appels') count = _filteredDossiers.length;
+    else if (_currentTab == 'Mobilité') count = _filteredProjets.length;
+    else count = _brouillons.length;
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkBgPrimary : AppColors.lightBgPrimary,
@@ -96,7 +108,7 @@ class _MesDossiersScreenState extends State<MesDossiersScreen> {
 
                   // Onglets
                   Row(
-                    children: ['Appels', 'Mobilité'].map((tab) {
+                    children: ['Appels', 'Mobilité', 'Brouillons'].map((tab) {
                       final isActive = _currentTab == tab;
                       return GestureDetector(
                         onTap: () => setState(() => _currentTab = tab),
@@ -134,11 +146,29 @@ class _MesDossiersScreenState extends State<MesDossiersScreen> {
           // Séparateur
           Divider(height: 1, color: isDark ? AppColors.darkBorder : AppColors.lightBorder),
 
+          // TEXTE INTRODUCTIF
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.fromLTRB(24, 16, 24, 4),
+            child: Text(
+              _currentTab == 'Brouillons' 
+                ? "Retrouvez ici vos candidatures en cours de saisie."
+                : "Retrouvez ici l'ensemble de vos dossiers soumis et suivez leur avancement.",
+              style: GoogleFonts.sora(
+                fontSize: 13.sp,
+                color: isDark ? AppColors.darkTxtSecondary : AppColors.lightTxtSecondary,
+                height: 1.5,
+              ),
+            ),
+          ),
+
           // Corps
           Expanded(
             child: _currentTab == 'Appels'
-                ? _DossiersTab(dossiers: _dossiers, isDark: isDark)
-                : _MobiliteTab(projets: _projets, isDark: isDark),
+                ? _DossiersTab(dossiers: _filteredDossiers, isDark: isDark)
+                : _currentTab == 'Mobilité'
+                    ? _MobiliteTab(projets: _filteredProjets, isDark: isDark)
+                    : _BrouillonsTab(brouillons: _brouillons, isDark: isDark),
           ),
         ],
       ),
@@ -230,6 +260,43 @@ class _MobiliteTab extends StatelessWidget {
         padding: EdgeInsets.only(bottom: 14),
         child: _MobiliteCard(projet: projets[i], isDark: isDark),
       ),
+    );
+  }
+}
+
+class _BrouillonsTab extends StatelessWidget {
+  final List<dynamic> brouillons;
+  final bool isDark;
+  const _BrouillonsTab({required this.brouillons, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    if (brouillons.isEmpty) {
+      return _EmptyState(
+        icon: Icons.edit_document,
+        message: 'Aucun brouillon en cours',
+        isDark: isDark,
+      );
+    }
+
+    return ListView.builder(
+      padding: EdgeInsets.fromLTRB(24, 20, 24, 32),
+      itemCount: brouillons.length,
+      itemBuilder: (context, i) {
+        final item = brouillons[i];
+        if (item is AppelProjetDossier) {
+          return Padding(
+            padding: EdgeInsets.only(bottom: 14),
+            child: _DossierCard(dossier: item, isDark: isDark),
+          );
+        } else if (item is ProjetMobilite) {
+          return Padding(
+            padding: EdgeInsets.only(bottom: 14),
+            child: _MobiliteCard(projet: item, isDark: isDark),
+          );
+        }
+        return const SizedBox.shrink();
+      },
     );
   }
 }
@@ -505,14 +572,18 @@ class _DossierCard extends StatelessWidget {
                       _ActionButton(
                         label: 'Continuer →',
                         isDark: isDark,
-                        onTap: () => Navigator.pushNamed(context, '/formulaire-appel', arguments: dossier.id),
+                        onTap: () => Navigator.pushNamed(context, '/formulaire-appel', arguments: dossier),
                       )
                     else
                       _ActionButton(
                         label: 'Voir le dossier',
                         isDark: isDark,
                         outline: true,
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(context, MaterialPageRoute(
+                            builder: (_) => DossierDetailScreen(dossier: dossier, isMobilite: false),
+                          ));
+                        },
                       ),
                   ],
                 ),
@@ -652,13 +723,17 @@ class _MobiliteCard extends StatelessWidget {
                       ? _ActionButton(
                           label: 'Continuer →',
                           isDark: isDark,
-                          onTap: () => Navigator.pushNamed(context, '/formulaire-mobilite', arguments: projet.id),
+                          onTap: () => Navigator.pushNamed(context, '/formulaire-mobilite', arguments: projet),
                         )
                       : _ActionButton(
                           label: 'Voir le dossier',
                           isDark: isDark,
                           outline: true,
-                          onTap: () {},
+                          onTap: () {
+                            Navigator.push(context, MaterialPageRoute(
+                              builder: (_) => DossierDetailScreen(dossier: projet, isMobilite: true),
+                            ));
+                          },
                         ),
                 ),
               ],

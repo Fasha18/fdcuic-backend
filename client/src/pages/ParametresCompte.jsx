@@ -11,6 +11,9 @@ export default function ParametresCompte() {
   const [nom, setNom] = useState('');
   const [prenom, setPrenom] = useState('');
   const [telephone, setTelephone] = useState('');
+  const [typePieceIdentite, setTypePieceIdentite] = useState('CNI');
+  const [numeroPieceIdentite, setNumeroPieceIdentite] = useState('');
+  const [dateNaissance, setDateNaissance] = useState('');
   
   const [ancienMotDePasse, setAncienMotDePasse] = useState('');
   const [nouveauMotDePasse, setNouveauMotDePasse] = useState('');
@@ -22,6 +25,7 @@ export default function ParametresCompte() {
   // Avatar upload
   const fileInputRef = useRef(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [loadingPass, setLoadingPass] = useState(false);
 
   useEffect(() => {
     fetchProfile();
@@ -35,6 +39,9 @@ export default function ParametresCompte() {
       setNom(data.nom || '');
       setPrenom(data.prenom || '');
       setTelephone(data.telephone || '');
+      setTypePieceIdentite(data.type_piece_identite || 'CNI');
+      setNumeroPieceIdentite(data.numero_piece_identite || '');
+      setDateNaissance(data.date_naissance || '');
       setNotificationsEmail(data.notifications_email !== false);
     } catch (err) {
       setError('Erreur lors du chargement du profil.');
@@ -56,7 +63,12 @@ export default function ParametresCompte() {
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
     try {
-      await meService.updateProfile({ nom, prenom, telephone });
+      await meService.updateProfile({ 
+        nom, prenom, telephone, 
+        type_piece_identite: typePieceIdentite, 
+        numero_piece_identite: numeroPieceIdentite, 
+        date_naissance: dateNaissance 
+      });
       showToast('Informations personnelles mises à jour avec succès.');
       // Mettre à jour le localStorage si besoin
       const localUser = JSON.parse(localStorage.getItem('user') || '{}');
@@ -76,6 +88,7 @@ export default function ParametresCompte() {
       showToast('Les nouveaux mots de passe ne correspondent pas.', true);
       return;
     }
+    setLoadingPass(true);
     try {
       await meService.updatePassword({ ancienMotDePasse, nouveauMotDePasse, confirmationNouveauMotDePasse });
       showToast('Mot de passe modifié avec succès.');
@@ -84,6 +97,8 @@ export default function ParametresCompte() {
       setConfirmationNouveauMotDePasse('');
     } catch (err) {
       showToast(err.response?.data?.message || 'Erreur lors de la modification du mot de passe.', true);
+    } finally {
+      setLoadingPass(false);
     }
   };
 
@@ -93,7 +108,7 @@ export default function ParametresCompte() {
     
     // Check size
     if (file.size > 5 * 1024 * 1024) {
-      showToast('L\\'image est trop volumineuse (max 5 Mo).', true);
+      showToast("L'image est trop volumineuse (max 5 Mo).", true);
       return;
     }
 
@@ -138,6 +153,28 @@ export default function ParametresCompte() {
     return <div>Impossible de charger le profil.</div>;
   }
 
+  const calculateCompletion = () => {
+    const fields = [
+      { name: 'Nom', val: nom },
+      { name: 'Prénom', val: prenom },
+      { name: 'Email', val: user.email },
+      { name: 'Téléphone', val: telephone },
+      { name: 'Photo de profil', val: user.avatar_url },
+      { name: 'Numéro de pièce d\'identité', val: numeroPieceIdentite },
+      { name: 'Date de naissance', val: dateNaissance }
+    ];
+    const filled = fields.filter(f => f.val && f.val.toString().trim() !== '');
+    const percentage = Math.round((filled.length / fields.length) * 100);
+    const missing = fields.filter(f => !f.val || f.val.toString().trim() === '').map(f => f.name);
+    return { percentage, missing };
+  };
+
+  const { percentage, missing } = calculateCompletion();
+  const barColor = percentage === 100 ? 'var(--color-green)' : (percentage >= 50 ? 'var(--color-orange)' : 'var(--color-red)');
+
+  const today = new Date();
+  const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate()).toISOString().split('T')[0];
+
   return (
     <div style={{ maxWidth: 800, margin: '0 auto', paddingBottom: 40, position: 'relative' }}>
       
@@ -168,6 +205,29 @@ export default function ParametresCompte() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
         
+        {/* BARRE DE COMPLETUDE */}
+        <div style={{ background: 'var(--color-bg-container)', padding: '24px 32px', borderRadius: 'var(--radius-lg)', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', border: '1px solid var(--color-border)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
+              Profil complet à {percentage}%
+            </h2>
+            {percentage === 100 && (
+              <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--color-green)', fontSize: 14, fontWeight: 600 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                Profil au top !
+              </span>
+            )}
+          </div>
+          <div style={{ width: '100%', height: 8, background: 'var(--color-border-light)', borderRadius: 4, overflow: 'hidden', marginBottom: 12 }}>
+            <div style={{ height: '100%', width: `${percentage}%`, background: barColor, transition: 'width 0.5s ease-out, background 0.5s ease-out' }} />
+          </div>
+          {missing.length > 0 && (
+            <div style={{ fontSize: 14, color: 'var(--color-text-secondary)' }}>
+              <strong>Il vous manque :</strong> {missing.join(', ')}
+            </div>
+          )}
+        </div>
+
         {/* SECTION 1: PHOTO DE PROFIL */}
         <div style={{ background: 'var(--color-bg-container)', padding: 32, borderRadius: 'var(--radius-lg)', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', border: '1px solid var(--color-border)' }}>
           <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 20 }}>Photo de profil</h2>
@@ -252,6 +312,27 @@ export default function ParametresCompte() {
               <label className="form-label">Numéro de téléphone</label>
               <input type="tel" className="form-input" value={telephone} onChange={e => setTelephone(e.target.value)} />
             </div>
+
+            <div className="form-group">
+              <label className="form-label">Type de pièce d'identité</label>
+              <select className="form-input" value={typePieceIdentite} onChange={e => setTypePieceIdentite(e.target.value)}>
+                <option value="CNI">Carte Nationale d'Identité (CNI)</option>
+                <option value="Passeport">Passeport</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Numéro de pièce d'identité</label>
+              <input type="text" className="form-input" value={numeroPieceIdentite} onChange={e => setNumeroPieceIdentite(e.target.value)} />
+            </div>
+
+            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+              <label className="form-label">Date de naissance</label>
+              <input type="date" className="form-input" value={dateNaissance} onChange={e => setDateNaissance(e.target.value)} max={maxDate} />
+              <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginTop: 4 }}>
+                Vous devez avoir au moins 18 ans pour soumettre un dossier.
+              </div>
+            </div>
+
             <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
               <button type="submit" className="btn-primary">Enregistrer les modifications</button>
             </div>
@@ -284,15 +365,50 @@ export default function ParametresCompte() {
             </div>
             <div className="form-group">
               <label className="form-label">Nouveau mot de passe</label>
-              <input type={showPassword ? "text" : "password"} className="form-input" value={nouveauMotDePasse} onChange={e => setNouveauMotDePasse(e.target.value)} required minLength={8} />
+              <div style={{ position: 'relative' }}>
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  className="form-input" 
+                  value={nouveauMotDePasse} 
+                  onChange={e => setNouveauMotDePasse(e.target.value)} 
+                  required 
+                  minLength={8}
+                  style={{ paddingRight: 40 }}
+                />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: 12, top: 10, background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer' }}>
+                  {showPassword ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  )}
+                </button>
+              </div>
               <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginTop: 6 }}>Minimum 8 caractères.</div>
             </div>
             <div className="form-group">
               <label className="form-label">Confirmer le nouveau mot de passe</label>
-              <input type={showPassword ? "text" : "password"} className="form-input" value={confirmationNouveauMotDePasse} onChange={e => setConfirmationNouveauMotDePasse(e.target.value)} required />
+              <div style={{ position: 'relative' }}>
+                <input 
+                  type={showPassword ? "text" : "password"} 
+                  className="form-input" 
+                  value={confirmationNouveauMotDePasse} 
+                  onChange={e => setConfirmationNouveauMotDePasse(e.target.value)} 
+                  required 
+                  style={{ paddingRight: 40 }}
+                />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: 12, top: 10, background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer' }}>
+                  {showPassword ? (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  )}
+                </button>
+              </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: 12 }}>
-              <button type="submit" className="btn-primary" style={{ background: 'var(--color-bg-dark)', color: '#fff' }}>Mettre à jour le mot de passe</button>
+              <button type="submit" className="btn-primary" disabled={loadingPass}>
+                {loadingPass ? 'Mise à jour...' : 'Mettre à jour le mot de passe'}
+              </button>
             </div>
           </form>
         </div>

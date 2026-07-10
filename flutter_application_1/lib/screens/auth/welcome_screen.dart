@@ -1,8 +1,27 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
+import '../../services/api_service.dart';
 
-class WelcomeScreen extends StatelessWidget {
+class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
+
+  @override
+  State<WelcomeScreen> createState() => _WelcomeScreenState();
+}
+
+class _WelcomeScreenState extends State<WelcomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkAuth();
+  }
+
+  Future<void> _checkAuth() async {
+    final token = await ApiService.getToken();
+    if (token != null && mounted) {
+      Navigator.pushReplacementNamed(context, '/home');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,8 +56,6 @@ class WelcomeScreen extends StatelessWidget {
                       height: 60.h,
                     ),
                     SizedBox(height: 10.h),
-
-                    // Tagline → texte gris foncé
                   ],
                 ),
               ),
@@ -53,13 +70,13 @@ class WelcomeScreen extends StatelessWidget {
                       'Votre espace de gestion de candidatures',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.black.withValues(alpha: 0.4), // ← était blanc
+                        color: Colors.black.withValues(alpha: 0.4),
                         fontSize: 12.sp,
                       ),
                     ),
                     SizedBox(height: 28.h),
 
-                    // Bouton Se connecter (plein blanc)
+                    // Bouton Se connecter (plein bleu)
                     SizedBox(
                       width: double.infinity,
                       height: 54.h,
@@ -87,7 +104,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 14.h),
 
-                    // Bouton Créer un compte (contour blanc)
+                    // Bouton Créer un compte (contour bleu)
                     SizedBox(
                       width: double.infinity,
                       height: 54.h,

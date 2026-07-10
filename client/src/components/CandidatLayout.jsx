@@ -223,11 +223,14 @@ export default function CandidatLayout({ children, activeTab, title, onLogout, o
         }
       `}</style>
 
-      {/* --- SIDEBAR --- */}
       <aside className="drive-sidebar">
-        <div className="drive-brand">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polygon points="12 2 2 22 22 22"></polygon></svg>
-          FDCUIC
+        <div className="drive-brand" style={{ padding: '24px 24px 16px 24px', display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 16 }}>
+          <img src="/FDCUIC_logo.png" alt="FDCUIC Logo" style={{ width: 130, height: 'auto', flexShrink: 0 }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span style={{ fontSize: 11, color: '#6b7182', whiteSpace: 'normal', lineHeight: 1.4, fontWeight: 500, letterSpacing: '0.2px' }}>
+              Fonds de Développement des Cultures Urbaines et des Industries Créatives
+            </span>
+          </div>
         </div>
 
         <div className="new-btn-container">

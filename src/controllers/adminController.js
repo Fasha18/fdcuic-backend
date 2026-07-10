@@ -393,12 +393,15 @@ const uploadImageCampagne = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ message: 'Aucune image fournie.' });
     }
-    await campagne.update({ image_couverture: req.file.filename });
-    return res.status(200).json({ message: 'Image uploadée.', image: req.file.filename, campagne });
+    // req.file.path = URL Cloudinary complète, req.file.filename = public_id seulement
+    const imageUrl = req.file.path || req.file.secure_url || req.file.filename;
+    await campagne.update({ image_couverture: imageUrl });
+    return res.status(200).json({ message: 'Image uploadée.', image: imageUrl, campagne: await campagne.reload() });
   } catch (error) {
     return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
   }
 };
+
 
 // ── Candidatures d'un appel à projets spécifique ──
 const getCandidaturesAppel = async (req, res) => {
