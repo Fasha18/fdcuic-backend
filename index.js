@@ -27,32 +27,8 @@ app.get('/api/admin/force-fix', async (req, res) => {
   }
 });
 
-// Proxy universel pour forcer l'affichage inline (désactive le forçage de téléchargement de Cloudinary)
-app.get(['/api/proxy-file', '/api/proxy-file/:filename'], async (req, res) => {
-  try {
-    const { url } = req.query;
-    if (!url) return res.status(400).send('URL manquante');
-    
-    const https = require('https');
-    
-    https.get(url, (fileRes) => {
-      // Reprendre le Content-Type original ou fallback sur octet-stream
-      const contentType = fileRes.headers['content-type'] || 'application/octet-stream';
-      res.setHeader('Content-Type', contentType);
-      res.setHeader('Content-Disposition', 'inline');
-      fileRes.pipe(res);
-    }).on('error', (err) => {
-      console.error('Proxy File HTTPS Error:', err.message);
-      res.status(500).send('Erreur HTTPS: ' + err.message);
-    });
-    
-  } catch (error) {
-    const status = error.response ? error.response.status : 'N/A';
-    const msg = error.message;
-    console.error('Proxy PDF Error:', msg, 'Status:', status, 'URL:', req.query.url);
-    res.status(500).send(`Erreur lors de la récupération du PDF.<br/>URL: ${req.query.url}<br/>Status: ${status}<br/>Détail: ${msg}`);
-  }
-});
+
+
 
 app.get('/api/admin/check-schema', async (req, res) => {
   try {
