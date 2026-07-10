@@ -23,11 +23,7 @@ const AppelProjet = sequelize.define('AppelProjet', {
     allowNull: true,
   },
   secteur_activite: {
-    type: DataTypes.ENUM(
-      'claque', 'danse_urbaine', 'conception',
-      'sport_de_rue', 'art_vivant', 'mode',
-      'hiphop', 'graffiti'
-    ),
+    type: DataTypes.STRING(255),
     allowNull: true,
   },
   region: {
@@ -136,6 +132,12 @@ doc_business_model: {
   allowNull: true,
   comment: 'Structuration uniquement — Business Model Canvas',
 },
+
+  documents_soumis: {
+    type: DataTypes.JSON,
+    allowNull: true,
+    comment: 'Tableau de documents: [{ nom_document, label, chemin_fichier }]',
+  },
 
   // ── STATUT GÉNÉRAL ────────────────────────────────────
   etape_courante: {
