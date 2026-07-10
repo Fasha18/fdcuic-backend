@@ -21,9 +21,31 @@ app.get('/api/admin/force-fix', async (req, res) => {
   try {
     const { sequelize } = require('./src/models/index');
     await sequelize.query(`ALTER TABLE appels_projets ALTER COLUMN secteur_activite TYPE VARCHAR(255) USING secteur_activite::VARCHAR;`);
-    res.send('FIX APPLIED SUCCESSFULLY');
-  } catch (e) {
-    res.send('ERROR: ' + e.message);
+    return res.send('<h1>FIX APPLIED SUCCESSFULLY</h1><p>You can now use the mobile app.</p>');
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// Proxy pour contourner le forçage de téléchargement (Content-Disposition: attachment) de Cloudinary pour les PDF
+app.get('/api/proxy-pdf', async (req, res) => {
+  try {
+    const { url } = req.query;
+    if (!url) return res.status(400).send('URL manquante');
+    
+    const axios = require('axios');
+    const response = await axios({
+      url,
+      method: 'GET',
+      responseType: 'stream'
+    });
+    
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline');
+    response.data.pipe(res);
+  } catch (error) {
+    console.error('Proxy PDF Error:', error.message);
+    res.status(500).send('Erreur lors de la récupération du PDF');
   }
 });
 
