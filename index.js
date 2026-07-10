@@ -17,13 +17,38 @@ console.error = (...args) => {
   originalError(...args);
 };
 
+app.get('/api/admin/force-fix', async (req, res) => {
+  try {
+    const { sequelize } = require('./src/models/index');
+    await sequelize.query(`ALTER TABLE appels_projets ALTER COLUMN secteur_activite TYPE VARCHAR(255) USING secteur_activite::VARCHAR;`);
+    res.send('FIX APPLIED SUCCESSFULLY');
+  } catch (e) {
+    res.send('ERROR: ' + e.message);
+  }
+});
+
+app.get('/api/admin/check-schema', async (req, res) => {
+  try {
+    const { sequelize } = require('./src/models/index');
+    const result = await sequelize.query(`SELECT column_name, data_type, udt_name FROM information_schema.columns WHERE table_name = 'appels_projets' AND column_name = 'secteur_activite';`);
+    res.json(result[0]);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get('/api/debug-logs', async (req, res) => {
   try {
-    const { User } = require('./src/models/index');
-    const latestUser = await User.findOne({ order: [['id', 'DESC']] });
-    res.json({ logs, latestUser });
-  } catch (e) {
-    res.json({ logs, error: e.message });
+    const logFile = path.join(__dirname, 'logs.txt');
+    if (fs.existsSync(logFile)) {
+      const content = fs.readFileSync(logFile, 'utf8');
+      const logs = content.split('\n').filter(l => l.trim().length > 0);
+      res.json({ logs });
+    } else {
+      res.json({ logs: ['Aucun log disponible.'] });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message, stack: err.stack });
   }
 });
 
