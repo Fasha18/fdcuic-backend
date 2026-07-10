@@ -44,8 +44,10 @@ app.get('/api/proxy-pdf', async (req, res) => {
     res.setHeader('Content-Disposition', 'inline');
     response.data.pipe(res);
   } catch (error) {
-    console.error('Proxy PDF Error:', error.message);
-    res.status(500).send('Erreur lors de la récupération du PDF');
+    const status = error.response ? error.response.status : 'N/A';
+    const msg = error.message;
+    console.error('Proxy PDF Error:', msg, 'Status:', status, 'URL:', req.query.url);
+    res.status(500).send(`Erreur lors de la récupération du PDF.<br/>URL: ${req.query.url}<br/>Status: ${status}<br/>Détail: ${msg}`);
   }
 });
 
