@@ -7,15 +7,10 @@ const cloudinary = require('./cloudinary');
 const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
-    // Determine resource_type based on file extension
-    const ext = path.extname(file.originalname).toLowerCase();
-    const isImage = ['.jpg', '.jpeg', '.png'].includes(ext);
-    
     return {
       folder: 'fdcuic/appels',
-      resource_type: isImage ? 'image' : 'raw',
-      public_id: `appel_${file.fieldname}_${Date.now()}${ext}`,
-      format: isImage ? ext.replace('.', '') : undefined,
+      resource_type: 'auto',
+      public_id: `appel_${file.fieldname}_${Date.now()}`,
     };
   },
 });

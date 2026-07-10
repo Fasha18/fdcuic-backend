@@ -140,7 +140,7 @@ const etape4 = async (req, res) => {
       return res.status(404).json({ message: 'Projet introuvable.' });
     }
 
-    // Récupérer les fichiers uploadés
+    let docsSoumis = projet.documents_soumis ? [...projet.documents_soumis] : [];
     const fichiers = req.files || {};
     const updates = { etape_courante: 4 };
 

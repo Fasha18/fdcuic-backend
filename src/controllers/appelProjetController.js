@@ -166,7 +166,7 @@ const etape3 = async (req, res) => {
       return res.status(404).json({ message: 'Dossier introuvable.' });
     }
 
-    let docsSoumis = dossier.documents_soumis || [];
+    let docsSoumis = dossier.documents_soumis ? [...dossier.documents_soumis] : [];
     const fichiers = req.files || []; // upload.any() donne un tableau
 
     for (const file of fichiers) {
@@ -218,7 +218,7 @@ const uploadDocumentUnique = async (req, res) => {
       return res.status(400).json({ message: 'Type de document et fichier manquants.' });
     }
 
-    let docsSoumis = dossier.documents_soumis || [];
+    let docsSoumis = dossier.documents_soumis ? [...dossier.documents_soumis] : [];
     const existingIndex = docsSoumis.findIndex(d => d.nom_document === docType);
     const docEntry = {
       nom_document: docType,
