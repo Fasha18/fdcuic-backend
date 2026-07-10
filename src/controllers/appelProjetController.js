@@ -329,6 +329,17 @@ const soumettre = async (req, res) => {
       etape_courante: 4,
     });
 
+    // Supprimer tous les autres brouillons du même appel pour ce candidat
+    const { Op } = require('sequelize');
+    await AppelProjet.destroy({
+      where: {
+        user_id: req.user.id,
+        appel_id: dossier.appel_id,
+        statut: 'brouillon',
+        id: { [Op.ne]: dossier.id }
+      }
+    });
+
     const { envoyerNotificationStatut } = require('../services/notificationService');
     try {
       await envoyerNotificationStatut(

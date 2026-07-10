@@ -240,6 +240,15 @@ const soumettre = async (req, res) => {
       etape_courante: 5,
     });
 
+    const { Op } = require('sequelize');
+    await ProjetMobilite.destroy({
+      where: {
+        user_id: req.user.id,
+        statut: 'brouillon',
+        id: { [Op.ne]: projet.id }
+      }
+    });
+
     const { envoyerNotificationStatut } = require('../services/notificationService');
     try {
       await envoyerNotificationStatut(
