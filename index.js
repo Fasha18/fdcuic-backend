@@ -60,7 +60,7 @@ app.get('/api/debug-logs', async (req, res) => {
 const ALLOWED_ORIGINS = [
   'http://localhost:5173',   // Vite dev
   'http://localhost:3000',   // Dev local
-  'https://fdcuic-backend-production.up.railway.app', // Railway prod
+  'https://fdcuic-backend.onrender.com', // Railway prod
   process.env.FRONTEND_URL,  // Domaine frontend custom (ex: https://mon-site.com)
 ].filter(Boolean);
 

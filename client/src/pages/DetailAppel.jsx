@@ -4,6 +4,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import Topbar from '../components/Topbar';
 import adminService from '../services/adminService';
 import AppelModal from '../components/AppelModal';
+import ConfirmModal from '../components/ConfirmModal';
 import { getImageUrl } from '../utils/imageUrl';
 
 const LABEL_STATUT = {
@@ -20,6 +21,7 @@ export default function DetailAppel({ onLogout }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
   const [toast, setToast] = useState({ message: '', type: '' });
 
   const fetchCampagne = async () => {
@@ -50,15 +52,18 @@ export default function DetailAppel({ onLogout }) {
     showToast("Appel à projets mis à jour avec succès.");
   };
 
-  const handleCloturer = async () => {
-    if (window.confirm("Voulez-vous vraiment clôturer cet appel à projets ? Les candidats ne pourront plus postuler.")) {
-      try {
-        await adminService.modifierCampagne(id, { statut: 'fermé' });
-        showToast("Appel à projets clôturé avec succès.");
-        await fetchCampagne();
-      } catch (err) {
-        showToast(err.response?.data?.message || "Erreur lors de la clôture.", "error");
-      }
+  const handleCloturerClick = () => {
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleConfirmCloture = async () => {
+    setIsConfirmModalOpen(false);
+    try {
+      await adminService.modifierCampagne(id, { statut: 'fermé' });
+      showToast("Appel à projets clôturé avec succès.");
+      await fetchCampagne();
+    } catch (err) {
+      showToast(err.response?.data?.message || "Erreur lors de la clôture.", "error");
     }
   };
 
@@ -129,7 +134,7 @@ export default function DetailAppel({ onLogout }) {
                   </button>
                 )}
                 {isOuvert && (
-                  <button className="btn-secondary" style={{ color: 'var(--color-red)', borderColor: 'var(--color-red-light)' }} onClick={handleCloturer}>
+                  <button className="btn-secondary" style={{ color: 'var(--color-red)', borderColor: 'var(--color-red-light)' }} onClick={handleCloturerClick}>
                     Clôturer l'appel
                   </button>
                 )}
@@ -311,6 +316,17 @@ export default function DetailAppel({ onLogout }) {
         onClose={() => setIsModalOpen(false)} 
         onSaveSuccess={handleSaveCampagneSuccess} 
         appel={campagne} 
+      />
+
+      <ConfirmModal
+        isOpen={isConfirmModalOpen}
+        title="Clôturer l'appel à projets"
+        message="Voulez-vous vraiment clôturer cet appel à projets ? Les candidats ne pourront plus postuler et cette action est irréversible."
+        confirmText="Oui, clôturer"
+        cancelText="Annuler"
+        type="danger"
+        onConfirm={handleConfirmCloture}
+        onCancel={() => setIsConfirmModalOpen(false)}
       />
 
       {/* Toast Notification */}

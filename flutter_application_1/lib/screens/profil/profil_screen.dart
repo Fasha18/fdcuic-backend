@@ -8,6 +8,7 @@ import '../../core/app_colors.dart';
 import '../../core/theme_provider.dart';
 import '../../services/api_service.dart';
 import '../../utils/form_validators.dart';
+import 'package:file_picker/file_picker.dart';
 
 class ProfilScreen extends StatefulWidget {
   const ProfilScreen({super.key});
@@ -47,6 +48,41 @@ class _ProfilScreenState extends State<ProfilScreen> {
     );
   }
 
+  bool _isUploadingAvatar = false;
+
+  Future<void> _pickAndUploadAvatar() async {
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.image,
+      );
+
+      if (result != null && result.files.single.path != null) {
+        setState(() => _isUploadingAvatar = true);
+        final response = await ApiService.uploadAvatar(result.files.single.path!);
+        if (response.containsKey('avatar_url')) {
+          setState(() {
+            _user!['avatar_url'] = response['avatar_url'];
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Photo de profil mise à jour'), backgroundColor: AppColors.success),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Erreur: ${e.toString()}'), backgroundColor: AppColors.error),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isUploadingAvatar = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
@@ -75,19 +111,21 @@ class _ProfilScreenState extends State<ProfilScreen> {
               padding: EdgeInsets.fromLTRB(24, 16, 24, 16),
               child: Row(
                 children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      width: 40.w, height: 40.h,
-                      decoration: BoxDecoration(
-                        color: c.bgCard,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: c.borderMain),
+                  if (Navigator.canPop(context)) ...[
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        width: 40.w, height: 40.h,
+                        decoration: BoxDecoration(
+                          color: c.bgCard,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: c.borderMain),
+                        ),
+                        child: Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: c.txtPrimary),
                       ),
-                      child: Icon(Icons.arrow_back_ios_new_rounded, size: 16, color: c.txtPrimary),
                     ),
-                  ),
-                  SizedBox(width: 16.w),
+                    SizedBox(width: 16.w),
+                  ],
                   Text("Mon Profil",
                     style: GoogleFonts.sora(fontSize: 18.sp, fontWeight: FontWeight.w700, color: c.txtPrimary)),
                 ],
@@ -111,15 +149,58 @@ class _ProfilScreenState extends State<ProfilScreen> {
                       ),
                       child: Row(
                         children: [
-                          Container(
-                            width: 64.w, height: 64.h,
-                            decoration: BoxDecoration(
-                              color: c.accentPurple,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Center(
-                              child: Text(initial,
-                                style: GoogleFonts.sora(fontSize: 24.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+                          GestureDetector(
+                            onTap: _pickAndUploadAvatar,
+                            child: Stack(
+                              children: [
+                                Container(
+                                  width: 64.w, height: 64.h,
+                                  decoration: BoxDecoration(
+                                    color: c.accentPurple,
+                                    shape: BoxShape.circle,
+                                    image: _user!['avatar_url'] != null
+                                        ? DecorationImage(
+                                            image: NetworkImage(_user!['avatar_url']),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : null,
+                                  ),
+                                  child: _user!['avatar_url'] == null
+                                      ? Center(
+                                          child: Text(initial,
+                                            style: GoogleFonts.sora(fontSize: 24.sp, fontWeight: FontWeight.w700, color: Colors.white)),
+                                        )
+                                      : null,
+                                ),
+                                if (_isUploadingAvatar)
+                                  Positioned.fill(
+                                    child: Container(
+                                      decoration: const BoxDecoration(
+                                        color: Colors.black45,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Center(
+                                        child: SizedBox(
+                                          width: 24, height: 24,
+                                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: Container(
+                                    padding: EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: c.bgPrimary,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: c.borderMain),
+                                    ),
+                                    child: Icon(Icons.camera_alt_rounded, size: 12, color: c.txtSecondary),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                           SizedBox(width: 16.w),
@@ -155,7 +236,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
                     SizedBox(height: 24.h),
 
                     // Préférences
-                    _ProfilPreferences(themeProvider: themeProvider, c: c),
+                    _ProfilPreferences(user: _user!, c: c, themeProvider: themeProvider),
                     SizedBox(height: 24.h),
 
                     // Sécurité
@@ -418,14 +499,16 @@ class _ProfilInfosFormState extends State<_ProfilInfosForm> {
                       _buildLabel('Type de pièce'),
                       SizedBox(height: 6.h),
                       DropdownButtonFormField<String>(
+                        isExpanded: true,
+                        iconSize: 20,
                         value: _typePiece != null && ['CNI', 'Passeport'].contains(_typePiece) ? _typePiece : null,
                         items: const [
-                          DropdownMenuItem(value: 'CNI', child: Text('CNI')),
-                          DropdownMenuItem(value: 'Passeport', child: Text('Passeport')),
+                          DropdownMenuItem(value: 'CNI', child: Text('CNI', overflow: TextOverflow.ellipsis)),
+                          DropdownMenuItem(value: 'Passeport', child: Text('Passeport', overflow: TextOverflow.ellipsis)),
                         ],
                         onChanged: (val) => setState(() => _typePiece = val),
                         style: GoogleFonts.sora(fontSize: 13.sp, color: widget.c.txtPrimary),
-                        decoration: _inputDecoration('Sélectionner'),
+                        decoration: _inputDecoration('Choisir'),
                         dropdownColor: widget.c.bgCard,
                       ),
                     ],
@@ -471,55 +554,84 @@ class _ProfilInfosFormState extends State<_ProfilInfosForm> {
   }
 }
 
-class _ProfilPreferences extends StatelessWidget {
+class _ProfilPreferences extends StatefulWidget {
+  final Map<String, dynamic> user;
   final ThemeProvider themeProvider;
   final AppColors c;
 
-  const _ProfilPreferences({required this.themeProvider, required this.c});
+  const _ProfilPreferences({required this.user, required this.themeProvider, required this.c});
+
+  @override
+  State<_ProfilPreferences> createState() => _ProfilPreferencesState();
+}
+
+class _ProfilPreferencesState extends State<_ProfilPreferences> {
+  bool _isLoadingNotifs = false;
+
+  Future<void> _toggleNotifications(bool val) async {
+    setState(() => _isLoadingNotifs = true);
+    try {
+      final res = await ApiService.updatePreferences(val);
+      if (mounted) {
+        setState(() {
+          widget.user['notifications_email'] = res['notifications_email'];
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Préférences mises à jour'), backgroundColor: AppColors.success),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString()), backgroundColor: AppColors.error));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoadingNotifs = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: c.bgCard,
+        color: widget.c.bgCard,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: c.borderMain),
+        border: Border.all(color: widget.c.borderMain),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.tune_rounded, color: c.accentPurple, size: 20),
+              Icon(Icons.tune_rounded, color: widget.c.accentPurple, size: 20),
               SizedBox(width: 8.w),
-              Text('Préférences', style: GoogleFonts.sora(fontSize: 15.sp, fontWeight: FontWeight.w600, color: c.txtPrimary)),
+              Text('Préférences', style: GoogleFonts.sora(fontSize: 15.sp, fontWeight: FontWeight.w600, color: widget.c.txtPrimary)),
             ],
           ),
           SizedBox(height: 16.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Mode Sombre', style: GoogleFonts.sora(fontSize: 13.sp, color: c.txtPrimary)),
+              Text('Mode Sombre', style: GoogleFonts.sora(fontSize: 13.sp, color: widget.c.txtPrimary)),
               Switch(
-                value: themeProvider.isDark,
-                onChanged: (_) => themeProvider.toggle(),
-                activeColor: c.accentPurple,
+                value: widget.themeProvider.isDark,
+                onChanged: (_) => widget.themeProvider.toggle(),
+                activeColor: widget.c.accentPurple,
               ),
             ],
           ),
-          Divider(color: c.borderMain, height: 24.h),
+          Divider(color: widget.c.borderMain, height: 24.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Notifications Push', style: GoogleFonts.sora(fontSize: 13.sp, color: c.txtPrimary)),
-              Switch(
-                value: true,
-                onChanged: (val) {
-                  // TODO: implement notifications toggle
-                },
-                activeColor: c.accentPurple,
-              ),
+              Text('Notifications Push', style: GoogleFonts.sora(fontSize: 13.sp, color: widget.c.txtPrimary)),
+              _isLoadingNotifs 
+                  ? SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: widget.c.accentPurple, strokeWidth: 2))
+                  : Switch(
+                      value: widget.user['notifications_email'] ?? true,
+                      onChanged: _toggleNotifications,
+                      activeColor: widget.c.accentPurple,
+                    ),
             ],
           ),
         ],
@@ -551,9 +663,9 @@ class _ProfilPasswordFormState extends State<_ProfilPasswordForm> {
     setState(() => _isLoading = true);
     try {
       await ApiService.updatePassword({
-        'mot_de_passe_actuel': _actuel,
-        'nouveau_mot_de_passe': _nouveau,
-        'confirmation_mot_de_passe': _confirmation,
+        'ancienMotDePasse': _actuel,
+        'nouveauMotDePasse': _nouveau,
+        'confirmationNouveauMotDePasse': _confirmation,
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -677,6 +789,18 @@ class _ProfilReadOnlyInfo extends StatelessWidget {
       } catch (_) {}
     }
 
+    String lastConnexion = 'N/A';
+    if (user['derniere_connexion'] != null) {
+      try {
+        final d = DateTime.parse(user['derniere_connexion']);
+        final day = d.day.toString().padLeft(2, '0');
+        final month = d.month.toString().padLeft(2, '0');
+        final hour = d.hour.toString().padLeft(2, '0');
+        final minute = d.minute.toString().padLeft(2, '0');
+        lastConnexion = '$day/$month/${d.year} à $hour:$minute';
+      } catch (_) {}
+    }
+
     return Container(
       padding: EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -698,6 +822,8 @@ class _ProfilReadOnlyInfo extends StatelessWidget {
           _InfoRow(label: "Rôle", value: user['role']?.toString().toUpperCase() ?? 'CANDIDAT', c: c),
           Divider(color: c.borderMain, height: 24.h),
           _InfoRow(label: "Membre depuis le", value: joinedDate, c: c),
+          Divider(color: c.borderMain, height: 24.h),
+          _InfoRow(label: "Dernière connexion", value: lastConnexion, c: c),
         ],
       ),
     );

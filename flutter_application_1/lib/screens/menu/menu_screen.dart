@@ -75,33 +75,12 @@ class _MenuScreenState extends State<MenuScreen> {
     final email = _user?['email'] as String? ?? '';
     final initial = nom.isNotEmpty ? nom.substring(0, 1).toUpperCase() : 'U';
 
-    return Scaffold(
+    return Drawer(
       backgroundColor: c.bgPrimary,
-      body: SafeArea(
+      child: SafeArea(
         child: Column(
           children: [
-            // Header: close button
-            Padding(
-              padding: EdgeInsets.fromLTRB(24, 16, 24, 0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                      width: 42.w,
-                      height: 42.h,
-                      decoration: BoxDecoration(
-                        color: c.bgCard,
-                        borderRadius: BorderRadius.circular(13),
-                        border: Border.all(color: c.borderMain),
-                      ),
-                      child: Icon(Icons.close_rounded, color: c.txtPrimary, size: 22),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            SizedBox(height: 16.h), // Espacement pour remplacer l'ancien bouton X
             
             // Profil Info (cliquable)
             GestureDetector(
@@ -200,7 +179,7 @@ class _MenuScreenState extends State<MenuScreen> {
                       label: "Documents importants",
                       c: c,
                       onTap: () {
-                        // TODO
+                        Navigator.pushNamed(context, '/ressources');
                       },
                     ),
                     _MenuItem(

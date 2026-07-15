@@ -492,7 +492,7 @@ export default function Dashboard({ activeTab = 'apercu', onLogout }) {
                   onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = 'var(--shadow-card-hover)'; }}
                   onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'var(--shadow-md)'; }}
                 >
-                  <div style={{ height: 180, background: 'var(--color-bg-body)', position: 'relative', overflow: 'hidden' }}>
+                  <div style={{ height: 340, background: 'var(--color-bg-body)', position: 'relative', overflow: 'hidden' }}>
                     {campagne.image_couverture ? (
                       <>
                         <img src={getImageUrl(campagne.image_couverture)} alt={campagne.titre} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />

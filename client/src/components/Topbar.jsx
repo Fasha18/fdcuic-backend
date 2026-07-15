@@ -49,7 +49,7 @@ const Topbar = ({ title, subtitle }) => {
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('https://fdcuic-backend-production.up.railway.app/api/notifications', {
+      const res = await axios.get('https://fdcuic-backend.onrender.com/api/notifications', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(res.data.data || []);
@@ -63,7 +63,7 @@ const Topbar = ({ title, subtitle }) => {
   const handleMarkAsRead = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`https://fdcuic-backend-production.up.railway.app/api/notifications/${id}/lu`, {}, {
+      await axios.put(`https://fdcuic-backend.onrender.com/api/notifications/${id}/lu`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(notifications.map(n => n.id === id ? { ...n, lu: true } : n));
@@ -75,7 +75,7 @@ const Topbar = ({ title, subtitle }) => {
   const handleMarkAllAsRead = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put('https://fdcuic-backend-production.up.railway.app/api/notifications/tout-lire', {}, {
+      await axios.put('https://fdcuic-backend.onrender.com/api/notifications/tout-lire', {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(notifications.map(n => ({ ...n, lu: true })));

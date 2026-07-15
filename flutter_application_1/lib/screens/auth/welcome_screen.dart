@@ -34,12 +34,12 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF0D1B4B), // bleu nuit — tout en haut
-              Color(0xFF1A3A8F), // bleu royal
-              Color(0xFF2563EB), // bleu vif
+              Color(0xFFEFF6FF), // bleu très clair
+              Color(0xFFDBEAFE), // bleu ciel doux
+              Color(0xFFBFDBFE), // bleu pastel
               Color(0xFFFFFFFF), // blanc pur — en bas
             ],
-            stops: [0.0, 0.2, 0.45, 0.75], // le blanc arrive à 75% de la page
+            stops: [0.0, 0.25, 0.5, 0.8], // le blanc arrive à 80% de la page
           ),
         ),
         child: SafeArea(

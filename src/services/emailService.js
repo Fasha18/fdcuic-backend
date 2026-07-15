@@ -45,7 +45,7 @@ const sendBrevoEmail = async (toEmail, toName, subject, content, isText = false)
 };
 
 const envoyerEmailActivation = async (email, prenom, token) => {
-  const baseUrl = process.env.BACKEND_URL || 'https://fdcuic-backend-production.up.railway.app';
+  const baseUrl = process.env.BACKEND_URL || 'https://fdcuic-backend.onrender.com';
   const lien = `${baseUrl}/api/auth/activer/${token}`;
   
   const text = `Bonjour ${prenom},
@@ -67,7 +67,7 @@ const envoyerEmailBienvenue = async (email, prenom) => {
     <p>Bienvenue sur la plateforme <strong>FDCUIC</strong> !</p>
     <p>Votre compte a été créé avec succès. Vous pouvez dès à présent vous connecter et explorer les appels à projets disponibles.</p>
     <p style="text-align:center; margin: 28px 0;">
-      <a href="https://fdcuic-backend-production.up.railway.app" style="display:inline-block;background:#1B6CA8;color:white;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:15px;">
+      <a href="https://fdcuic-backend.onrender.com" style="display:inline-block;background:#1B6CA8;color:white;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:15px;">
         🚀 Accéder à la plateforme
       </a>
     </p>
@@ -174,7 +174,7 @@ const templateEmail = (prenom, titre, contenu) => `
 `;
 
 const envoyerEmailResetPassword = async (email, prenom, token) => {
-  const lien = `${process.env.FRONTEND_URL || 'https://fdcuic-backend-production.up.railway.app'}/reset-password?token=${token}`;
+  const lien = `${process.env.FRONTEND_URL || 'https://fdcuic-backend.onrender.com'}/reset-password?token=${token}`;
 
   const html = templateEmail(prenom, '', `
     <p>Vous avez demandé la réinitialisation de votre mot de passe sur FDCUIC.</p>

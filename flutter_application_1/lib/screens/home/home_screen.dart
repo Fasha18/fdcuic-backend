@@ -28,6 +28,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  final GlobalKey<AppelsScreenState> _appelsScreenKey = GlobalKey<AppelsScreenState>();
 
   void _switchTab(int index) {
     setState(() {
@@ -43,6 +44,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: colors.bgPrimary,
+      drawer: const MenuScreen(),
       body: Column(
         children: [
           Expanded(
@@ -51,10 +53,11 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 _HomeDashboardContent(
                   onNavigateToTab: _switchTab,
+                  appelsScreenKey: _appelsScreenKey,
                   themeProvider: themeProvider,
                   colors: colors,
                 ),
-                const AppelsScreen(hideBottomNav: true),
+                AppelsScreen(key: _appelsScreenKey, hideBottomNav: true),
                 const MesDossiersScreen(),
                 const ProfilScreen(),
               ],
@@ -74,11 +77,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class _HomeDashboardContent extends StatefulWidget {
   final ValueChanged<int> onNavigateToTab;
+  final GlobalKey<AppelsScreenState> appelsScreenKey;
   final ThemeProvider themeProvider;
   final AppColors colors;
 
   const _HomeDashboardContent({
     required this.onNavigateToTab,
+    required this.appelsScreenKey,
     required this.themeProvider,
     required this.colors,
   });
@@ -174,7 +179,7 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
               // Hamburger Menu
               GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const MenuScreen()));
+                  Scaffold.of(context).openDrawer();
                 },
                 child: Container(
                   width: 42.w,
@@ -428,27 +433,19 @@ class _HomeDashboardContentState extends State<_HomeDashboardContent> {
                   c: c,
                   isDark: isDark,
                   onTap: () {
-                    final mobData = _programmeMobilite ?? {
-                      'id': 9999,
-                      'titre': 'Programme de Mobilité',
-                      'description': 'Soutien aux déplacements culturels pour les artistes et professionnels de la culture.',
-                      'statut': 'ouvert'
-                    };
-                    Navigator.push(context, MaterialPageRoute(
-                      builder: (_) => AppelDetailScreen(
-                        appel: AppelAProjet(
-                          id: mobData['id'] ?? 9999,
-                          titre: mobData['titre'] ?? 'Programme de Mobilité',
-                          description: mobData['description'] ?? '',
-                          typeProjet: 'mobilite',
-                          dateDebut: mobData['date_ouverture'] ?? '',
-                          dateFin: mobData['date_cloture'] ?? '',
-                          statut: mobData['statut'] ?? 'ouvert',
-                          criteres: mobData['criteres_eligibilite'] ?? '',
-                          imageCouverture: mobData['image_couverture'],
-                        )
-                      )
-                    ));
+                    widget.appelsScreenKey.currentState?.switchToMobilite();
+                    widget.onNavigateToTab(1);
+                  },
+                ),
+
+                SizedBox(height: 12.h),
+
+                // ── 3.4.1 DOCUMENTS IMPORTANTS CARD ───────
+                DocumentsImportantsCard(
+                  c: c,
+                  isDark: isDark,
+                  onTap: () {
+                    Navigator.pushNamed(context, '/ressources');
                   },
                 ),
 
@@ -680,6 +677,79 @@ class FeaturedAppelCard extends StatelessWidget {
     );
   }
 }
+
+// ── 3.4.1 DOCUMENTS IMPORTANTS CARD ──
+class DocumentsImportantsCard extends StatelessWidget {
+  final AppColors c;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const DocumentsImportantsCard({super.key, required this.c, required this.isDark, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final mobBg = isDark ? const Color(0xFF110E2C) : Colors.white;
+    final mobInner = isDark ? const Color(0xFF1E174A) : const Color(0xFFE6F0FF);
+    final mobBorder = isDark ? const Color(0xFF2D1F6E) : const Color(0xFFB0C4DE);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: EdgeInsets.symmetric(horizontal: 24),
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          color: mobBg,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: mobBorder, width: 1),
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              left: 0, top: 0, bottom: 0,
+              child: Container(
+                width: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0144BD),
+                  borderRadius: BorderRadius.only(topLeft: Radius.circular(17), bottomLeft: Radius.circular(17)),
+                ),
+              ),
+            ),
+            Padding(
+            padding: EdgeInsets.fromLTRB(18, 16, 16, 16),
+            child: Row(
+              children: [
+                Container(
+                    width: 44.w, height: 44.h,
+                    decoration: BoxDecoration(color: mobInner, borderRadius: BorderRadius.circular(13)),
+                    child: Icon(Icons.description_outlined, color: const Color(0xFF0144BD), size: 21),
+                  ),
+                  SizedBox(width: 14.w),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Documents importants", style: GoogleFonts.sora(fontSize: 15.sp, fontWeight: FontWeight.w600, color: c.txtPrimary)),
+                        SizedBox(height: 4.h),
+                        Text("Téléchargez les modèles requis", style: GoogleFonts.sora(fontSize: 12.sp, color: c.txtSecondary)),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 14.w),
+                  Container(
+                    width: 36.w, height: 36.h,
+                    decoration: BoxDecoration(color: const Color(0xFF0144BD), borderRadius: BorderRadius.circular(11)),
+                    child: Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 17),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 
 
 

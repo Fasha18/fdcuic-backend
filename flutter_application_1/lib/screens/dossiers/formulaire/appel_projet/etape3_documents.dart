@@ -227,6 +227,7 @@ class _Etape3DocumentsState extends State<Etape3Documents> {
                     isRequis: doc['requis'] == 'true',
                     fichierNom: _fichiers[doc['key']],
                     isUploading: _uploadingKeys.contains(doc['key']),
+                    isAnyUploading: _uploadingKeys.isNotEmpty,
                     onTap: () {
                       _pickFile(doc['key']!);
                       field.didChange(true);
@@ -252,6 +253,7 @@ class _DocUploadField extends StatelessWidget {
   final bool isRequis;
   final String? fichierNom;
   final bool isUploading;
+  final bool isAnyUploading;
   final VoidCallback onTap;
   final VoidCallback onSupprimer;
 
@@ -260,6 +262,7 @@ class _DocUploadField extends StatelessWidget {
     required this.isRequis,
     required this.fichierNom,
     required this.isUploading,
+    required this.isAnyUploading,
     required this.onTap,
     required this.onSupprimer,
   });
@@ -268,7 +271,7 @@ class _DocUploadField extends StatelessWidget {
   Widget build(BuildContext context) {
     final uploaded = fichierNom != null;
     return GestureDetector(
-      onTap: uploaded ? null : onTap,
+      onTap: (uploaded || isAnyUploading) ? null : onTap,
       child: Container(
         padding: EdgeInsets.all(14),
         decoration: BoxDecoration(

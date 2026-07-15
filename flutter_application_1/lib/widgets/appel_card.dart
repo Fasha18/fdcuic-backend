@@ -104,15 +104,15 @@ class AppelCard extends StatelessWidget {
                             Container(
                               padding: EdgeInsets.symmetric(horizontal: 9, vertical: 3),
                               decoration: BoxDecoration(
-                                color: isOpen ? AppColors.successBg : AppColors.warningBg,
+                                color: isOpen ? AppColors.successBg : AppColors.errorBg,
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
-                                isOpen ? "Ouvert" : "Bientôt",
+                                isOpen ? "Ouvert" : "Fermé",
                                 style: GoogleFonts.sora(
                                   fontSize: 10.sp,
                                   fontWeight: FontWeight.w700,
-                                  color: isOpen ? AppColors.success : AppColors.warning
+                                  color: isOpen ? AppColors.success : AppColors.error
                                 ),
                               ),
                             ),

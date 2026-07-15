@@ -156,11 +156,6 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
           }
         }
       }
-    } else if (_currentStep == 3) {
-      final docs = formData['documents'] as Map<String, String?>;
-      if (docs['doc_ninea_recepisse'] == null || docs['doc_cni_passeport'] == null) {
-        isValid = false;
-      }
     }
     
     if (!isValid) {
@@ -255,17 +250,8 @@ class _AppelFormScreenState extends State<AppelFormScreen> {
       }
     }
 
-    // Sync étape 3 (Documents) si on a passé l'étape 3
-    if (_currentStep > 3 || (_currentStep == 3 && _formKeys[2].currentState != null)) {
-      final docs = formData['documents'] as Map<String, String?>?;
-      if (docs != null && docs.isNotEmpty) {
-        try {
-          await ApiService.etape3Appel(dId, docs);
-        } catch (e) {
-          throw Exception('Échec Upload Documents (Etape 3): $e');
-        }
-      }
-    }
+    // L'étape 3 (Documents) est ignorée ici car les documents sont
+    // uploadés individuellement de façon immédiate via uploadDocumentUniqueAppel.
     
     return dId;
   }

@@ -1,33 +1,15 @@
 require('dotenv').config();
-const { sequelize, ChampFormulaire } = require('./src/models');
-const { QueryTypes } = require('sequelize');
+const { AppelProjet, User } = require('./src/models/index');
 
 async function removeDuplicates() {
-  try {
-    await sequelize.authenticate();
-    console.log('Connexion réussie.');
+  const dossiers = await AppelProjet.findAll({
+    where: { user_id: 12 },
+    order: [['createdAt', 'DESC']]
+  });
 
-    const sql = `
-      DELETE FROM champs_formulaire
-      WHERE id IN (
-        SELECT id
-        FROM (
-          SELECT id,
-                 ROW_NUMBER() OVER (PARTITION BY type_projet, nom_champ ORDER BY id) AS rnum
-          FROM champs_formulaire
-        ) t
-        WHERE t.rnum > 1
-      );
-    `;
-
-    const result = await sequelize.query(sql, { type: QueryTypes.DELETE });
-    console.log('Doublons supprimés :', result);
-
-  } catch (err) {
-    console.error('Erreur :', err);
-  } finally {
-    await sequelize.close();
+  for (const d of dossiers) {
+    console.log(`ID: ${d.id} | Appel_ID: ${d.appel_id} | Statut: ${d.statut} | Type: ${d.type_projet}`);
   }
 }
 
-removeDuplicates();
+removeDuplicates().catch(console.error).finally(() => process.exit(0));

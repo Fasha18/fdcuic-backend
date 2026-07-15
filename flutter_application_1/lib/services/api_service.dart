@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 class ApiService {
   // L'adresse IP est redirigée directement via ADB (adb reverse)
-  static const String baseUrl = 'https://fdcuic-backend-production.up.railway.app';
+  static const String baseUrl = 'https://fdcuic-backend.onrender.com';
   // static const String baseUrl = 'http://192.168.1.71:3000'; // IP local pour tester avec un téléphone physique
 
   // ── TOKEN ─────────────────────────────────────────────
@@ -142,8 +143,8 @@ class ApiService {
 
   // ── PROFIL ────────────────────────────────────────────
   static Future<Map<String, dynamic>> updateProfil(Map<String, dynamic> data) async {
-    final res = await http.put(
-      Uri.parse('$baseUrl/api/users'),
+    final res = await http.patch(
+      Uri.parse('$baseUrl/api/me'),
       headers: await _headers(),
       body: jsonEncode(data),
     );
@@ -160,8 +161,8 @@ class ApiService {
   }
 
   static Future<void> updatePassword(Map<String, dynamic> data) async {
-    final res = await http.put(
-      Uri.parse('$baseUrl/api/users/password'),
+    final res = await http.patch(
+      Uri.parse('$baseUrl/api/me/mot-de-passe'),
       headers: await _headers(),
       body: jsonEncode(data),
     );
@@ -169,6 +170,67 @@ class ApiService {
       final responseData = jsonDecode(res.body);
       throw Exception(responseData['message'] ?? 'Erreur mise à jour mot de passe');
     }
+  }
+
+  static Future<Map<String, dynamic>> uploadAvatar(String filePath) async {
+    final token = await getToken();
+    final request = http.MultipartRequest('PATCH', Uri.parse('$baseUrl/api/me/avatar'));
+    request.headers['Authorization'] = 'Bearer $token';
+    
+    // Explicitly set media type as image to avoid application/octet-stream rejection by multer
+    String ext = filePath.split('.').last.toLowerCase();
+    String subType = (ext == 'png') ? 'png' : ((ext == 'webp') ? 'webp' : 'jpeg');
+    
+    request.files.add(await http.MultipartFile.fromPath(
+      'avatar', 
+      filePath,
+      contentType: MediaType('image', subType),
+    ));
+
+    final streamedResponse = await request.send();
+    final response = await http.Response.fromStream(streamedResponse);
+    
+    Map<String, dynamic> responseData;
+    try {
+      responseData = jsonDecode(response.body);
+    } catch (e) {
+      throw Exception('Erreur serveur (${response.statusCode}): Le format de l\'image n\'est peut-être pas supporté.');
+    }
+
+    if (response.statusCode == 200) {
+      // Met à jour le stockage local
+      if (responseData.containsKey('avatar_url')) {
+        final prefs = await SharedPreferences.getInstance();
+        final userStr = prefs.getString('user');
+        if (userStr != null) {
+          final user = jsonDecode(userStr);
+          user['avatar_url'] = responseData['avatar_url'];
+          await prefs.setString('user', jsonEncode(user));
+        }
+      }
+      return responseData;
+    }
+    throw Exception(responseData['message'] ?? 'Erreur lors de l\'upload de l\'avatar');
+  }
+
+  static Future<Map<String, dynamic>> updatePreferences(bool notificationsEmail) async {
+    final res = await http.patch(
+      Uri.parse('$baseUrl/api/me/preferences'),
+      headers: await _headers(),
+      body: jsonEncode({'notifications_email': notificationsEmail}),
+    );
+    final responseData = jsonDecode(res.body);
+    if (res.statusCode == 200) {
+      final prefs = await SharedPreferences.getInstance();
+      final userStr = prefs.getString('user');
+      if (userStr != null) {
+        final user = jsonDecode(userStr);
+        user['notifications_email'] = notificationsEmail;
+        await prefs.setString('user', jsonEncode(user));
+      }
+      return responseData;
+    }
+    throw Exception(responseData['message'] ?? 'Erreur mise à jour préférences');
   }
 
   // ── APPELS À PROJETS ──────────────────────────────────

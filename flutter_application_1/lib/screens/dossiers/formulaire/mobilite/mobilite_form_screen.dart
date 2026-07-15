@@ -131,13 +131,6 @@ class _MobiliteFormScreenState extends State<MobiliteFormScreen> {
       for (var k in req) {
         if (formData[k] == null || formData[k].toString().trim().isEmpty) isValid = false;
       }
-    } else if (_currentStep == 4) {
-      final docs = formData['documents'] as Map<String, String?>;
-      if (docs['doc_ninea'] == null ||
-          docs['doc_recepisse'] == null ||
-          docs['doc_invitation'] == null) {
-        isValid = false;
-      }
     }
     
     if (!isValid) {
@@ -215,17 +208,8 @@ class _MobiliteFormScreenState extends State<MobiliteFormScreen> {
       });
     }
 
-    // Sync étape 4 (Documents) si on a passé l'étape 4
-    if (_currentStep > 4 || (_currentStep == 4 && _formKeys[3].currentState != null)) {
-      final docs = formData['documents'] as Map<String, String?>?;
-      if (docs != null && docs.isNotEmpty) {
-        try {
-          await ApiService.etape4Mobilite(pId, docs);
-        } catch (e) {
-          throw Exception('Échec Upload Documents (Etape 4): $e');
-        }
-      }
-    }
+    // L'étape 4 (Documents) est ignorée ici car les documents sont
+    // uploadés individuellement de façon immédiate via uploadDocumentUniqueMobilite.
 
     return pId;
   }

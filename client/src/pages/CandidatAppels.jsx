@@ -207,7 +207,7 @@ export default function CandidatAppels({ onLogout }) {
 
             /* IMAGE AREA */
             .appel-card-banner {
-              height: 140px;
+              height: 340px;
               position: relative;
               background-color: #0B1B3A;
               border-radius: 2px 2px 0 0;
@@ -228,9 +228,9 @@ export default function CandidatAppels({ onLogout }) {
             /* Colorful overlapping circles */
             .fallback-circle { position: absolute; border-radius: 50%; }
             .fc-1 { width: 140px; height: 140px; background: #0144BD; top: -40px; left: -20px; opacity: 0.8; }
-            .fc-2 { width: 180px; height: 180px; background: #7C5CFC; bottom: -60px; right: 10px; opacity: 0.6; }
-            .fc-3 { width: 90px; height: 90px; background: #FFB020; top: 20px; left: 40%; opacity: 0.9; }
-            .fc-4 { width: 100px; height: 100px; background: #1baf7a; bottom: -20px; left: -10px; opacity: 0.5; }
+            .fc-2 { width: 180px; height: 180px; background: #7C5CFC; bottom: 40px; right: 10px; opacity: 0.6; }
+            .fc-3 { width: 120px; height: 120px; background: #FFB020; top: 100px; left: 30%; opacity: 0.9; }
+            .fc-4 { width: 150px; height: 150px; background: #1baf7a; bottom: -20px; left: -10px; opacity: 0.5; }
             .fallback-veil {
               position: absolute;
               inset: 0;

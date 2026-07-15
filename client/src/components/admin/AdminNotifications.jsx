@@ -26,12 +26,12 @@ const AdminNotifications = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       
-      const resNotifs = await axios.get('https://fdcuic-backend-production.up.railway.app/api/admin/notifications', {
+      const resNotifs = await axios.get('https://fdcuic-backend.onrender.com/api/admin/notifications', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(resNotifs.data.notifications || []);
 
-      const resCandidats = await axios.get('https://fdcuic-backend-production.up.railway.app/api/admin/candidats', {
+      const resCandidats = await axios.get('https://fdcuic-backend.onrender.com/api/admin/candidats', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCandidats(resCandidats.data.data || []);
@@ -50,7 +50,7 @@ const AdminNotifications = () => {
       setSending(true);
       setSuccessMsg('');
       const token = localStorage.getItem('token');
-      await axios.post('https://fdcuic-backend-production.up.railway.app/api/admin/notifications/envoyer', formData, {
+      await axios.post('https://fdcuic-backend.onrender.com/api/admin/notifications/envoyer', formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSuccessMsg('Notification envoyée avec succès !');

@@ -13,6 +13,8 @@ import 'screens/dossiers/mes_dossiers_screen.dart';
 import 'screens/dossiers/formulaire/appel_projet/appel_form_screen.dart';
 import 'screens/dossiers/formulaire/mobilite/mobilite_form_screen.dart';
 import 'screens/notifications/notifications_screen.dart';
+import 'screens/profil/profil_screen.dart';
+import 'screens/ressources/ressources_screen.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 void main() {
@@ -51,6 +53,8 @@ class FDCUICApp extends StatelessWidget {
                 AppRoutes.formulaireAppel: (context) => const AppelFormScreen(),
                 AppRoutes.formulaireMobilite: (context) => const MobiliteFormScreen(),
                 AppRoutes.notifs: (context) => const NotificationsScreen(),
+                '/profil': (context) => const ProfilScreen(),
+                AppRoutes.ressources: (context) => const RessourcesScreen(),
               },
             );
           },

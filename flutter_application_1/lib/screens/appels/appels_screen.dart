@@ -12,11 +12,17 @@ class AppelsScreen extends StatefulWidget {
   final bool hideBottomNav;
   const AppelsScreen({super.key, this.hideBottomNav = false});
   @override
-  State<AppelsScreen> createState() => _AppelsScreenState();
+  State<AppelsScreen> createState() => AppelsScreenState();
 }
 
-class _AppelsScreenState extends State<AppelsScreen> {
+class AppelsScreenState extends State<AppelsScreen> {
   String _currentTab = 'Appels à projets';
+  
+  void switchToMobilite() {
+    setState(() {
+      _currentTab = 'Mobilité';
+    });
+  }
   
   List<AppelAProjet> _appels = [];
   ProgrammeMobilite? _mobilite;

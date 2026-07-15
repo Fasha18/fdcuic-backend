@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://fdcuic-backend-production.up.railway.app/api',
+  baseURL: 'https://fdcuic-backend.onrender.com/api',
   // baseURL: 'http://localhost:8000/api',
 });
 

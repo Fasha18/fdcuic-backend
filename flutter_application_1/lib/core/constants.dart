@@ -18,6 +18,7 @@ class AppRoutes {
   static const String formulaireMobilite = '/formulaire-mobilite';
   static const String notifs = '/notifications';
   static const String profil = '/profil';
+  static const String ressources = '/ressources';
 }
 
 class AppStrings {
