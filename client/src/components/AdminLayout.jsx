@@ -15,7 +15,7 @@ const TABS = [
   { id: 'types-projet', label: 'Types de projet' },
   { id: 'secteurs', label: 'Secteurs d\'activité' },
   { id: 'notifications-admin', label: 'Notifications' },
-  { id: 'statistiques', label: 'Statistiques' },
+
   { id: 'faqs', label: 'Gestion FAQs' },
   { id: 'legal', label: 'Paramètres légaux' },
   { id: 'parametres', label: 'Paramètres compte' },
@@ -45,7 +45,7 @@ export default function AdminLayout({ onLogout }) {
     if (path.startsWith('/admin/brouillons')) return 'brouillons';
     if (path.startsWith('/admin/personnel')) return 'personnel';
     if (path.startsWith('/admin/notifications-admin') || path.startsWith('/admin/notifications')) return 'notifications-admin';
-    if (path.startsWith('/admin/statistiques')) return 'statistiques';
+
     if (path.startsWith('/admin/finances')) return 'finances';
     if (path.startsWith('/admin/faqs')) return 'faqs';
     if (path.startsWith('/admin/legal')) return 'legal';
@@ -73,9 +73,34 @@ export default function AdminLayout({ onLogout }) {
   });
 
   return (
-    <div className="dashboard-layout">
+    <div className="dashboard-layout" style={{ background: 'linear-gradient(155deg, #eef3ff, #dce8ff 60%, #cfe0ff)', position: 'relative', overflow: 'hidden' }}>
+      
+      {/* ── METABALLS BACKGROUND ── */}
+      <div className="ag-metaballs" aria-hidden="true" style={{ opacity: 0.12, position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+        <svg style={{ width: '100%', height: '100%' }}>
+          <defs>
+            <filter id="goo-admin">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="18" result="b"/>
+              <feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 25 -11" result="g"/>
+            </filter>
+          </defs>
+          <g filter="url(#goo-admin)">
+            <circle className="mb-1" cx="320" cy="340" r="180" />
+            <circle className="mb-2" cx="400" cy="420" r="150" />
+            <circle className="mb-3" cx="200" cy="240" r="130" />
+            <circle className="mb-4" cx="440" cy="270" r="110" />
+            <circle className="mb-5" cx="240" cy="440" r="90" />
+            
+            {/* Added a few more on the right side for wider dashboard screens */}
+            <circle className="mb-1" cx="80%" cy="30%" r="200" style={{ animationDelay: '-5s' }} />
+            <circle className="mb-3" cx="70%" cy="60%" r="160" style={{ animationDelay: '-2s' }} />
+            <circle className="mb-5" cx="90%" cy="80%" r="140" style={{ animationDelay: '-7s' }} />
+          </g>
+        </svg>
+      </div>
+
       <Sidebar activeTab={activeTab} onTabChange={handleTabChange} onLogout={onLogout} role={userRole} />
-      <div className="dashboard-main">
+      <div className="dashboard-main" style={{ position: 'relative', zIndex: 10 }}>
         <Topbar title={currentTab?.label || 'Tableau de bord'} subtitle={`Dernière mise à jour : ${dateStr}`} />
         <div className="dashboard-content">
           <Outlet />

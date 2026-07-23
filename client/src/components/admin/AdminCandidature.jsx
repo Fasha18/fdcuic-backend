@@ -199,29 +199,37 @@ export default function AdminCandidature() {
       {/* STAT CARDS */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
         {[
-          { label: 'Total candidats inscrits', value: stats.total, icon: Users, color: '#7C5CFC' },
-          { label: 'Comptes actifs', value: stats.actifs, icon: CheckCircle, color: '#4CAF50' },
-          { label: 'En attente d\'activation', value: stats.attente, icon: Clock, color: '#FFA726' },
-          { label: 'Comptes désactivés', value: stats.desactives, icon: XCircle, color: '#FF6B6B' },
+          { label: 'Total candidats inscrits', value: stats.total, icon: Users, color: '#7C5CFC', borderColor: '#7C5CFC' },
+          { label: 'Comptes actifs', value: stats.actifs, icon: CheckCircle, color: '#1baf7a', borderColor: '#1baf7a' },
+          { label: 'En attente d\'activation', value: stats.attente, icon: Clock, color: '#FFB020', borderColor: '#FFB020' },
+          { label: 'Comptes désactivés', value: stats.desactives, icon: XCircle, color: '#ef4444', borderColor: '#ef4444' },
         ].map((stat, idx) => (
-          <div key={idx} className="card animate-fade-in-up" style={{ 
-            padding: 20, 
+          <div key={idx} className="animate-fade-in-up" style={{ 
+            padding: '20px 20px 20px 16px',
             display: 'flex', 
             alignItems: 'center', 
-            gap: 16, 
-            background: 'var(--color-bg-card)', 
-            border: '1px solid var(--color-border)' 
-          }}>
+            gap: 16,
+            background: 'var(--color-bg-card)',
+            border: '1px solid var(--color-border-light)',
+            borderLeft: `4px solid ${stat.borderColor}`,
+            borderRadius: 12,
+            boxShadow: 'var(--shadow-sm)',
+            transition: 'transform 0.2s, box-shadow 0.2s',
+            animationDelay: `${idx * 0.06}s`,
+          }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-3px)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+          >
             <div style={{
-              width: 48, height: 48, borderRadius: 12,
-              background: `${stat.color}15`, color: stat.color,
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
+              width: 44, height: 44, borderRadius: 10,
+              background: `${stat.color}18`, color: stat.color,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}>
-              <stat.icon size={24} strokeWidth={2.5}/>
+              <stat.icon size={22} strokeWidth={2}/>
             </div>
             <div>
-              <div style={{ fontSize: 24, fontWeight: 800, color: stat.color, lineHeight: 1.2 }}>{stat.value}</div>
-              <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', fontWeight: 500 }}>{stat.label}</div>
+              <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--color-text-primary)', lineHeight: 1.1 }}>{stat.value}</div>
+              <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', fontWeight: 500, marginTop: 3 }}>{stat.label}</div>
             </div>
           </div>
         ))}
@@ -250,7 +258,15 @@ export default function AdminCandidature() {
                 </tr>
               ) : candidatures.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ padding: '48px', textAlign: 'center', color: 'var(--color-text-tertiary)' }}>Aucun compte trouvé</td>
+                  <td colSpan={6}>
+                    <div style={{ padding: '48px 24px', textAlign: 'center' }}>
+                      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" style={{ color: 'var(--color-text-muted)', margin: '0 auto 14px', display: 'block' }}>
+                        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>
+                      </svg>
+                      <div style={{ fontWeight: 600, color: 'var(--color-text-secondary)', fontSize: 15, marginBottom: 6 }}>Aucun compte trouvé</div>
+                      <div style={{ color: 'var(--color-text-tertiary)', fontSize: 13 }}>Aucun candidat ne correspond à vos critères de recherche.</div>
+                    </div>
+                  </td>
                 </tr>
               ) : candidatures.map((c, i) => {
                 return (

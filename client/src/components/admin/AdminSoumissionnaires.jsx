@@ -127,29 +127,37 @@ const AdminSoumissionnaires = () => {
       {/* STAT CARDS */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
         {[
-          { label: 'Total candidats', value: soumissionnaires.length, icon: Users, color: '#7C5CFC' },
-          { label: 'Dossiers en examen', value: soumissionnaires.filter(s => s.dernier_statut === 'en_examen').length, icon: FileSearch, color: '#FFA726' },
-          { label: 'Dossiers acceptés', value: soumissionnaires.filter(s => s.dernier_statut === 'accepte').length, icon: CheckCircle, color: '#4CAF50' },
-          { label: 'Dossiers rejetés', value: soumissionnaires.filter(s => s.dernier_statut === 'rejete').length, icon: XCircle, color: '#FF6B6B' },
+          { label: 'Total candidats', value: soumissionnaires.length, icon: Users, color: '#7C5CFC', borderColor: '#7C5CFC' },
+          { label: 'Dossiers en examen', value: soumissionnaires.filter(s => s.dernier_statut === 'en_examen').length, icon: FileSearch, color: '#FFB020', borderColor: '#FFB020' },
+          { label: 'Dossiers acceptés', value: soumissionnaires.filter(s => s.dernier_statut === 'accepte').length, icon: CheckCircle, color: '#1baf7a', borderColor: '#1baf7a' },
+          { label: 'Dossiers rejetés', value: soumissionnaires.filter(s => s.dernier_statut === 'rejete').length, icon: XCircle, color: '#ef4444', borderColor: '#ef4444' },
         ].map((stat, idx) => (
-          <div key={idx} className="card animate-fade-in-up" style={{ 
-            padding: 20, 
+          <div key={idx} className="animate-fade-in-up" style={{ 
+            padding: '20px 20px 20px 16px',
             display: 'flex', 
             alignItems: 'center', 
-            gap: 16, 
-            background: 'var(--color-bg-card)', 
-            border: '1px solid var(--color-border)' 
-          }}>
+            gap: 16,
+            background: 'var(--color-bg-card)',
+            border: '1px solid var(--color-border-light)',
+            borderLeft: `4px solid ${stat.borderColor}`,
+            borderRadius: 12,
+            boxShadow: 'var(--shadow-sm)',
+            transition: 'transform 0.2s',
+            animationDelay: `${idx * 0.06}s`,
+          }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-3px)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+          >
             <div style={{
-              width: 48, height: 48, borderRadius: 12,
-              background: `${stat.color}15`, color: stat.color,
-              display: 'flex', alignItems: 'center', justifyContent: 'center'
+              width: 44, height: 44, borderRadius: 10,
+              background: `${stat.borderColor}18`, color: stat.color,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}>
-              <stat.icon size={24} strokeWidth={2.5}/>
+              <stat.icon size={22} strokeWidth={2}/>
             </div>
             <div>
-              <div style={{ fontSize: 24, fontWeight: 800, color: stat.color, lineHeight: 1.2 }}>{stat.value}</div>
-              <div style={{ fontSize: 13, color: 'var(--color-text-secondary)', fontWeight: 500 }}>{stat.label}</div>
+              <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--color-text-primary)', lineHeight: 1.1 }}>{stat.value}</div>
+              <div style={{ fontSize: 12, color: 'var(--color-text-secondary)', fontWeight: 500, marginTop: 3 }}>{stat.label}</div>
             </div>
           </div>
         ))}

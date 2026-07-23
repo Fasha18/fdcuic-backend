@@ -26,12 +26,12 @@ const AdminNotifications = () => {
       setLoading(true);
       const token = localStorage.getItem('token');
       
-      const resNotifs = await axios.get('https://fdcuic-backend.onrender.com/api/admin/notifications', {
+      const resNotifs = await axios.get('https://fdcuic-backend-production.up.railway.app/api/admin/notifications', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(resNotifs.data.notifications || []);
 
-      const resCandidats = await axios.get('https://fdcuic-backend.onrender.com/api/admin/candidats', {
+      const resCandidats = await axios.get('https://fdcuic-backend-production.up.railway.app/api/admin/candidats', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCandidats(resCandidats.data.data || []);
@@ -50,7 +50,7 @@ const AdminNotifications = () => {
       setSending(true);
       setSuccessMsg('');
       const token = localStorage.getItem('token');
-      await axios.post('https://fdcuic-backend.onrender.com/api/admin/notifications/envoyer', formData, {
+      await axios.post('https://fdcuic-backend-production.up.railway.app/api/admin/notifications/envoyer', formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setSuccessMsg('Notification envoyée avec succès !');
@@ -100,6 +100,18 @@ const AdminNotifications = () => {
 
   return (
     <div className="content-grid">
+      {/* HEADER */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <div>
+          <h2 style={{ fontSize: 24, fontWeight: 800, color: 'var(--color-text-primary)', letterSpacing: '-0.5px' }}>
+            Notifications
+          </h2>
+          <p style={{ color: 'var(--color-text-secondary)', marginTop: 4, fontSize: 14 }}>
+            Gérez et envoyez des notifications aux candidats de la plateforme.
+          </p>
+        </div>
+      </div>
+
       <div className="stats-grid">
         <StatCard label="Total Envoyées" value={total} icon="mail" accent="blue" delay={0} />
         <StatCard label="Non Lues (Global)" value={nonLues} icon="alert" accent="orange" delay={1} />

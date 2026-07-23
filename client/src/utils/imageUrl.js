@@ -12,5 +12,5 @@ export const getImageUrl = (imagePath) => {
   }
   
   // Fallback pour les anciennes images stockées localement
-  return `https://fdcuic-backend.onrender.com/uploads/${imagePath}`;
+  return `https://fdcuic-backend-production.up.railway.app/uploads/${imagePath}`;
 };

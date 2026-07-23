@@ -89,24 +89,34 @@ const AdminPersonnel = () => {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 24 }}>
         {[
           {
-            label: 'Total membres', value: personnel.length, color: 'var(--color-primary)', bg: 'var(--color-primary-light)',
-            icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+            label: 'Total membres', value: personnel.length, borderColor: '#0144BD', color: 'var(--color-primary)',
+            icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           },
           {
-            label: 'Admins', value: nbAdmins, color: 'var(--color-violet)', bg: 'var(--color-violet-light)',
-            icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-violet)" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+            label: 'Admins', value: nbAdmins, borderColor: '#7C5CFC', color: 'var(--color-violet)',
+            icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-violet)" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           },
           {
-            label: 'Actifs', value: nbActifs, color: 'var(--color-green)', bg: 'var(--color-green-light)',
-            icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-green)" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
+            label: 'Actifs', value: nbActifs, borderColor: '#1baf7a', color: 'var(--color-green)',
+            icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--color-green)" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
           },
         ].map((s, i) => (
-          <div key={s.label} className="card animate-fade-in-up" style={{ padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16, animationDelay: `${i * 0.05}s` }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div key={s.label} className="animate-fade-in-up" style={{
+            padding: '20px 20px 20px 16px', display: 'flex', alignItems: 'center', gap: 16,
+            background: 'var(--color-bg-card)',
+            border: '1px solid var(--color-border-light)',
+            borderLeft: `4px solid ${s.borderColor}`,
+            borderRadius: 12, boxShadow: 'var(--shadow-sm)',
+            transition: 'transform 0.2s', animationDelay: `${i * 0.05}s`,
+          }}
+          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-3px)'}
+          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+          >
+            <div style={{ width: 44, height: 44, borderRadius: 10, background: `${s.borderColor}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               {s.icon}
             </div>
             <div>
-              <div style={{ fontSize: 28, fontWeight: 800, color: 'var(--color-text-primary)', lineHeight: 1 }}>{s.value}</div>
+              <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--color-text-primary)', lineHeight: 1 }}>{s.value}</div>
               <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', fontWeight: 600, marginTop: 4, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{s.label}</div>
             </div>
           </div>

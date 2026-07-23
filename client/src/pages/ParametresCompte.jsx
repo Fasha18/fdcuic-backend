@@ -170,279 +170,239 @@ export default function ParametresCompte() {
   };
 
   const { percentage, missing } = calculateCompletion();
-  const barColor = percentage === 100 ? 'var(--color-green)' : (percentage >= 50 ? 'var(--color-orange)' : 'var(--color-red)');
+  
+  // Custom logic for bar color avoiding solid red unless very low
+  let barColor = '#ef4444'; // Red
+  if (percentage === 100) barColor = '#1baf7a'; // Green
+  else if (percentage >= 70) barColor = '#0144BD'; // Blue
+  else if (percentage >= 40) barColor = '#FFB020'; // Amber/Orange
 
   const today = new Date();
   const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate()).toISOString().split('T')[0];
 
+  const cardStyle = {
+    background: 'var(--color-bg-card)',
+    padding: '32px',
+    borderRadius: '12px',
+    boxShadow: 'var(--shadow-sm)',
+    border: '1px solid var(--color-border-light)'
+  };
+
+  const inputClass = "param-input";
+  const labelClass = "param-label";
+
   return (
-    <div style={{ maxWidth: 800, margin: '0 auto', paddingBottom: 40, position: 'relative' }}>
-      
-      {/* Notifications Toast */}
-      {(success || error) && (
-        <div style={{
-          position: 'fixed', top: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 9999,
-          background: error ? 'var(--color-red)' : 'var(--color-green)',
-          color: '#fff', padding: '12px 24px', borderRadius: 'var(--radius-md)',
-          boxShadow: '0 8px 16px rgba(0,0,0,0.1)', fontWeight: 500,
-          display: 'flex', alignItems: 'center', gap: 8,
-          animation: 'slideDown 0.3s ease-out'
-        }}>
-          {error ? (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          ) : (
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-          )}
-          {error || success}
-        </div>
-      )}
-
-      {/* Header */}
-      <div style={{ marginBottom: 32 }}>
-        <h1 style={{ fontSize: 28, fontWeight: 700, color: 'var(--color-text-primary)' }}>Paramètres du compte</h1>
-        <p style={{ color: 'var(--color-text-secondary)', marginTop: 4 }}>Gérez vos informations, votre sécurité et vos préférences.</p>
-      </div>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <>
+      <style>{`
+        .param-group {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+        .param-label {
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--color-text-tertiary);
+          text-transform: uppercase;
+          letter-spacing: 0.6px;
+        }
+        .param-input {
+          width: 100%;
+          padding: 12px 16px;
+          border-radius: 8px;
+          border: 1px solid var(--color-border);
+          background: var(--color-bg-body);
+          font-size: 14px;
+          color: var(--color-text-primary);
+          transition: all 0.2s;
+        }
+        .param-input:focus {
+          border-color: var(--color-primary);
+          box-shadow: 0 0 0 3px rgba(1, 68, 189, 0.1);
+          outline: none;
+        }
+      `}</style>
+      <div style={{ maxWidth: 840, margin: '0 auto', paddingBottom: 40, position: 'relative' }}>
         
-        {/* BARRE DE COMPLETUDE */}
-        <div style={{ background: 'var(--color-bg-container)', padding: '24px 32px', borderRadius: 'var(--radius-lg)', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', border: '1px solid var(--color-border)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-            <h2 style={{ fontSize: 16, fontWeight: 600, color: 'var(--color-text-primary)', margin: 0 }}>
-              Profil complet à {percentage}%
-            </h2>
-            {percentage === 100 && (
-              <span style={{ display: 'flex', alignItems: 'center', gap: 4, color: 'var(--color-green)', fontSize: 14, fontWeight: 600 }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                Profil au top !
-              </span>
+        {/* Notifications Toast */}
+        {(success || error) && (
+          <div style={{
+            position: 'fixed', top: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 9999,
+            background: error ? 'var(--color-red)' : 'var(--color-green)',
+            color: '#fff', padding: '12px 24px', borderRadius: 'var(--radius-md)',
+            boxShadow: '0 8px 16px rgba(0,0,0,0.1)', fontWeight: 500,
+            display: 'flex', alignItems: 'center', gap: 8,
+            animation: 'slideDown 0.3s ease-out'
+          }}>
+            {error ? (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             )}
+            {error || success}
           </div>
-          <div style={{ width: '100%', height: 8, background: 'var(--color-border-light)', borderRadius: 4, overflow: 'hidden', marginBottom: 12 }}>
-            <div style={{ height: '100%', width: `${percentage}%`, background: barColor, transition: 'width 0.5s ease-out, background 0.5s ease-out' }} />
-          </div>
-          {missing.length > 0 && (
-            <div style={{ fontSize: 14, color: 'var(--color-text-secondary)' }}>
-              <strong>Il vous manque :</strong> {missing.join(', ')}
-            </div>
-          )}
+        )}
+
+        {/* Header */}
+        <div style={{ marginBottom: 32 }}>
+          <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--color-text-primary)', letterSpacing: '-0.5px' }}>Paramètres du compte</h1>
+          <p style={{ color: 'var(--color-text-secondary)', marginTop: 4, fontSize: 14 }}>Gérez vos informations, votre sécurité et vos préférences.</p>
         </div>
 
-        {/* SECTION 1: PHOTO DE PROFIL */}
-        <div style={{ background: 'var(--color-bg-container)', padding: 32, borderRadius: 'var(--radius-lg)', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', border: '1px solid var(--color-border)' }}>
-          <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 20 }}>Photo de profil</h2>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-            <div style={{ 
-              width: 100, height: 100, borderRadius: '50%', overflow: 'hidden', 
-              background: 'linear-gradient(135deg, var(--color-primary-light), var(--color-primary))',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff', fontSize: 32, fontWeight: 700, flexShrink: 0,
-              boxShadow: '0 4px 12px rgba(1, 68, 189, 0.2)'
-            }}>
-              {user.avatar_url ? (
-                <img src={user.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                `${user.prenom?.charAt(0) || ''}${user.nom?.charAt(0) || ''}`
-              )}
-            </div>
-            <div>
-              <p style={{ color: 'var(--color-text-secondary)', fontSize: 14, marginBottom: 12 }}>
-                Format recommandé : JPG, PNG ou WEBP.<br/>Taille maximale : 5 Mo.
-              </p>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleAvatarChange} 
-                accept="image/jpeg, image/png, image/webp" 
-                style={{ display: 'none' }} 
-              />
-              <button 
-                className="btn-outline" 
-                onClick={() => fileInputRef.current?.click()}
-                disabled={avatarUploading}
-              >
-                {avatarUploading ? 'Téléversement...' : 'Changer la photo'}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* SECTION 2: INFORMATIONS DU COMPTE (Lecture seule) */}
-        <div style={{ background: 'var(--color-bg-container)', padding: 32, borderRadius: 'var(--radius-lg)', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', border: '1px solid var(--color-border)' }}>
-          <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 20 }}>Détails du compte</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 24 }}>
-            <div>
-              <div style={{ fontSize: 13, color: 'var(--color-text-tertiary)', fontWeight: 500, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Rôle d'accès</div>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', background: 'var(--color-primary-light)', color: 'var(--color-primary)', borderRadius: 20, fontSize: 14, fontWeight: 600 }}>
-                {user.role === 'admin' ? 'Administrateur' : user.role === 'evaluateur' ? 'Évaluateur' : 'Candidat'}
-              </div>
-            </div>
-            <div>
-              <div style={{ fontSize: 13, color: 'var(--color-text-tertiary)', fontWeight: 500, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Email d'authentification</div>
-              <div style={{ fontSize: 15, color: 'var(--color-text-primary)', fontWeight: 500 }}>{user.email}</div>
-              <div style={{ fontSize: 12, color: 'var(--color-orange)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                Contactez l'administration pour modifier
-              </div>
-            </div>
-            {user.derniere_connexion && (
-              <div>
-                <div style={{ fontSize: 13, color: 'var(--color-text-tertiary)', fontWeight: 500, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Dernière connexion</div>
-                <div style={{ fontSize: 15, color: 'var(--color-text-secondary)' }}>
-                  {new Date(user.derniere_connexion).toLocaleString('fr-FR', { dateStyle: 'medium', timeStyle: 'short' })}
+        <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: 24, alignItems: 'start' }}>
+          
+          {/* COLONNE GAUCHE */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {/* PHOTO DE PROFIL & IDENTITE */}
+            <div className="animate-fade-in-up" style={cardStyle}>
+              <div style={{ textAlign: 'center', marginBottom: 24 }}>
+                <div style={{ 
+                  width: 120, height: 120, borderRadius: '50%', overflow: 'hidden', margin: '0 auto 16px',
+                  background: 'linear-gradient(135deg, var(--color-primary-light), var(--color-primary))',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#fff', fontSize: 36, fontWeight: 700,
+                  boxShadow: '0 4px 12px rgba(1, 68, 189, 0.2)'
+                }}>
+                  {user.avatar_url ? (
+                    <img src={user.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    `${user.prenom?.charAt(0) || ''}${user.nom?.charAt(0) || ''}`
+                  )}
+                </div>
+                <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--color-text-primary)', marginBottom: 4 }}>
+                  {user.prenom} {user.nom}
+                </h2>
+                <div style={{ fontSize: 13, color: 'var(--color-primary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', background: 'var(--color-primary-light)', padding: '4px 12px', display: 'inline-block' }}>
+                  {user.role === 'admin' ? 'Administrateur' : user.role === 'evaluateur' ? 'Évaluateur' : 'Candidat'}
                 </div>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* SECTION 3: INFORMATIONS PERSONNELLES */}
-        <div style={{ background: 'var(--color-bg-container)', padding: 32, borderRadius: 'var(--radius-lg)', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', border: '1px solid var(--color-border)' }}>
-          <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 20 }}>Informations personnelles</h2>
-          <form onSubmit={handleUpdateProfile} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-            <div className="form-group">
-              <label className="form-label">Prénom</label>
-              <input type="text" className="form-input" value={prenom} onChange={e => setPrenom(e.target.value)} required />
-            </div>
-            <div className="form-group">
-              <label className="form-label">Nom</label>
-              <input type="text" className="form-input" value={nom} onChange={e => setNom(e.target.value)} required />
-            </div>
-            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-              <label className="form-label">Numéro de téléphone</label>
-              <input type="tel" className="form-input" value={telephone} onChange={e => setTelephone(e.target.value)} />
-            </div>
-
-            <div className="form-group">
-              <label className="form-label">Type de pièce d'identité</label>
-              <select className="form-input" value={typePieceIdentite} onChange={e => setTypePieceIdentite(e.target.value)}>
-                <option value="CNI">Carte Nationale d'Identité (CNI)</option>
-                <option value="Passeport">Passeport</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Numéro de pièce d'identité</label>
-              <input type="text" className="form-input" value={numeroPieceIdentite} onChange={e => setNumeroPieceIdentite(e.target.value)} />
-            </div>
-
-            <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-              <label className="form-label">Date de naissance</label>
-              <input type="date" className="form-input" value={dateNaissance} onChange={e => setDateNaissance(e.target.value)} max={maxDate} />
-              <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginTop: 4 }}>
-                Vous devez avoir au moins 18 ans pour soumettre un dossier.
-              </div>
-            </div>
-
-            <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
-              <button type="submit" className="btn-primary">Enregistrer les modifications</button>
-            </div>
-          </form>
-        </div>
-
-        {/* SECTION 4: SECURITE */}
-        <div style={{ background: 'var(--color-bg-container)', padding: 32, borderRadius: 'var(--radius-lg)', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', border: '1px solid var(--color-border)' }}>
-          <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 20 }}>Sécurité</h2>
-          <form onSubmit={handleUpdatePassword} style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 500 }}>
-            <div className="form-group">
-              <label className="form-label">Mot de passe actuel</label>
-              <div style={{ position: 'relative' }}>
-                <input 
-                  type={showPassword ? "text" : "password"} 
-                  className="form-input" 
-                  value={ancienMotDePasse} 
-                  onChange={e => setAncienMotDePasse(e.target.value)} 
-                  required 
-                  style={{ paddingRight: 40 }}
-                />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: 12, top: 10, background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer' }}>
-                  {showPassword ? (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                  ) : (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  )}
+              
+              <div style={{ borderTop: '1px solid var(--color-border-light)', paddingTop: 20 }}>
+                <p style={{ color: 'var(--color-text-secondary)', fontSize: 13, marginBottom: 14, lineHeight: 1.5, textAlign: 'center' }}>
+                  Format recommandé : JPG/PNG.<br/>Max 5 Mo.
+                </p>
+                <input type="file" ref={fileInputRef} onChange={handleAvatarChange} accept="image/jpeg, image/png, image/webp" style={{ display: 'none' }} />
+                <button className="btn-primary" onClick={() => fileInputRef.current?.click()} disabled={avatarUploading} style={{ width: '100%', padding: '10px', fontSize: 13, fontWeight: 600 }}>
+                  {avatarUploading ? 'Téléversement...' : 'Changer la photo'}
                 </button>
               </div>
             </div>
-            <div className="form-group">
-              <label className="form-label">Nouveau mot de passe</label>
-              <div style={{ position: 'relative' }}>
-                <input 
-                  type={showPassword ? "text" : "password"} 
-                  className="form-input" 
-                  value={nouveauMotDePasse} 
-                  onChange={e => setNouveauMotDePasse(e.target.value)} 
-                  required 
-                  minLength={8}
-                  style={{ paddingRight: 40 }}
-                />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: 12, top: 10, background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer' }}>
-                  {showPassword ? (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                  ) : (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  )}
-                </button>
-              </div>
-              <div style={{ fontSize: 12, color: 'var(--color-text-tertiary)', marginTop: 6 }}>Minimum 8 caractères.</div>
-            </div>
-            <div className="form-group">
-              <label className="form-label">Confirmer le nouveau mot de passe</label>
-              <div style={{ position: 'relative' }}>
-                <input 
-                  type={showPassword ? "text" : "password"} 
-                  className="form-input" 
-                  value={confirmationNouveauMotDePasse} 
-                  onChange={e => setConfirmationNouveauMotDePasse(e.target.value)} 
-                  required 
-                  style={{ paddingRight: 40 }}
-                />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: 12, top: 10, background: 'none', border: 'none', color: 'var(--color-text-tertiary)', cursor: 'pointer' }}>
-                  {showPassword ? (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                  ) : (
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                  )}
-                </button>
-              </div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: 12 }}>
-              <button type="submit" className="btn-primary" disabled={loadingPass}>
-                {loadingPass ? 'Mise à jour...' : 'Mettre à jour le mot de passe'}
-              </button>
-            </div>
-          </form>
-        </div>
 
-        {/* SECTION 5: PREFERENCES */}
-        <div style={{ background: 'var(--color-bg-container)', padding: 32, borderRadius: 'var(--radius-lg)', boxShadow: '0 2px 8px rgba(0,0,0,0.02)', border: '1px solid var(--color-border)' }}>
-          <h2 style={{ fontSize: 18, fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: 20 }}>Préférences</h2>
-          
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 20, borderBottom: '1px solid var(--color-border-light)' }}>
-            <div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--color-text-primary)' }}>Notifications par email</div>
-              <div style={{ fontSize: 14, color: 'var(--color-text-secondary)', marginTop: 4 }}>Recevez des alertes concernant l'évolution de vos dossiers et les annonces.</div>
-            </div>
-            {/* Custom Toggle Switch */}
-            <div 
-              onClick={handleToggleNotifications}
-              style={{ 
-                width: 44, height: 24, borderRadius: 12, 
-                background: notificationsEmail ? 'var(--color-primary)' : 'var(--color-border-light)',
-                position: 'relative', cursor: 'pointer', transition: 'background 0.3s'
-              }}
-            >
-              <div style={{ 
-                width: 20, height: 20, borderRadius: '50%', background: '#fff', 
-                position: 'absolute', top: 2, left: notificationsEmail ? 22 : 2,
-                transition: 'left 0.3s', boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-              }} />
+            {/* BARRE DE COMPLETUDE */}
+            <div className="animate-fade-in-up" style={{ ...cardStyle, animationDelay: '0.05s' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>Profil à {percentage}%</h2>
+              </div>
+              <div style={{ width: '100%', height: 6, background: 'var(--color-bg-body)', overflow: 'hidden', marginBottom: 12 }}>
+                <div style={{ height: '100%', width: `${percentage}%`, background: barColor, transition: 'width 0.5s ease-out, background 0.5s ease-out' }} />
+              </div>
+              {missing.length > 0 ? (
+                <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
+                  <strong>Manquant:</strong> {missing.join(', ')}
+                </div>
+              ) : (
+                <div style={{ fontSize: 12, color: 'var(--color-green)', fontWeight: 600 }}>Profil complété à 100%</div>
+              )}
             </div>
           </div>
-          
-        </div>
 
+          {/* COLONNE DROITE */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            
+            {/* INFORMATIONS PERSONNELLES */}
+            <div className="animate-fade-in-up" style={{ ...cardStyle, animationDelay: '0.1s' }}>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 20 }}>Informations personnelles</h2>
+              <form onSubmit={handleUpdateProfile} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div className="param-group">
+                  <label className={labelClass}>Prénom</label>
+                  <input type="text" className={inputClass} value={prenom} onChange={e => setPrenom(e.target.value)} required />
+                </div>
+                <div className="param-group">
+                  <label className={labelClass}>Nom</label>
+                  <input type="text" className={inputClass} value={nom} onChange={e => setNom(e.target.value)} required />
+                </div>
+                <div className="param-group">
+                  <label className={labelClass}>Téléphone</label>
+                  <input type="tel" className={inputClass} value={telephone} onChange={e => setTelephone(e.target.value)} />
+                </div>
+                <div className="param-group">
+                  <label className={labelClass}>Date de naissance</label>
+                  <input type="date" className={inputClass} value={dateNaissance} onChange={e => setDateNaissance(e.target.value)} max={maxDate} />
+                </div>
+                <div className="param-group">
+                  <label className={labelClass}>Type de pièce</label>
+                  <select className={inputClass} value={typePieceIdentite} onChange={e => setTypePieceIdentite(e.target.value)}>
+                    <option value="CNI">CNI</option>
+                    <option value="Passeport">Passeport</option>
+                  </select>
+                </div>
+                <div className="param-group">
+                  <label className={labelClass}>N° de pièce</label>
+                  <input type="text" className={inputClass} value={numeroPieceIdentite} onChange={e => setNumeroPieceIdentite(e.target.value)} />
+                </div>
+                <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+                  <button type="submit" className="btn-primary" style={{ padding: '10px 20px', fontSize: 13 }}>Enregistrer</button>
+                </div>
+              </form>
+            </div>
+
+            {/* DETAILS & PREFERENCES */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+              <div className="animate-fade-in-up" style={{ ...cardStyle, animationDelay: '0.15s' }}>
+                <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 16 }}>Détails d'accès</h2>
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', fontWeight: 700, textTransform: 'uppercase' }}>Email</div>
+                  <div style={{ fontSize: 14, color: 'var(--color-text-primary)', fontWeight: 600 }}>{user.email}</div>
+                </div>
+                {user.derniere_connexion && (
+                  <div>
+                    <div style={{ fontSize: 11, color: 'var(--color-text-tertiary)', fontWeight: 700, textTransform: 'uppercase' }}>Dernière connexion</div>
+                    <div style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>{new Date(user.derniere_connexion).toLocaleString('fr-FR')}</div>
+                  </div>
+                )}
+              </div>
+              
+              <div className="animate-fade-in-up" style={{ ...cardStyle, animationDelay: '0.2s' }}>
+                <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 16 }}>Préférences</h2>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)' }}>Notifications Email</div>
+                    <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 4 }}>Recevoir les alertes</div>
+                  </div>
+                  <div onClick={handleToggleNotifications} style={{ width: 40, height: 20, borderRadius: 10, background: notificationsEmail ? 'var(--color-primary)' : 'var(--color-border-light)', position: 'relative', cursor: 'pointer', transition: 'background 0.3s' }}>
+                    <div style={{ width: 16, height: 16, borderRadius: '50%', background: '#fff', position: 'absolute', top: 2, left: notificationsEmail ? 22 : 2, transition: 'left 0.3s', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* SECURITE */}
+            <div className="animate-fade-in-up" style={{ ...cardStyle, animationDelay: '0.25s' }}>
+              <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: 20 }}>Sécurité</h2>
+              <form onSubmit={handleUpdatePassword} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div className="param-group" style={{ gridColumn: '1 / -1' }}>
+                  <label className={labelClass}>Mot de passe actuel</label>
+                  <input type="password" className={inputClass} value={ancienMotDePasse} onChange={e => setAncienMotDePasse(e.target.value)} required />
+                </div>
+                <div className="param-group">
+                  <label className={labelClass}>Nouveau mot de passe</label>
+                  <input type="password" className={inputClass} value={nouveauMotDePasse} onChange={e => setNouveauMotDePasse(e.target.value)} required minLength={8} />
+                </div>
+                <div className="param-group">
+                  <label className={labelClass}>Confirmer mot de passe</label>
+                  <input type="password" className={inputClass} value={confirmationNouveauMotDePasse} onChange={e => setConfirmationNouveauMotDePasse(e.target.value)} required />
+                </div>
+                <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-start', marginTop: 8 }}>
+                  <button type="submit" className="btn-primary" disabled={loadingPass} style={{ padding: '10px 20px', fontSize: 13 }}>
+                    {loadingPass ? 'Mise à jour...' : 'Mettre à jour'}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+          </div>
+        </div>
       </div>
-
-    </div>
+    </>
   );
 }

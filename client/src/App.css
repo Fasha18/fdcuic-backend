@@ -3314,3 +3314,69 @@
     width: 100%;
   }
 }
+
+/* ── Metaballs Background Animation (Admin & Login) ─────────────────────── */
+.ag-metaballs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+  animation: hueshift 16s ease-in-out infinite;
+}
+.ag-metaballs svg {
+  width: 100%;
+  height: 100%;
+}
+.mb-1 { animation: gooA 13s ease-in-out infinite alternate; fill: #2f6bff; }
+.mb-2 { animation: gooB 15s ease-in-out infinite alternate; fill: #0144BD; }
+.mb-3 { animation: gooC 17s ease-in-out infinite alternate; fill: #5b8dff; }
+.mb-4 { animation: gooD 19s ease-in-out infinite alternate; fill: #1e63ff; }
+.mb-5 { animation: gooE 21s ease-in-out infinite alternate; fill: #78a8ff; }
+
+@keyframes gooA {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(150px, -110px); }
+}
+@keyframes gooB {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-130px, 120px); }
+}
+@keyframes gooC {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(110px, 140px); }
+}
+@keyframes gooD {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-120px, -90px); }
+}
+@keyframes gooE {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(60px, -60px) scale(1.15); }
+}
+@keyframes hueshift {
+  0%, 100% { filter: hue-rotate(0); }
+  50% { filter: hue-rotate(-16deg); }
+}
+
+/* ── Global Border Radius Override for Cards and Tables ── */
+.dashboard-layout .card,
+.dashboard-layout table,
+.candidat-dashboard .card,
+.candidat-dashboard table,
+.dashboard-layout .table-container,
+.candidat-dashboard .table-container,
+.sp-stage,
+.sp-panel-left,
+.sp-panel-left-inner,
+.ag-card,
+[class*="Dashboard_"] .card {
+  border-radius: 0 !important;
+}
+
+/* Override inline border radius for cards that use background: var(--color-bg-card) */
+div[style*="var(--color-bg-card)"] {
+  border-radius: 0 !important;
+}
+
+

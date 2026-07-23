@@ -23,7 +23,7 @@ const ETAPES = [
   { id: 'final',       label: 'Décision',       statuts: ['accepte', 'rejete', 'non_conforme'] },
 ];
 
-const getBaseUrl = () => 'https://fdcuic-backend.onrender.com';
+const getBaseUrl = () => 'https://fdcuic-backend-production.up.railway.app';
 
 // ════════════════════════════════════════════════════════════
 // STEPPER

@@ -44,17 +44,18 @@ export default function CandidatAppels({ onLogout }) {
         
         const withStatus = allAppels.map(a => ({ ...a, computedStatus: getAppelStatus(a) }));
         
-        const ouverts = withStatus.filter(a => a.computedStatus === 'ouvert')
-          .sort((a, b) => new Date(b.date_debut) - new Date(a.date_debut));
-        const appelOuvert = ouverts.length > 0 ? ouverts[0] : null;
+        // La restriction demandée : 1 seul appel récent (ouvert/à venir) et 1 seul appel fermé
+        const nonFermes = withStatus.filter(a => a.computedStatus !== 'cloture')
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        const dernierActif = nonFermes.length > 0 ? nonFermes[0] : null;
         
         const clotures = withStatus.filter(a => a.computedStatus === 'cloture')
           .sort((a, b) => new Date(b.date_fin) - new Date(a.date_fin));
-        const appelCloture = clotures.length > 0 ? clotures[0] : null;
+        const dernierCloture = clotures.length > 0 ? clotures[0] : null;
         
         const selectedAppels = [];
-        if (appelOuvert) selectedAppels.push(appelOuvert);
-        if (appelCloture) selectedAppels.push(appelCloture);
+        if (dernierActif) selectedAppels.push(dernierActif);
+        if (dernierCloture) selectedAppels.push(dernierCloture);
         
         setAppels(selectedAppels);
       } catch (err) {

@@ -80,10 +80,7 @@ const AdminMobilite = () => {
   );
 
   return (
-    <div className="content-grid" style={{ display: 'flex', gap: 24, alignItems: 'flex-start' }}>
-      
-      {/* ── LEFT TABLE SECTION ── */}
-      <div style={{ flex: '1 1 100%', transition: 'all 0.3s', minWidth: 0 }}>
+    <div style={{ paddingBottom: 40, width: '100%', maxWidth: '100%' }}>
         
         {/* TOPBAR */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
@@ -124,42 +121,43 @@ const AdminMobilite = () => {
 
         {/* STATS CARDS */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16, marginBottom: 24 }}>
-          <div className="card animate-fade-in-up" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: 16 }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--color-bg-body)', color: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+          {[
+            { label: 'Total', value: stats.total, color: 'var(--color-primary)', borderColor: '#0144BD',
+              icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+            },
+            { label: 'En analyse', value: stats.en_analyse, color: 'var(--color-orange)', borderColor: '#FFB020',
+              icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            },
+            { label: 'Acceptées', value: stats.valides, color: 'var(--color-green)', borderColor: '#1baf7a',
+              icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+            },
+            { label: 'Rejetées', value: stats.rejetes, color: 'var(--color-red)', borderColor: '#ef4444',
+              icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+            },
+          ].map((s, idx) => (
+            <div key={s.label} className="animate-fade-in-up" style={{
+              padding: '18px 18px 18px 14px',
+              display: 'flex', alignItems: 'center', gap: 14,
+              background: 'var(--color-bg-card)',
+              border: '1px solid var(--color-border-light)',
+              borderLeft: `4px solid ${s.borderColor}`,
+              borderRadius: 0,
+              boxShadow: 'var(--shadow-sm)',
+              transition: 'transform 0.2s',
+              animationDelay: `${idx * 0.05}s`,
+            }}
+            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-3px)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+            >
+              <div style={{ width: 42, height: 42, borderRadius: 0, background: `${s.borderColor}18`, color: s.color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                {s.icon}
+              </div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 2 }}>{s.label}</div>
+                <div style={{ fontSize: 26, fontWeight: 800, color: 'var(--color-text-primary)', lineHeight: 1 }}>{s.value}</div>
+              </div>
             </div>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 4 }}>Total</div>
-              <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--color-text-primary)', lineHeight: 1 }}>{stats.total}</div>
-            </div>
-          </div>
-          <div className="card animate-fade-in-up" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: 16, animationDelay: '0.05s' }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--color-orange-light)', color: 'var(--color-orange)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            </div>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 4 }}>En analyse</div>
-              <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--color-text-primary)', lineHeight: 1 }}>{stats.en_analyse}</div>
-            </div>
-          </div>
-          <div className="card animate-fade-in-up" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: 16, animationDelay: '0.1s' }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--color-green-light)', color: 'var(--color-green)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
-            </div>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 4 }}>Acceptées</div>
-              <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--color-text-primary)', lineHeight: 1 }}>{stats.valides}</div>
-            </div>
-          </div>
-          <div className="card animate-fade-in-up" style={{ padding: '20px', display: 'flex', alignItems: 'center', gap: 16, animationDelay: '0.15s' }}>
-            <div style={{ width: 44, height: 44, borderRadius: 12, background: 'var(--color-red-light)', color: 'var(--color-red)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-            </div>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: 4 }}>Rejetées</div>
-              <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--color-text-primary)', lineHeight: 1 }}>{stats.rejetes}</div>
-            </div>
-          </div>
+          ))}
         </div>
 
         {/* TABLE */}
@@ -182,8 +180,14 @@ const AdminMobilite = () => {
                   </tr>
                 ) : candidatures.length === 0 ? (
                   <tr>
-                    <td colSpan="7" style={{ padding: 40, textAlign: 'center', color: 'var(--color-text-tertiary)' }}>
-                      Aucune candidature trouvée.
+                    <td colSpan="7">
+                      <div style={{ padding: '48px 24px', textAlign: 'center' }}>
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" style={{ color: 'var(--color-text-muted)', margin: '0 auto 14px', display: 'block' }}>
+                          <circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+                        </svg>
+                        <div style={{ fontWeight: 600, color: 'var(--color-text-secondary)', fontSize: 15, marginBottom: 6 }}>Aucune candidature trouvée</div>
+                        <div style={{ color: 'var(--color-text-tertiary)', fontSize: 13 }}>Aucun dossier de mobilité ne correspond à vos critères.</div>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -281,7 +285,6 @@ const AdminMobilite = () => {
             </div>
           )}
         </div>
-      </div>
     </div>
   );
 };

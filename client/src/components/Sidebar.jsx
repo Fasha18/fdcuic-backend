@@ -27,12 +27,8 @@ const NAV_ADMIN = [
         icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> },
       { id: 'notifications-admin', label: 'Notifications',
         icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> },
-      { id: 'statistiques', label: 'Statistiques',
-        icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> },
-      { id: 'finances', label: 'Finances',
-        icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg> },
-      { id: 'faqs', label: 'Gestion FAQs',
-        icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> },
+
+
       { id: 'legal', label: 'Paramètres légaux',
         icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> },
       { id: 'parametres', label: 'Paramètres compte',
@@ -63,7 +59,7 @@ const NAV_CANDIDAT = [
 
 // Items masqués pour le rôle évaluateur
 const ITEMS_EVALUATEUR_BLOQUES = [
-  'candidatures-admin', 'personnel', 'statistiques', 'finances', 'faqs', 'legal'
+  'candidatures-admin', 'personnel', 'legal'
 ];
 
 const Sidebar = ({ activeTab, onTabChange, onLogout, role = 'admin' }) => {
@@ -100,9 +96,7 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, role = 'admin' }) => {
       'brouillons': '/admin/brouillons',
       'personnel': '/admin/personnel',
       'notifications-admin': '/admin/notifications-admin',
-      'statistiques': '/admin/statistiques',
-      'finances': '/admin/finances',
-      'faqs': '/admin/faqs',
+
       'legal': '/admin/legal',
       'parametres': '/admin/parametres',
       'profil': '/admin/profil'

@@ -188,6 +188,10 @@ export default function Dashboard({ activeTab = 'apercu', onLogout }) {
       <div className="stats-grid">
         {[1, 2, 3, 4].map(n => <div key={n} className="stat-card skeleton" style={{ minHeight: '120px' }} />)}
       </div>
+      <div style={{ textAlign: 'center', marginTop: 32, color: 'var(--color-text-secondary)', fontSize: 14, animation: 'fadeIn 1s ease-in-out' }}>
+        <p>Chargement des données en cours...</p>
+        <p style={{ opacity: 0.7, fontSize: 12, marginTop: 4 }}>Le serveur (Render) sort de veille, cela peut prendre jusqu'à 50 secondes.</p>
+      </div>
     </div>
   );
 

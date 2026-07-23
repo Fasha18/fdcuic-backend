@@ -1,4 +1,5 @@
 const { AppelProjet, AppelAProjet, User, Notification, DocumentModele, TypeProjet } = require('../models/index');
+const { envoyerEmailNotification } = require('../services/emailService');
 
 // ════════════════════════════════════════════════════════════
 // STATUTS VALIDES pour le workflow d'évaluation
@@ -139,16 +140,39 @@ const evaluerConformite = async (req, res) => {
     const nomStructure = dossier.nom_structure || 'votre dossier';
     const nomAppel = dossier.appel?.titre || "l'appel à projets";
 
+    const candidat = await User.findByPk(dossier.user_id, { attributes: ['id', 'prenom', 'nom', 'email'] });
+
     if (conforme) {
-      await notifierCandidat(
-        dossier.user_id,
-        `✅ Votre dossier "${nomStructure}" a passé la vérification de conformité administrative. Il entre maintenant en phase d'évaluation du contenu pour l'appel "${nomAppel}".`
-      );
+      const msgInApp = `✅ Votre dossier "${nomStructure}" a passé la vérification de conformité administrative. Il entre maintenant en phase d'évaluation du contenu pour l'appel "${nomAppel}".`;
+      await notifierCandidat(dossier.user_id, msgInApp);
+
+      // Email Brevo
+      if (candidat) {
+        const sujet = '🔍 Conformité validée — FDCUIC';
+        const contenu = `Bonjour ${candidat.prenom},<br><br>
+Votre dossier <strong>${nomStructure}</strong> soumis pour l'appel <strong>${nomAppel}</strong> a <strong>passé avec succès</strong> la vérification de conformité administrative.<br><br>
+Votre dossier entre maintenant en phase d'<strong>évaluation du contenu</strong>. Vous serez notifié dès qu'une décision sera prise.<br><br>
+Cordialement,<br>L'équipe FDCUIC`;
+        envoyerEmailNotification(candidat.email, candidat.prenom, sujet, contenu).catch(err =>
+          console.error('Erreur email conformité (conforme):', err.message)
+        );
+      }
     } else {
-      await notifierCandidat(
-        dossier.user_id,
-        `❌ Votre dossier "${nomStructure}" n'a pas satisfait aux critères de conformité administrative. Motif : ${commentaire.trim()}. Pour plus d'informations, contactez l'équipe FDCUIC.`
-      );
+      const msgInApp = `❌ Votre dossier "${nomStructure}" n'a pas satisfait aux critères de conformité administrative. Motif : ${commentaire.trim()}. Pour plus d'informations, contactez l'équipe FDCUIC.`;
+      await notifierCandidat(dossier.user_id, msgInApp);
+
+      // Email Brevo
+      if (candidat) {
+        const sujet = '❌ Dossier non conforme — FDCUIC';
+        const contenu = `Bonjour ${candidat.prenom},<br><br>
+Après examen, votre dossier <strong>${nomStructure}</strong> soumis pour l'appel <strong>${nomAppel}</strong> ne satisfait pas aux critères de conformité administrative.<br><br>
+<strong>Motif :</strong> ${commentaire.trim()}<br><br>
+Pour toute question, contactez notre équipe à <a href="mailto:contact@fdcuic.sn">contact@fdcuic.sn</a>.<br><br>
+Cordialement,<br>L'équipe FDCUIC`;
+        envoyerEmailNotification(candidat.email, candidat.prenom, sujet, contenu).catch(err =>
+          console.error('Erreur email conformité (non conforme):', err.message)
+        );
+      }
     }
 
     return res.status(200).json({
@@ -211,17 +235,41 @@ const evaluerContenu = async (req, res) => {
     // Notification au candidat
     const nomStructure = dossier.nom_structure || 'votre dossier';
     const nomAppel = dossier.appel?.titre || "l'appel à projets";
+    const candidat2 = await User.findByPk(dossier.user_id, { attributes: ['id', 'prenom', 'nom', 'email'] });
 
     if (decision === 'accepte') {
-      await notifierCandidat(
-        dossier.user_id,
-        `🎉 Félicitations ! Votre dossier "${nomStructure}" a été accepté dans le cadre de l'appel "${nomAppel}". Notre équipe vous contactera prochainement pour les modalités.`
-      );
+      const msgInApp = `🎉 Félicitations ! Votre dossier "${nomStructure}" a été accepté dans le cadre de l'appel "${nomAppel}". Notre équipe vous contactera prochainement pour les modalités.`;
+      await notifierCandidat(dossier.user_id, msgInApp);
+
+      // Email Brevo
+      if (candidat2) {
+        const sujet = '🎉 Félicitations ! Votre dossier a été accepté — FDCUIC';
+        const contenu = `Bonjour ${candidat2.prenom},<br><br>
+Nous avons le plaisir de vous informer que votre dossier <strong>${nomStructure}</strong> soumis pour l'appel <strong>${nomAppel}</strong> a été <strong style="color:#16a34a;">accepté</strong> par le FDCUIC !<br><br>
+Notre équipe vous contactera très prochainement pour vous communiquer les modalités de financement et les prochaines étapes.<br><br>
+Félicitations et bienvenue dans la famille FDCUIC !<br><br>
+Cordialement,<br>L'équipe FDCUIC`;
+        envoyerEmailNotification(candidat2.email, candidat2.prenom, sujet, contenu).catch(err =>
+          console.error('Erreur email évaluation (accepté):', err.message)
+        );
+      }
     } else {
-      await notifierCandidat(
-        dossier.user_id,
-        `📋 Nous regrettons de vous informer que votre dossier "${nomStructure}" n'a pas été retenu pour l'appel "${nomAppel}". Motif : ${commentaire.trim()}.`
-      );
+      const msgInApp = `📋 Nous regrettons de vous informer que votre dossier "${nomStructure}" n'a pas été retenu pour l'appel "${nomAppel}". Motif : ${commentaire.trim()}.`;
+      await notifierCandidat(dossier.user_id, msgInApp);
+
+      // Email Brevo
+      if (candidat2) {
+        const sujet = '📋 Résultat de votre candidature — FDCUIC';
+        const contenu = `Bonjour ${candidat2.prenom},<br><br>
+Après examen approfondi de votre dossier <strong>${nomStructure}</strong> soumis pour l'appel <strong>${nomAppel}</strong>, nous regrettons de vous informer que votre candidature n'a pas été retenue.<br><br>
+<strong>Motif :</strong> ${commentaire.trim()}<br><br>
+Nous vous encourageons à améliorer votre dossier et à postuler lors des prochains appels à projets.<br><br>
+Pour toute question, contactez-nous à <a href="mailto:contact@fdcuic.sn">contact@fdcuic.sn</a>.<br><br>
+Cordialement,<br>L'équipe FDCUIC`;
+        envoyerEmailNotification(candidat2.email, candidat2.prenom, sujet, contenu).catch(err =>
+          console.error('Erreur email évaluation (rejeté):', err.message)
+        );
+      }
     }
 
     return res.status(200).json({

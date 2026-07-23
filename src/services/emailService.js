@@ -5,47 +5,55 @@ const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const SENDER_EMAIL = process.env.BREVO_SENDER_EMAIL || 'fbiaye18@gmail.com';
 const SENDER_NAME = 'FDCUIC';
 
-const sendBrevoEmail = async (toEmail, toName, subject, content, isText = false) => {
-  const url = 'https://api.brevo.com/v3/smtp/email';
-  
-  const payload = {
-    sender: { name: SENDER_NAME, email: SENDER_EMAIL },
-    to: [{ email: toEmail, name: toName }],
-    subject: subject,
-  };
-  
-  if (isText) {
-    payload.textContent = content;
-  } else {
-    payload.htmlContent = content;
-  }
+const https = require('https');
 
-  try {
-    const response = await fetch(url, {
+const sendBrevoEmail = (toEmail, toName, subject, content, isText = false) => {
+  return new Promise((resolve, reject) => {
+    const payload = JSON.stringify({
+      sender: { name: SENDER_NAME, email: SENDER_EMAIL },
+      to: [{ email: toEmail, name: toName }],
+      subject: subject,
+      ...(isText ? { textContent: content } : { htmlContent: content })
+    });
+
+    const options = {
+      hostname: 'api.brevo.com',
+      path: '/v3/smtp/email',
       method: 'POST',
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'api-key': BREVO_API_KEY
-      },
-      body: JSON.stringify(payload)
+        'api-key': BREVO_API_KEY,
+        'Content-Length': Buffer.byteLength(payload)
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          console.log(`Email envoyé avec succès via Brevo à ${toEmail}`);
+          resolve(data);
+        } else {
+          console.error('Erreur API Brevo:', data);
+          reject(new Error(`Erreur Brevo: ${res.statusCode} - ${data}`));
+        }
+      });
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Erreur API Brevo:', errorData);
-      throw new Error(`Erreur Brevo: ${response.status}`);
-    }
+    req.on('error', (e) => {
+      console.error('Exception lors de l\'envoi de l\'email:', e.message);
+      reject(e);
+    });
 
-    console.log(`Email envoyé avec succès via Brevo à ${toEmail}`);
-  } catch (error) {
-    console.error('Exception lors de l\'envoi de l\'email:', error.message);
-    throw error;
-  }
+    req.write(payload);
+    req.end();
+  });
 };
 
 const envoyerEmailActivation = async (email, prenom, token) => {
-  const baseUrl = process.env.BACKEND_URL || 'https://fdcuic-backend.onrender.com';
+  const baseUrl = process.env.BACKEND_URL || 'https://fdcuic-backend-production.up.railway.app';
   const lien = `${baseUrl}/api/auth/activer/${token}`;
   
   const text = `Bonjour ${prenom},
@@ -67,7 +75,7 @@ const envoyerEmailBienvenue = async (email, prenom) => {
     <p>Bienvenue sur la plateforme <strong>FDCUIC</strong> !</p>
     <p>Votre compte a été créé avec succès. Vous pouvez dès à présent vous connecter et explorer les appels à projets disponibles.</p>
     <p style="text-align:center; margin: 28px 0;">
-      <a href="https://fdcuic-backend.onrender.com" style="display:inline-block;background:#1B6CA8;color:white;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:15px;">
+      <a href="https://fdcuic-backend-production.up.railway.app" style="display:inline-block;background:#1B6CA8;color:white;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:bold;font-size:15px;">
         🚀 Accéder à la plateforme
       </a>
     </p>
@@ -174,7 +182,7 @@ const templateEmail = (prenom, titre, contenu) => `
 `;
 
 const envoyerEmailResetPassword = async (email, prenom, token) => {
-  const lien = `${process.env.FRONTEND_URL || 'https://fdcuic-backend.onrender.com'}/reset-password?token=${token}`;
+  const lien = `${process.env.FRONTEND_URL || 'https://fdcuic-backend-production.up.railway.app'}/reset-password?token=${token}`;
 
   const html = templateEmail(prenom, '', `
     <p>Vous avez demandé la réinitialisation de votre mot de passe sur FDCUIC.</p>

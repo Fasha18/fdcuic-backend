@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 class ApiService {
   // L'adresse IP est redirigée directement via ADB (adb reverse)
-  static const String baseUrl = 'https://fdcuic-backend.onrender.com';
+  static const String baseUrl = 'https://fdcuic-backend-production.up.railway.app';
   // static const String baseUrl = 'http://192.168.1.71:3000'; // IP local pour tester avec un téléphone physique
 
   // ── TOKEN ─────────────────────────────────────────────
