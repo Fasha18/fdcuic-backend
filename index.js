@@ -213,6 +213,15 @@ app.get('/api/run-seeder', async (req, res) => {
   }
 });
 
+// ── Serve React Frontend (Dashboard) ──
+app.use(express.static(path.join(__dirname, 'client', 'dist')));
+app.get('*', (req, res) => {
+  // Ignorer les requêtes API (elles ne doivent pas renvoyer le dashboard)
+  if (req.path.startsWith('/api')) {
+    return res.status(404).json({ error: 'Route API introuvable' });
+  }
+  res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'));
+});
 
 // ── Gestion des erreurs ──
 
