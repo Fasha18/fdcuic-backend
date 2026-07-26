@@ -21,14 +21,10 @@ const NAV_ADMIN = [
       { id: 'soumissionnaires', label: 'Soumissionnaires',
         icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="11" x2="12" y2="17"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
       },
-      { id: 'brouillons', label: 'Dossiers Brouillons',
-        icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> },
       { id: 'personnel', label: 'Personnel FDCUIC',
         icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> },
       { id: 'notifications-admin', label: 'Notifications',
         icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> },
-
-
       { id: 'legal', label: 'Paramètres légaux',
         icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> },
       { id: 'parametres', label: 'Paramètres compte',
@@ -93,7 +89,7 @@ const Sidebar = ({ activeTab, onTabChange, onLogout, role = 'admin' }) => {
       'secteurs': '/admin/secteurs',
       'candidatures-admin': '/admin/candidatures-admin',
       'soumissionnaires': '/admin/soumissionnaires',
-      'brouillons': '/admin/brouillons',
+
       'personnel': '/admin/personnel',
       'notifications-admin': '/admin/notifications-admin',
 

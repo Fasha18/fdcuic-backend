@@ -8,7 +8,7 @@ import CandidaturesList from './pages/CandidaturesList';
 import Profile from './pages/Profile';
 import AdminLayout from './components/AdminLayout';
 
-import AdminBrouillons from './components/admin/AdminBrouillons';
+
 import AdminCandidature from './components/admin/AdminCandidature';
 import AdminSoumissionnaires from './components/admin/AdminSoumissionnaires';
 import AdminPersonnel from './components/admin/AdminPersonnel';
@@ -81,7 +81,7 @@ function App() {
                 <Route path="mobilite" element={<Dashboard activeTab="mobilite" onLogout={handleLogout} />} />
                 
                 {/* Pages dédiées (remplaçant les anciens composants dans Dashboard) */}
-                <Route path="brouillons" element={<AdminBrouillons />} />
+
                 <Route path="candidatures-admin" element={<AdminCandidature />} />
                 <Route path="soumissionnaires" element={<AdminSoumissionnaires />} />
                 <Route path="personnel" element={<AdminPersonnel />} />

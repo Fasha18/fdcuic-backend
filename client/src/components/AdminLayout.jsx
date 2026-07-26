@@ -8,7 +8,7 @@ const TABS = [
   { id: 'campagnes', label: 'Appels à projets' },
   { id: 'mobilite', label: 'Mobilité' },
   { id: 'finances', label: 'Finances' },
-  { id: 'brouillons', label: 'Dossiers Brouillons' },
+
   { id: 'candidatures-admin', label: 'Candidats' },
   { id: 'soumissionnaires', label: 'Soumissionnaires' },
   { id: 'personnel', label: 'Personnel FDCUIC' },
@@ -42,7 +42,7 @@ export default function AdminLayout({ onLogout }) {
     if (path.startsWith('/admin/secteurs')) return 'secteurs';
     if (path.startsWith('/admin/candidatures-admin')) return 'candidatures-admin';
     if (path.startsWith('/admin/soumissionnaires')) return 'soumissionnaires';
-    if (path.startsWith('/admin/brouillons')) return 'brouillons';
+
     if (path.startsWith('/admin/personnel')) return 'personnel';
     if (path.startsWith('/admin/notifications-admin') || path.startsWith('/admin/notifications')) return 'notifications-admin';
 
