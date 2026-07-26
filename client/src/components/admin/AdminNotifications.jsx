@@ -72,11 +72,11 @@ const AdminNotifications = () => {
   const emails = notifications.filter(n => n.type === 'email').length;
 
   const columns = [
-    { key: 'destinataire', field: 'destinataire', label: 'Destinataire', render: (_, n) => <span style={{ fontWeight: 600 }}>{n.destinataire ? `${n.destinataire.prenom} ${n.destinataire.nom}` : 'Système/Global'}</span> },
+    { key: 'destinataire', field: 'destinataire', label: 'Destinataire', render: (_, n) => <span style={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{n.destinataire ? `${n.destinataire.prenom} ${n.destinataire.nom}` : 'Système/Global'}</span> },
     { key: 'message', field: 'message', label: 'Message', render: (_, n) => <div style={{ maxWidth: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={n.message}>{n.message}</div> },
     { key: 'type', field: 'type', label: 'Type', render: (_, n) => (
       <span style={{ 
-        padding: '4px 10px', borderRadius: '20px', fontSize: 12, fontWeight: 700,
+        padding: '4px 10px', borderRadius: '20px', fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap',
         background: n.type === 'email' ? 'var(--color-blue-light)' : 'var(--color-violet-light)',
         color: n.type === 'email' ? 'var(--color-blue)' : 'var(--color-violet)'
       }}>
@@ -85,14 +85,14 @@ const AdminNotifications = () => {
     ) },
     { key: 'statut', field: 'lu', label: 'Statut', render: (_, n) => (
       <span style={{ 
-        padding: '4px 10px', borderRadius: '20px', fontSize: 12, fontWeight: 700,
+        padding: '4px 10px', borderRadius: '20px', fontSize: 12, fontWeight: 700, whiteSpace: 'nowrap',
         background: n.lu ? 'var(--color-green-light)' : 'var(--color-orange-light)',
         color: n.lu ? 'var(--color-green)' : 'var(--color-orange)'
       }}>
         {n.lu ? 'Lue' : 'Non lue'}
       </span>
     ) },
-    { key: 'date', field: 'date_envoi', label: 'Date d\'envoi', render: (_, n) => new Date(n.date_envoi || n.createdAt).toLocaleString('fr-FR') }
+    { key: 'date', field: 'date_envoi', label: 'Date d\'envoi', render: (_, n) => <span style={{ whiteSpace: 'nowrap' }}>{new Date(n.date_envoi || n.createdAt).toLocaleString('fr-FR')}</span> }
   ];
 
   if (loading) return <div className="p-4">Chargement des notifications...</div>;
