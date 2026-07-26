@@ -249,7 +249,7 @@ const Login = ({ onLogin }) => {
 
           {/* Formulaire Card */}
           <div className="ag-card">
-            <div className="ag-eyebrow">Espace porteur de projet</div>
+
             <h2 className="ag-card-title">{isRegistering ? 'Inscription' : 'Connexion'}</h2>
             <p className="ag-card-subtitle">{isRegistering ? 'Créez votre compte porteur de projet.' : 'Accédez à votre tableau de bord.'}</p>
 
