@@ -119,21 +119,28 @@ export default function AdminCandidature() {
     }
   };
 
-  const iconButtonStyle = {
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    width: 32, height: 32, borderRadius: 8, border: 'none',
-    background: 'transparent', cursor: 'pointer', transition: 'all 0.2s',
-    color: 'var(--color-text-secondary)',
-  };
-
-  const getIconHoverStyle = (e, color) => {
-    e.currentTarget.style.background = `${color}20`;
-    e.currentTarget.style.color = color;
-  };
-  const resetIconHoverStyle = (e) => {
-    e.currentTarget.style.background = 'transparent';
-    e.currentTarget.style.color = 'var(--color-text-secondary)';
-  };
+  const ActionButton = ({ title, icon: Icon, onClick, color }) => (
+    <button
+      title={title}
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        width: 32, height: 32, borderRadius: 8, border: 'none',
+        background: `${color}15`, color: color,
+        cursor: 'pointer', transition: 'all 0.2s',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = color;
+        e.currentTarget.style.color = '#FFF';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = `${color}15`;
+        e.currentTarget.style.color = color;
+      }}
+    >
+      <Icon size={18} />
+    </button>
+  );
 
   // Statistiques calculées sur la page courante si on veut coller strictement au "déjà fetchées",
   // ou on utilise le totalApi pour les inscrits totaux.
@@ -289,50 +296,38 @@ export default function AdminCandidature() {
                     </td>
                     <td style={{ padding: '14px 16px' }}>
                       <div style={{ display: 'flex', gap: 4 }}>
-                        <button
-                          title="Détails"
-                          onClick={() => fetchUserDetails(c.id)}
-                          style={iconButtonStyle}
-                          onMouseEnter={(e) => getIconHoverStyle(e, '#7C5CFC')}
-                          onMouseLeave={resetIconHoverStyle}
-                        >
-                          <Eye size={18} />
-                        </button>
+                        <ActionButton 
+                          title="Détails" 
+                          icon={Eye} 
+                          onClick={() => fetchUserDetails(c.id)} 
+                          color="#4F6AF6" 
+                        />
                         
                         {c.statut_compte === 'en_attente' && (
-                          <button
-                            title="Renvoyer email d'activation"
-                            onClick={() => handleRenvoyerActivation(c.id)}
-                            style={iconButtonStyle}
-                            onMouseEnter={(e) => getIconHoverStyle(e, '#FFA726')}
-                            onMouseLeave={resetIconHoverStyle}
-                          >
-                            <Mail size={18} />
-                          </button>
+                          <ActionButton 
+                            title="Renvoyer email d'activation" 
+                            icon={Mail} 
+                            onClick={() => handleRenvoyerActivation(c.id)} 
+                            color="#F59F00" 
+                          />
                         )}
                         
                         {c.statut_compte === 'actif' && (
-                          <button
-                            title="Désactiver"
-                            onClick={() => handleDesactiver(c.id)}
-                            style={iconButtonStyle}
-                            onMouseEnter={(e) => getIconHoverStyle(e, '#FF6B6B')}
-                            onMouseLeave={resetIconHoverStyle}
-                          >
-                            <Power size={18} />
-                          </button>
+                          <ActionButton 
+                            title="Désactiver" 
+                            icon={Power} 
+                            onClick={() => handleDesactiver(c.id)} 
+                            color="#F03E3E" 
+                          />
                         )}
 
                         {c.statut_compte === 'desactive' && (
-                          <button
-                            title="Réactiver"
-                            onClick={() => handleReactiver(c.id)}
-                            style={iconButtonStyle}
-                            onMouseEnter={(e) => getIconHoverStyle(e, '#4CAF50')}
-                            onMouseLeave={resetIconHoverStyle}
-                          >
-                            <Power size={18} />
-                          </button>
+                          <ActionButton 
+                            title="Réactiver" 
+                            icon={Power} 
+                            onClick={() => handleReactiver(c.id)} 
+                            color="#22B07D" 
+                          />
                         )}
                       </div>
                     </td>

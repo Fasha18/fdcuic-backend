@@ -42,6 +42,29 @@ const AdminSoumissionnaires = () => {
     }
   };
 
+  const ActionButton = ({ title, icon: Icon, onClick, color }) => (
+    <button
+      title={title}
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        width: 32, height: 32, borderRadius: 8, border: 'none',
+        background: `${color}15`, color: color,
+        cursor: 'pointer', transition: 'all 0.2s',
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = color;
+        e.currentTarget.style.color = '#FFF';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = `${color}15`;
+        e.currentTarget.style.color = color;
+      }}
+    >
+      <Icon size={18} />
+    </button>
+  );
+
   const formatDate = (dateString) => {
     if (!dateString) return '—';
     const date = new Date(dateString);
@@ -271,26 +294,12 @@ const AdminSoumissionnaires = () => {
                     {/* Actions */}
                     <td style={{ padding: '14px 16px' }}>
                       <div style={{ display: 'flex', gap: 8 }}>
-                        <button
-                          title="Voir les détails"
-                          onClick={(e) => { e.stopPropagation(); navigate(`/admin/soumissionnaires/${c.id}`); }}
-                          style={{
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            width: 32, height: 32, borderRadius: 8, border: 'none',
-                            background: 'transparent', cursor: 'pointer', transition: 'all 0.2s',
-                            color: 'var(--color-text-secondary)',
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = '#7C5CFC20';
-                            e.currentTarget.style.color = '#7C5CFC';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'transparent';
-                            e.currentTarget.style.color = 'var(--color-text-secondary)';
-                          }}
-                        >
-                          <Eye size={18} />
-                        </button>
+                        <ActionButton 
+                          title="Voir les détails" 
+                          icon={Eye} 
+                          onClick={(e) => { e.stopPropagation(); navigate(`/admin/soumissionnaires/${c.id}`); }} 
+                          color="#4F6AF6" 
+                        />
                       </div>
                     </td>
                   </tr>
