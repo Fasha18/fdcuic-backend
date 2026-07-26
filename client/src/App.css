@@ -3380,3 +3380,148 @@ div[style*="var(--color-bg-card)"] {
 }
 
 
+/* ══════════════════════════════════════════════════════════════
+   DARK MODE — Global overrides for hardcoded backgrounds
+   Applies to all candidat & admin dashboard pages
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Admin + Candidat layouts ──────────────────────────────── */
+[data-theme="dark"] .admin-layout-bg,
+[data-theme="dark"] .candidat-main-bg,
+[data-theme="dark"] .candidat-mobilite-bg {
+  background: linear-gradient(155deg, #0f172a, #1e293b 60%, #0f172a) !important;
+}
+
+/* ── Cards with inline background: white ─────────────────── */
+[data-theme="dark"] .stat-card-accent,
+[data-theme="dark"] .quick-card,
+[data-theme="dark"] .recent-card,
+[data-theme="dark"] .m-stat-card,
+[data-theme="dark"] div[style*="background: white"],
+[data-theme="dark"] div[style*="background: '#fff'"],
+[data-theme="dark"] div[style*="background: #fff"] {
+  background: var(--color-bg-card) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* ── Text colors that were hardcoded ──────────────────────── */
+[data-theme="dark"] .cand-welcome-title,
+[data-theme="dark"] .stat-value,
+[data-theme="dark"] .quick-title,
+[data-theme="dark"] .recent-title,
+[data-theme="dark"] .recent-item-name,
+[data-theme="dark"] .activity-message,
+[data-theme="dark"] .m-stat-number,
+[data-theme="dark"] .sp-table-title,
+[data-theme="dark"] .sp-table-search input,
+[data-theme="dark"] .sp-quick-title,
+[data-theme="dark"] .sp-stat-number {
+  color: var(--color-text-primary) !important;
+}
+
+[data-theme="dark"] .cand-welcome-desc,
+[data-theme="dark"] .stat-label,
+[data-theme="dark"] .quick-sub,
+[data-theme="dark"] .recent-item-type,
+[data-theme="dark"] .activity-time,
+[data-theme="dark"] .m-stat-label,
+[data-theme="dark"] .sp-section-title-light,
+[data-theme="dark"] .sp-section-subtitle-light,
+[data-theme="dark"] .sp-stat-label,
+[data-theme="dark"] .sp-quick-count {
+  color: var(--color-text-secondary) !important;
+}
+
+/* ── Borders in candidat dashboard ────────────────────────── */
+[data-theme="dark"] .recent-item,
+[data-theme="dark"] .activity-item {
+  border-bottom-color: var(--color-border-light) !important;
+}
+
+[data-theme="dark"] .recent-item-icon {
+  background: var(--color-bg-body) !important;
+  color: var(--color-text-secondary) !important;
+}
+
+/* ── Inline white backgrounds in CandidatMesDossiers ──────── */
+[data-theme="dark"] div[style*="background: 'white'"] {
+  background: var(--color-bg-card) !important;
+  border-color: var(--color-border) !important;
+}
+
+/* ── CandidatRessources / CandidaturesList misc whites ─────── */
+[data-theme="dark"] div[style*="background: '#fff'"],
+[data-theme="dark"] div[style*="background: '#f8f9fa'"],
+[data-theme="dark"] select[style*="background: '#fff'"] {
+  background: var(--color-bg-card) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-primary) !important;
+}
+
+/* ── Mobilité collage card ──────────────────────────────────── */
+[data-theme="dark"] .collage-main-card::before {
+  background: var(--color-bg-card) !important;
+}
+[data-theme="dark"] .c-title {
+  color: var(--color-text-primary) !important;
+}
+[data-theme="dark"] .c-desc {
+  color: var(--color-text-secondary) !important;
+}
+[data-theme="dark"] .c-btn {
+  background: var(--color-bg-body) !important;
+  color: var(--color-text-primary) !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+/* ── Split-screen panel (candidat dashboard) ──────────────── */
+[data-theme="dark"] .sp-panel-right-inner {
+  background: linear-gradient(165deg, hsl(222, 40%, 12%) 0%, hsl(224, 38%, 16%) 50%, hsl(226, 36%, 18%) 100%) !important;
+}
+[data-theme="dark"] .sp-stat-card-light,
+[data-theme="dark"] .sp-quick-card,
+[data-theme="dark"] .sp-table-section {
+  background: var(--color-bg-card) !important;
+  border-color: var(--color-border) !important;
+}
+[data-theme="dark"] .sp-table-search {
+  background: var(--color-bg-hover) !important;
+  border-color: var(--color-border) !important;
+}
+[data-theme="dark"] .sp-table-search input {
+  color: var(--color-text-primary) !important;
+}
+[data-theme="dark"] .sp-table-btn {
+  color: var(--color-text-primary) !important;
+  border-color: var(--color-border) !important;
+}
+[data-theme="dark"] .sp-table-row:hover {
+  background: var(--color-bg-hover) !important;
+}
+[data-theme="dark"] .sp-table th {
+  color: var(--color-text-secondary) !important;
+}
+[data-theme="dark"] .sp-table-header {
+  border-bottom-color: var(--color-border-light) !important;
+}
+[data-theme="dark"] .sp-table-row {
+  border-bottom-color: var(--color-border-light) !important;
+}
+
+/* ── CandidatAppels cards ──────────────────────────────────── */
+[data-theme="dark"] .appels-card {
+  background: var(--color-bg-card) !important;
+  border-color: var(--color-border) !important;
+}
+
+/* ── Btn outline ───────────────────────────────────────────── */
+[data-theme="dark"] .btn-outline-blue {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #60a5fa !important;
+  border-color: rgba(96, 165, 250, 0.3) !important;
+}
+[data-theme="dark"] .btn-outline-blue:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
