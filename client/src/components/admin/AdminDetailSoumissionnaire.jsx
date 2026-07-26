@@ -168,27 +168,35 @@ const AdminDetailSoumissionnaire = () => {
           <p style={{ color: 'var(--color-text-tertiary)' }}>Aucune candidature aux appels à projets.</p>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+              <colgroup>
+                <col style={{ width: '220px' }} />
+                <col style={{ width: '120px' }} />
+                <col style={{ width: '180px' }} />
+                <col style={{ width: '120px' }} />
+                <col style={{ width: '120px' }} />
+                <col style={{ width: '160px' }} />
+              </colgroup>
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--color-border-light)' }}>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)' }}>Appel</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)' }}>Type</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)' }}>Structure</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)' }}>Statut</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)' }}>Date Soumission</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)' }}>Actions</th>
+                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap' }}>Appel</th>
+                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap' }}>Type</th>
+                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap' }}>Structure</th>
+                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap' }}>Statut</th>
+                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap' }}>Date Soumission</th>
+                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {appels.map(a => (
                   <React.Fragment key={a.id}>
                     <tr style={{ borderBottom: '1px solid var(--color-border-light)' }}>
-                      <td style={{ padding: '12px', fontWeight: 600, fontSize: 14 }}>{a.appel?.titre || 'Appel inconnu'}</td>
-                      <td style={{ padding: '12px' }}><span style={{ background: 'var(--color-bg-body)', padding: '4px 8px', borderRadius: 6, fontSize: 12, fontWeight: 600 }}>{a.type_projet || 'N/A'}</span></td>
-                      <td style={{ padding: '12px', fontSize: 14 }}>{a.nom_structure || 'N/A'}</td>
-                      <td style={{ padding: '12px' }}>{getStatusBadge(a.statut)}</td>
-                      <td style={{ padding: '12px', fontSize: 13, color: 'var(--color-text-secondary)' }}>{new Date(a.createdAt).toLocaleDateString('fr-FR')}</td>
-                       <td style={{ padding: '12px' }}>
+                      <td style={{ padding: '12px', fontWeight: 600, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={a.appel?.titre}>{a.appel?.titre || 'Appel inconnu'}</td>
+                      <td style={{ padding: '12px', whiteSpace: 'nowrap' }}><span style={{ background: 'var(--color-bg-body)', padding: '4px 8px', borderRadius: 6, fontSize: 12, fontWeight: 600 }}>{a.type_projet || 'N/A'}</span></td>
+                      <td style={{ padding: '12px', fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={a.nom_structure}>{a.nom_structure || 'N/A'}</td>
+                      <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{getStatusBadge(a.statut)}</td>
+                      <td style={{ padding: '12px', fontSize: 13, color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>{new Date(a.createdAt).toLocaleDateString('fr-FR')}</td>
+                       <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>
                          <button
                            onClick={() => navigate(`/admin/dossiers/${a.id}`)}
                            style={{
@@ -196,7 +204,7 @@ const AdminDetailSoumissionnaire = () => {
                              padding: '7px 14px', borderRadius: 8, border: 'none',
                              background: 'linear-gradient(135deg, #4F6AF620, #7C5CFC20)',
                              color: '#7C5CFC', fontWeight: 700, fontSize: 12,
-                             cursor: 'pointer', transition: 'all 0.2s',
+                             cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap',
                            }}
                            onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #4F6AF6, #7C5CFC)'; e.currentTarget.style.color = '#fff'; }}
                            onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #4F6AF620, #7C5CFC20)'; e.currentTarget.style.color = '#7C5CFC'; }}
@@ -220,29 +228,37 @@ const AdminDetailSoumissionnaire = () => {
           <p style={{ color: 'var(--color-text-tertiary)' }}>Aucune candidature mobilité.</p>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+              <colgroup>
+                <col style={{ width: '200px' }} />
+                <col style={{ width: '180px' }} />
+                <col style={{ width: '120px' }} />
+                <col style={{ width: '160px' }} />
+                <col style={{ width: '110px' }} />
+                <col style={{ width: '150px' }} />
+              </colgroup>
               <thead>
                 <tr style={{ borderBottom: '2px solid var(--color-border-light)' }}>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)' }}>Structure / Artiste</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)' }}>Discipline</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)' }}>Destination</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)' }}>Dates</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)' }}>Statut</th>
-                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)' }}>Actions</th>
+                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap' }}>Structure / Artiste</th>
+                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap' }}>Discipline</th>
+                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap' }}>Destination</th>
+                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap' }}>Dates</th>
+                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap' }}>Statut</th>
+                  <th style={{ padding: '12px', textAlign: 'left', fontSize: 12, color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap' }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {mobilites.map(m => (
                   <React.Fragment key={m.id}>
                     <tr style={{ borderBottom: '1px solid var(--color-border-light)' }}>
-                      <td style={{ padding: '12px', fontWeight: 600, fontSize: 14 }}>{m.nom_structure || 'N/A'}</td>
-                      <td style={{ padding: '12px', fontSize: 14 }}>{m.discipline || 'N/A'}</td>
-                      <td style={{ padding: '12px', fontSize: 14 }}>{m.pays_destination || 'N/A'}</td>
-                      <td style={{ padding: '12px', fontSize: 13, color: 'var(--color-text-secondary)' }}>
+                      <td style={{ padding: '12px', fontWeight: 600, fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={m.nom_structure}>{m.nom_structure || 'N/A'}</td>
+                      <td style={{ padding: '12px', fontSize: 14, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={m.discipline}>{m.discipline || 'N/A'}</td>
+                      <td style={{ padding: '12px', fontSize: 14, whiteSpace: 'nowrap' }}>{m.pays_destination || 'N/A'}</td>
+                      <td style={{ padding: '12px', fontSize: 13, color: 'var(--color-text-secondary)', whiteSpace: 'nowrap' }}>
                         {m.date_depart ? new Date(m.date_depart).toLocaleDateString() : '?'} → {m.date_retour ? new Date(m.date_retour).toLocaleDateString() : '?'}
                       </td>
-                      <td style={{ padding: '12px' }}>{getStatusBadge(m.statut)}</td>
-                      <td style={{ padding: '12px' }}>
+                      <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>{getStatusBadge(m.statut)}</td>
+                      <td style={{ padding: '12px', whiteSpace: 'nowrap' }}>
                         <button
                           onClick={() => navigate(`/admin/mobilite/candidature/${m.id}`)}
                           style={{
@@ -250,7 +266,7 @@ const AdminDetailSoumissionnaire = () => {
                             padding: '7px 14px', borderRadius: 8, border: 'none',
                             background: 'linear-gradient(135deg, #4F6AF620, #7C5CFC20)',
                             color: '#7C5CFC', fontWeight: 700, fontSize: 12,
-                            cursor: 'pointer', transition: 'all 0.2s',
+                            cursor: 'pointer', transition: 'all 0.2s', whiteSpace: 'nowrap',
                           }}
                           onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #4F6AF6, #7C5CFC)'; e.currentTarget.style.color = '#fff'; }}
                           onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #4F6AF620, #7C5CFC20)'; e.currentTarget.style.color = '#7C5CFC'; }}
