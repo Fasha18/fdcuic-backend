@@ -73,7 +73,7 @@ export default function AdminLayout({ onLogout }) {
   });
 
   return (
-    <div className="dashboard-layout" style={{ background: 'linear-gradient(155deg, #eef3ff, #dce8ff 60%, #cfe0ff)', position: 'relative', overflow: 'hidden' }}>
+    <div className="dashboard-layout admin-layout-bg" style={{ position: 'relative', overflow: 'hidden' }}>
       
       {/* ── METABALLS BACKGROUND ── */}
       <div className="ag-metaballs" aria-hidden="true" style={{ opacity: 0.12, position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
@@ -106,6 +106,10 @@ export default function AdminLayout({ onLogout }) {
           <Outlet />
         </div>
       </div>
+      <style>{`
+        .admin-layout-bg { background: linear-gradient(155deg, #eef3ff, #dce8ff 60%, #cfe0ff); }
+        body[data-theme='dark'] .admin-layout-bg { background: linear-gradient(155deg, #0f172a, #1e293b 60%, #0f172a) !important; }
+      `}</style>
     </div>
   );
 }

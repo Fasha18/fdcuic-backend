@@ -47,7 +47,7 @@ export default function CandidatMobilite({ onLogout }) {
         if (tab === 'mobilite') navigate('/candidat/mobilite');
       }} onLogout={onLogout} role="candidat" />
 
-      <main className="dashboard-main" style={{ background: 'linear-gradient(155deg, #eef3ff, #dce8ff 60%, #cfe0ff)', minHeight: '100vh' }}>
+      <main className="dashboard-main candidat-mobilite-bg" style={{ minHeight: '100vh' }}>
         <Topbar title="Mobilité" subtitle="Développez vos projets à l'international" />
 
         <div className="dashboard-content" style={{ padding: '24px 32px', maxWidth: 1000, margin: '0 auto' }}>
@@ -269,6 +269,17 @@ export default function CandidatMobilite({ onLogout }) {
               .c-badge { left: 16px; animation: none; transform: rotate(0); }
               .c-tape { display: none; }
             }
+
+            .candidat-mobilite-bg { background: linear-gradient(155deg, #eef3ff, #dce8ff 60%, #cfe0ff); }
+            body[data-theme='dark'] .candidat-mobilite-bg { background: linear-gradient(155deg, #0f172a, #1e293b 60%, #0f172a) !important; }
+            body[data-theme='dark'] .m-stat-card { background: var(--color-bg-card); border: 1px solid var(--color-border-light); }
+            body[data-theme='dark'] .m-stat-card.blue { border-left: 4px solid #0144BD; }
+            body[data-theme='dark'] .m-stat-card.green { border-left: 4px solid #1baf7a; }
+            body[data-theme='dark'] .m-stat-number, body[data-theme='dark'] h2, body[data-theme='dark'] .c-title { color: var(--color-text-primary) !important; }
+            body[data-theme='dark'] p, body[data-theme='dark'] .m-stat-label, body[data-theme='dark'] .c-desc { color: var(--color-text-secondary) !important; }
+            body[data-theme='dark'] .collage-main-card::before { background: var(--color-bg-card); }
+            body[data-theme='dark'] .collage-main-card { box-shadow: 0 4px 16px rgba(0,0,0,0.4); }
+            body[data-theme='dark'] .c-btn { background: var(--color-bg-body); color: var(--color-text-primary); border: 1px solid var(--color-border); }
           `}</style>
           
           {/* STATS CARDS */}

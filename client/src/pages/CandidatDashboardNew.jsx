@@ -138,7 +138,7 @@ export default function CandidatDashboardNew({ onLogout }) {
       }} onLogout={onLogout} role="candidat" />
 
       {/* Main content area with gradient background and relative positioning for metaballs */}
-      <main className="dashboard-main" style={{ position: 'relative', background: 'linear-gradient(155deg, #eef3ff, #dce8ff 60%, #cfe0ff)', overflow: 'hidden', padding: 0 }}>
+      <main className="dashboard-main candidat-main-bg" style={{ position: 'relative', overflow: 'hidden', padding: 0 }}>
         
         {/* GLOBAL METABALLS BACKGROUND */}
         <div className="global-metaballs">
@@ -169,6 +169,7 @@ export default function CandidatDashboardNew({ onLogout }) {
           
           <style>{`
             /* Global Candidate Dashboard CSS */
+            .candidat-main-bg { background: linear-gradient(155deg, #eef3ff, #dce8ff 60%, #cfe0ff); }
             .global-metaballs {
               position: absolute;
               top: 0; right: 0; bottom: 0; left: 0;
@@ -272,19 +273,17 @@ export default function CandidatDashboardNew({ onLogout }) {
 
             .empty-state { text-align: center; padding: 40px 0; color: #8a90a0; font-size: 14px; }
             
-            @media (prefers-color-scheme: dark) {
               /* Adaptations très basiques si le thème sombre global est activé sur le dashboard */
-              body[data-theme='dark'] .dashboard-main { background: linear-gradient(155deg, #0f172a, #1e293b 60%, #0f172a) !important; }
+              body[data-theme='dark'] .candidat-main-bg { background: linear-gradient(155deg, #0f172a, #1e293b 60%, #0f172a) !important; }
               body[data-theme='dark'] .cand-welcome-title { color: #f1f5f9; }
               body[data-theme='dark'] .cand-welcome-desc { color: #94a3b8; }
-              body[data-theme='dark'] .btn-outline-blue { background: rgba(255,255,255,0.1); color: #60a5fa; }
+              body[data-theme='dark'] .btn-outline-blue { background: rgba(255,255,255,0.1); color: #60a5fa; border-color: rgba(96,165,250,0.3); }
               body[data-theme='dark'] .stat-card-accent, body[data-theme='dark'] .quick-card, body[data-theme='dark'] .recent-card { background: var(--color-bg-card); border-color: var(--color-border); }
               body[data-theme='dark'] .stat-value, body[data-theme='dark'] .quick-title, body[data-theme='dark'] .recent-title, body[data-theme='dark'] .recent-item-name, body[data-theme='dark'] .activity-message { color: var(--color-text-primary); }
               body[data-theme='dark'] .stat-label, body[data-theme='dark'] .quick-sub, body[data-theme='dark'] .recent-item-type, body[data-theme='dark'] .activity-time { color: var(--color-text-secondary); }
               body[data-theme='dark'] .recent-item, body[data-theme='dark'] .activity-item { border-bottom-color: var(--color-border-light); }
               body[data-theme='dark'] .recent-item-icon { background: var(--color-bg-body); }
-            }
-          `}</style>
+            `}</style>
 
           {/* 1. WELCOME TEXT (Directly on background) */}
           <div className="cand-welcome-area animate-fade-in-up">
