@@ -484,13 +484,28 @@ class ApiService {
     if (!File(safePath).existsSync()) {
       throw Exception('Fichier local introuvable : $safePath');
     }
+
+    // Déterminer le Content-Type selon l'extension
+    final ext = safePath.split('.').last.toLowerCase();
+    MediaType contentType;
+    if (ext == 'pdf') {
+      contentType = MediaType('application', 'pdf');
+    } else if (ext == 'png') {
+      contentType = MediaType('image', 'png');
+    } else {
+      contentType = MediaType('image', 'jpeg');
+    }
     
-    request.files.add(await http.MultipartFile.fromPath('fichier', safePath));
+    request.files.add(await http.MultipartFile.fromPath(
+      'fichier', 
+      safePath,
+      contentType: contentType,
+    ));
 
     final res = await request.send();
     if (res.statusCode != 200) {
       final respStr = await res.stream.bytesToString();
-      throw Exception('Erreur upload document: $respStr');
+      throw Exception('Erreur upload document ($docType): $respStr');
     }
   }
 
@@ -512,7 +527,38 @@ class ApiService {
     }
   }
 
-  // ── MES DOSSIERS ──────────────────────────────────────
+  // ── VÉRIFICATION DOSSIER EXISTANT ─────────────────────────
+  /// Retourne le dossier existant (brouillon, soumis, en examen, etc.) pour un appel donné, ou null.
+  static Future<Map<String, dynamic>?> getDossierExistantPourAppel(int appelId) async {
+    try {
+      final dossiers = await getMesDossiers();
+      for (final d in dossiers) {
+        if (d['appel_id']?.toString() == appelId.toString()) {
+          return Map<String, dynamic>.from(d);
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Erreur getDossierExistantPourAppel: \$e');
+      return null;
+    }
+  }
+
+  /// Retourne le projet mobilité existant (brouillon, soumis, etc.), ou null.
+  static Future<Map<String, dynamic>?> getProjetMobiliteExistant() async {
+    try {
+      final projets = await getMesProjets();
+      if (projets.isNotEmpty) {
+        return Map<String, dynamic>.from(projets.first);
+      }
+      return null;
+    } catch (e) {
+      debugPrint('Erreur getProjetMobiliteExistant: \$e');
+      return null;
+    }
+  }
+
+  // ── MES DOSSIERS ──────────────────────────────────────────
   static Future<List<dynamic>> getMesDossiers() async {
     final res = await http.get(
       Uri.parse('$baseUrl/api/dossiers/mes-dossiers'),
