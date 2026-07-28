@@ -97,27 +97,35 @@ const modifierType = async (req, res) => {
   }
 };
 
-// DELETE admin — supprimer un type de projet (soft delete ou hard delete si non utilisé)
+// DELETE admin — désactiver un type de projet (soft delete sécurisé)
+// On ne supprime jamais physiquement pour éviter les erreurs de contrainte FK
+// (DocumentModele et DocumentTemplate sont liés à TypeProjet)
 const supprimerType = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const typeProjet = await TypeProjet.findByPk(id);
     if (!typeProjet) {
       return res.status(404).json({ message: 'Type de projet introuvable.' });
     }
 
-    // Vérifier si des dossiers l'utilisent
-    const totalAppels = await AppelProjet.count({ where: { type_projet: typeProjet.code } });
-    
-    if (totalAppels > 0) {
-      // Soft delete: on le rend inactif (pour l'instant la DB n'a peut-être pas prévu de filter par actif, mais c'est l'idée)
-      await typeProjet.update({ actif: false });
-      return res.status(200).json({ message: 'Type de projet désactivé car des dossiers y sont rattachés.' });
-    } else {
-      await typeProjet.destroy();
-      return res.status(200).json({ message: 'Type de projet supprimé avec succès.' });
+    // Soft delete systématique : on désactive le type sans le supprimer de la BD
+    // Cela évite les erreurs de contrainte FK avec DocumentModele et DocumentTemplate
+    await typeProjet.update({ actif: false });
+
+    // Message selon qu'il y a ou non des dossiers liés
+    let totalAppels = 0;
+    try {
+      totalAppels = await AppelProjet.count({ where: { type_projet: typeProjet.code } });
+    } catch (e) {
+      // Si le count échoue (ex: problème ENUM), on continue quand même
     }
+
+    const message = totalAppels > 0
+      ? 'Type de projet désactivé. Les dossiers existants sont conservés.'
+      : 'Type de projet désactivé avec succès.';
+
+    return res.status(200).json({ message });
   } catch (error) {
     return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
   }

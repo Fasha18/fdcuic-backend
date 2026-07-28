@@ -198,7 +198,7 @@ const AdminTypesProjet = () => {
                       <Edit2 size={14} />
                     </button>
                     <button 
-                      onClick={() => setConfirmDelete(type.id)}
+                      onClick={() => setConfirmDelete(type)}
                       style={{ background: 'var(--color-bg-body)', border: '1px solid var(--color-border-light)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-red)', cursor: 'pointer', transition: 'all 0.2s' }}
                       onMouseOver={e => { e.currentTarget.style.background = 'var(--color-red-light)'; e.currentTarget.style.borderColor = 'var(--color-red)'; }}
                       onMouseOut={e => { e.currentTarget.style.background = 'var(--color-bg-body)'; e.currentTarget.style.borderColor = 'var(--color-border-light)'; }}
@@ -335,12 +335,12 @@ const AdminTypesProjet = () => {
             </div>
             <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, color: 'var(--color-text-primary)' }}>Supprimer ce type ?</h3>
             <p style={{ color: 'var(--color-text-secondary)', fontSize: 14, marginBottom: 24 }}>
-              Vous êtes sur le point de supprimer le type <strong>{confirmDelete.label}</strong>. Les dossiers existants seront conservés.
+              Vous êtes sur le point de supprimer le type <strong>{confirmDelete?.label}</strong>. Les dossiers existants seront conservés.
             </p>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
               <button className="btn-secondary" onClick={() => setConfirmDelete(null)} style={{ padding: '10px 20px', borderRadius: 10, fontWeight: 600 }}>Annuler</button>
               <button
-                onClick={() => handleDelete(confirmDelete.id)}
+                onClick={() => handleDelete(confirmDelete?.id)}
                 style={{ padding: '10px 20px', borderRadius: 10, background: 'var(--color-red)', color: '#fff', border: 'none', fontWeight: 600, cursor: 'pointer' }}
               >
                 Supprimer
