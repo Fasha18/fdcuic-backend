@@ -104,7 +104,9 @@ const AdminTypesProjet = () => {
       setConfirmDelete(null);
       fetchTypes();
     } catch (err) {
-      alert(err.response?.data?.message || 'Erreur lors de la suppression.');
+      const msg = err.response?.data?.message || 'Erreur lors de la suppression.';
+      const detail = err.response?.data?.error ? `\n(${err.response.data.error})` : '';
+      alert(msg + detail);
     }
   };
 

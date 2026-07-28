@@ -1,4 +1,4 @@
-const { TypeProjet, AppelProjet } = require('../models/index');
+const { TypeProjet, AppelProjet, sequelize } = require('../models/index');
 
 // GET admin — tous les types + stats
 const listerTypes = async (req, res) => {
@@ -97,35 +97,34 @@ const modifierType = async (req, res) => {
   }
 };
 
-// DELETE admin — désactiver un type de projet (soft delete sécurisé)
-// On ne supprime jamais physiquement pour éviter les erreurs de contrainte FK
-// (DocumentModele et DocumentTemplate sont liés à TypeProjet)
+// DELETE admin — désactiver un type de projet (soft delete sécurisé via SQL direct)
+// On utilise du SQL brut pour éviter tout problème de sync ORM ou colonne manquante
 const supprimerType = async (req, res) => {
   try {
     const { id } = req.params;
 
+    // Vérifier que le type existe
     const typeProjet = await TypeProjet.findByPk(id);
     if (!typeProjet) {
       return res.status(404).json({ message: 'Type de projet introuvable.' });
     }
 
-    // Soft delete systématique : on désactive le type sans le supprimer de la BD
-    // Cela évite les erreurs de contrainte FK avec DocumentModele et DocumentTemplate
-    await typeProjet.update({ actif: false });
-
-    // Message selon qu'il y a ou non des dossiers liés
-    let totalAppels = 0;
+    // Étape 1 : S'assurer que la colonne actif existe (idempotent)
     try {
-      totalAppels = await AppelProjet.count({ where: { type_projet: typeProjet.code } });
-    } catch (e) {
-      // Si le count échoue (ex: problème ENUM), on continue quand même
+      await sequelize.query(
+        `ALTER TABLE types_projet ADD COLUMN IF NOT EXISTS actif BOOLEAN DEFAULT true`
+      );
+    } catch (colErr) {
+      // Colonne déjà existante ou erreur non bloquante — on continue
     }
 
-    const message = totalAppels > 0
-      ? 'Type de projet désactivé. Les dossiers existants sont conservés.'
-      : 'Type de projet désactivé avec succès.';
+    // Étape 2 : Désactiver via SQL direct (bypass ORM)
+    await sequelize.query(
+      `UPDATE types_projet SET actif = false, "updatedAt" = NOW() WHERE id = :id`,
+      { replacements: { id: typeProjet.id }, type: sequelize.QueryTypes.UPDATE }
+    );
 
-    return res.status(200).json({ message });
+    return res.status(200).json({ message: 'Type de projet désactivé avec succès.' });
   } catch (error) {
     return res.status(500).json({ message: 'Erreur serveur.', error: error.message });
   }
