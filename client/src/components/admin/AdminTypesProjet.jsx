@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, FileText, CheckCircle, Search, File } from 'lucide-react';
+import { Plus, Edit2, Trash2, FileText, CheckCircle, Search, File, RotateCcw, EyeOff } from 'lucide-react';
 import adminService from '../../services/adminService';
 import api from '../../api/axios';
 import AdminDocumentsModeles from './AdminDocumentsModeles';
@@ -110,6 +110,15 @@ const AdminTypesProjet = () => {
     }
   };
 
+  const handleReactivate = async (id) => {
+    try {
+      await api.put(`/admin/types-projet/${id}`, { actif: true });
+      fetchTypes();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Erreur lors de la réactivation.');
+    }
+  };
+
   if (loading && types.length === 0) {
     return (
       <div className="content-grid">
@@ -167,6 +176,7 @@ const AdminTypesProjet = () => {
           {types.map((type, i) => {
             // Configuration visuelle fallback
             const conf = TYPE_CONFIG[type.code] || { emoji: '📁', color: 'var(--color-text-secondary)', bg: 'var(--color-bg-body)' };
+            const isInactive = type.actif === false;
             
             return (
               <div
@@ -174,48 +184,81 @@ const AdminTypesProjet = () => {
                 className="card animate-fade-in-up"
                 style={{ 
                   padding: 24, 
-                  background: 'var(--color-bg-card)', 
-                  border: '1px solid var(--color-border)', 
+                  background: isInactive ? 'var(--color-bg-body)' : 'var(--color-bg-card)', 
+                  border: `1px solid ${isInactive ? 'var(--color-border-light)' : 'var(--color-border)'}`, 
                   borderRadius: 16, 
                   animationDelay: `${i * 0.05}s`, 
                   transition: 'all 0.25s', 
                   display: 'flex', 
                   flexDirection: 'column',
-                  cursor: 'pointer',
-                  position: 'relative'
+                  cursor: isInactive ? 'default' : 'pointer',
+                  position: 'relative',
+                  opacity: isInactive ? 0.65 : 1,
                 }}
-                onClick={() => handleOpenModal(type)}
-                onMouseOver={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = 'var(--shadow-lg)'; e.currentTarget.style.borderColor = 'var(--color-primary-light)'; }}
-                onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--color-border)'; }}
+                onClick={() => !isInactive && handleOpenModal(type)}
+                onMouseOver={e => { if (!isInactive) { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = 'var(--shadow-lg)'; e.currentTarget.style.borderColor = 'var(--color-primary-light)'; }}}
+                onMouseOut={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = isInactive ? 'var(--color-border-light)' : 'var(--color-border)'; }}
               >
-                {/* Actions Absolues */}
-                {!isEvaluateur && (
-                  <div style={{ position: 'absolute', top: 16, right: 16, display: 'flex', gap: 8 }} onClick={e => e.stopPropagation()}>
-                    <button 
-                      onClick={() => handleOpenModal(type)}
-                      style={{ background: 'var(--color-bg-body)', border: '1px solid var(--color-border-light)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-secondary)', cursor: 'pointer', transition: 'all 0.2s' }}
-                      onMouseOver={e => { e.currentTarget.style.color = 'var(--color-primary)'; e.currentTarget.style.borderColor = 'var(--color-primary)'; }}
-                      onMouseOut={e => { e.currentTarget.style.color = 'var(--color-text-secondary)'; e.currentTarget.style.borderColor = 'var(--color-border-light)'; }}
-                    >
-                      <Edit2 size={14} />
-                    </button>
-                    <button 
-                      onClick={() => setConfirmDelete(type)}
-                      style={{ background: 'var(--color-bg-body)', border: '1px solid var(--color-border-light)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-red)', cursor: 'pointer', transition: 'all 0.2s' }}
-                      onMouseOver={e => { e.currentTarget.style.background = 'var(--color-red-light)'; e.currentTarget.style.borderColor = 'var(--color-red)'; }}
-                      onMouseOut={e => { e.currentTarget.style.background = 'var(--color-bg-body)'; e.currentTarget.style.borderColor = 'var(--color-border-light)'; }}
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                {/* Badge Désactivé */}
+                {isInactive && (
+                  <div style={{
+                    position: 'absolute', top: 12, left: 16,
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    background: 'var(--color-red-light, #fff0f0)',
+                    border: '1px solid var(--color-red, #e53e3e)',
+                    color: 'var(--color-red, #e53e3e)',
+                    borderRadius: 20, padding: '3px 10px',
+                    fontSize: 11, fontWeight: 700, letterSpacing: '0.3px'
+                  }}>
+                    <EyeOff size={11} />
+                    Désactivé
                   </div>
                 )}
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
-                  <div style={{ width: 48, height: 48, borderRadius: 12, background: conf.bg, fontSize: 24, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {/* Actions Absolues */}
+                {!isEvaluateur && (
+                  <div style={{ position: 'absolute', top: 16, right: 16, display: 'flex', gap: 8 }} onClick={e => e.stopPropagation()}>
+                    {isInactive ? (
+                      /* Bouton Réactiver */
+                      <button
+                        onClick={() => handleReactivate(type.id)}
+                        title="Réactiver ce type"
+                        style={{ background: 'var(--color-bg-card)', border: '1px solid var(--color-border-light)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-primary)', cursor: 'pointer', transition: 'all 0.2s' }}
+                        onMouseOver={e => { e.currentTarget.style.background = 'var(--color-primary-light)'; e.currentTarget.style.borderColor = 'var(--color-primary)'; }}
+                        onMouseOut={e => { e.currentTarget.style.background = 'var(--color-bg-card)'; e.currentTarget.style.borderColor = 'var(--color-border-light)'; }}
+                      >
+                        <RotateCcw size={14} />
+                      </button>
+                    ) : (
+                      /* Boutons normaux (modifier + supprimer) */
+                      <>
+                        <button 
+                          onClick={() => handleOpenModal(type)}
+                          style={{ background: 'var(--color-bg-body)', border: '1px solid var(--color-border-light)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-text-secondary)', cursor: 'pointer', transition: 'all 0.2s' }}
+                          onMouseOver={e => { e.currentTarget.style.color = 'var(--color-primary)'; e.currentTarget.style.borderColor = 'var(--color-primary)'; }}
+                          onMouseOut={e => { e.currentTarget.style.color = 'var(--color-text-secondary)'; e.currentTarget.style.borderColor = 'var(--color-border-light)'; }}
+                        >
+                          <Edit2 size={14} />
+                        </button>
+                        <button 
+                          onClick={() => setConfirmDelete(type)}
+                          style={{ background: 'var(--color-bg-body)', border: '1px solid var(--color-border-light)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--color-red)', cursor: 'pointer', transition: 'all 0.2s' }}
+                          onMouseOver={e => { e.currentTarget.style.background = 'var(--color-red-light)'; e.currentTarget.style.borderColor = 'var(--color-red)'; }}
+                          onMouseOut={e => { e.currentTarget.style.background = 'var(--color-bg-body)'; e.currentTarget.style.borderColor = 'var(--color-border-light)'; }}
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16, marginTop: isInactive ? 28 : 0 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 12, background: isInactive ? 'var(--color-bg-body)' : conf.bg, fontSize: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', filter: isInactive ? 'grayscale(1)' : 'none' }}>
                     {conf.emoji}
                   </div>
                   <div style={{ flex: 1, paddingRight: 60 }}>
-                    <h3 style={{ fontSize: 16, fontWeight: 800, color: 'var(--color-text-primary)' }}>{type.label}</h3>
+                    <h3 style={{ fontSize: 16, fontWeight: 800, color: isInactive ? 'var(--color-text-tertiary)' : 'var(--color-text-primary)', textDecoration: isInactive ? 'line-through' : 'none' }}>{type.label}</h3>
                     <div style={{ fontSize: 11, fontFamily: 'monospace', color: 'var(--color-text-tertiary)', marginTop: 2, background: 'var(--color-bg-body)', padding: '2px 6px', borderRadius: 4, display: 'inline-block' }}>{type.code}</div>
                   </div>
                 </div>
@@ -225,10 +268,15 @@ const AdminTypesProjet = () => {
                 </p>
 
                 <div style={{ marginTop: 'auto', borderTop: '1px solid var(--color-border-light)', paddingTop: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <FileText size={16} color="var(--color-primary)" />
-                  <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                  <FileText size={16} color={isInactive ? 'var(--color-text-tertiary)' : 'var(--color-primary)'} />
+                  <span style={{ fontSize: 13, fontWeight: 600, color: isInactive ? 'var(--color-text-tertiary)' : 'var(--color-text-primary)' }}>
                     {type.docsCount !== undefined ? `${type.docsCount} document${type.docsCount > 1 ? 's' : ''} modèle${type.docsCount > 1 ? 's' : ''}` : 'Chargement...'}
                   </span>
+                  {isInactive && (
+                    <span style={{ marginLeft: 'auto', fontSize: 11, color: 'var(--color-text-tertiary)', fontStyle: 'italic' }}>
+                      Non visible aux candidats
+                    </span>
+                  )}
                 </div>
               </div>
             );

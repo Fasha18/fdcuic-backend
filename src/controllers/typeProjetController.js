@@ -78,18 +78,23 @@ const creerType = async (req, res) => {
   }
 };
 
-// PUT admin — modifier un type de projet
+// PUT admin — modifier un type de projet (label, description, ou actif pour réactivation)
 const modifierType = async (req, res) => {
   try {
     const { id } = req.params;
-    const { label, description } = req.body;
+    const { label, description, actif } = req.body;
 
     const typeProjet = await TypeProjet.findByPk(id);
     if (!typeProjet) {
       return res.status(404).json({ message: 'Type de projet introuvable.' });
     }
 
-    await typeProjet.update({ label, description });
+    const updates = {};
+    if (label !== undefined) updates.label = label;
+    if (description !== undefined) updates.description = description;
+    if (actif !== undefined) updates.actif = actif;
+
+    await typeProjet.update(updates);
 
     return res.status(200).json({ message: 'Type de projet mis à jour.', type: typeProjet });
   } catch (error) {
